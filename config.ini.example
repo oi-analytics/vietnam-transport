@@ -1,3 +1,9 @@
+###
+#
+# Copy this file to `config.ini` and edit for your local setup
+#
+###
+
 # Config file for preprocessing scripts
 [paths]
 # incoming_data is the path to the directory of input data, as provided

@@ -104,3 +104,6 @@ ENV/
 .vs
 .vscode
 .editorconfig
+
+# Config
+config.ini
