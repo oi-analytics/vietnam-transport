@@ -106,4 +106,4 @@ ENV/
 .editorconfig
 
 # Config
-config.ini
+config.json
