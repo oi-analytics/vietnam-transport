@@ -48,7 +48,7 @@ def set_ax_bg(ax, color='#c6e0ff'):
     ax.background_patch.set_facecolor(color)
 
 
-def plot_basemap(ax, data_path, focus='VNM', neighbours=['VNM', 'CHN', 'LAO', 'KHM', 'THA']):
+def plot_basemap(ax, data_path, focus='VNM', neighbours=['VNM', 'CHN', 'LAO', 'KHM', 'THA'],country_border='white'):
     """Plot countries and regions background
     """
     proj = ccrs.PlateCarree()
@@ -86,7 +86,7 @@ def plot_basemap(ax, data_path, focus='VNM', neighbours=['VNM', 'CHN', 'LAO', 'K
             ax.add_geometries(
                 [geom],
                 crs=proj,
-                edgecolor='white',
+                edgecolor=country_border,
                 facecolor='#e0e0e0',
                 zorder=1)
 
