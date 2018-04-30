@@ -108,7 +108,7 @@ def plot_basemap(ax, data_path, focus='VNM', neighbours=['VNM', 'CHN', 'LAO', 'K
 
 
 
-def plot_basemap_labels(ax, data_path, labels=None):
+def plot_basemap_labels(ax, data_path, labels=None,province_zoom=False):
     """Plot countries and regions background
     """
     proj = ccrs.PlateCarree()
@@ -189,6 +189,10 @@ def plot_basemap_labels(ax, data_path, labels=None):
         ]
 
     for text, x, y, size in labels:
+        
+        if province_zoom == True:
+            size = 18
+        
         if within_extent(x, y, extent):
             ax.text(
                 x, y,
