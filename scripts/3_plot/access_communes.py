@@ -35,6 +35,7 @@ def main():
     )
     with open(config_path, 'r') as config_fh:
         config = json.load(config_fh)
+    data_path = config['paths']['data']
     output_path = config['paths']['output']
     figure_path = config['paths']['figures']
 
@@ -62,7 +63,7 @@ def main():
 
     for rp in rps:
         # create map of affected communes in province
-        map_distance_per_commune(rp,communes_affected,figure_path)
+        map_distance_per_commune(rp,communes_affected,figure_path,rp_names,data_path)
         
         if rp != 'no_flood':
             
@@ -73,7 +74,7 @@ def main():
             create_bar_plots(rp,communes_affected,sectors,sectors_eng,rp_names,figure_path)
 
         
-def map_distance_per_commune(rp,communes_affected,figure_path,rp_names):
+def map_distance_per_commune(rp,communes_affected,figure_path,rp_names,data_path):
 
     # create bin set
     bins = [-1, 1, 5, 10, 25, 50,75,np.float('inf')]
@@ -94,7 +95,7 @@ def map_distance_per_commune(rp,communes_affected,figure_path,rp_names):
     ax.set_extent([tot_bounds[0]-0.1,tot_bounds[2]+0.1,tot_bounds[1]-0.1,tot_bounds[3]+0.1] , crs=proj_lat_lon)
     
     # load background 
-    world = gpd.read_file(os.path.join('..','data','Vietnam_boundaries','who_boundaries','who_provinces.shp'))
+    world = gpd.read_file(os.path.join(data_path,'Vietnam_boundaries','who_boundaries','who_provinces.shp'))
 
     world.plot(ax=ax,color='#FEF9E0',lw=0.3,edgecolor='k')
 
@@ -218,7 +219,7 @@ def create_bar_plots(rp,communes_affected,sectors,sectors_eng,rp_names,figure_pa
     plt.title('Relative share of firms affected \n in Thanh Hoa for %s' % rp_names[rp],fontweight='bold',fontsize=17)
 
     # save figure
-    figure_out= os.path.join(figure_path,'Figures','Share_firms_affected_Thanh_Hoa_%s.png' % rp)
+    figure_out= os.path.join(figure_path,'Share_firms_affected_Thanh_Hoa_%s.png' % rp)
     plt.savefig(figure_out,dpi=600,bbox_inches='tight')
 
 
