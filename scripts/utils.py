@@ -67,8 +67,9 @@ def plot_basemap(ax, data_path, focus='VNM', neighbours=['VNM', 'CHN', 'LAO', 'K
 
     provinces_filename = os.path.join(
         data_path,
-        'Global_boundaries',
-        'ne_10m_admin_1_states_provinces_lakes.shp'
+        'Vietnam_boundaries',
+        'who_boundaries',
+        'who_provinces.shp'
     )
 
     lakes_filename = os.path.join(
@@ -91,10 +92,8 @@ def plot_basemap(ax, data_path, focus='VNM', neighbours=['VNM', 'CHN', 'LAO', 'K
 
     # Regions
     for record in shpreader.Reader(provinces_filename).records():
-        country_code = record.attributes['adm0_a3']
-        if country_code == focus:
-            geom = record.geometry
-            ax.add_geometries([geom], crs=proj, edgecolor='#ffffff', facecolor='#d2d2d2')
+        geom = record.geometry
+        ax.add_geometries([geom], crs=proj, edgecolor='#ffffff', facecolor='#d2d2d2')
 
     # Lakes
     for record in shpreader.Reader(lakes_filename).records():
