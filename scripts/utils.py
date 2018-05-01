@@ -3,6 +3,8 @@
 import json
 import os
 
+from collections import namedtuple
+
 import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
 import matplotlib.patches as mpatches
@@ -189,10 +191,10 @@ def plot_basemap_labels(ax, data_path, labels=None,province_zoom=False):
         ]
 
     for text, x, y, size in labels:
-        
+
         if province_zoom == True:
             size = 18
-        
+
         if within_extent(x, y, extent):
             ax.text(
                 x, y,
@@ -244,3 +246,23 @@ def scale_bar(ax, length=100, location=(0.5, 0.05), linewidth=3):
     ax.plot(bar_xs, [sby, sby], transform=tmc, color='k', linewidth=linewidth)
     ax.text(sbx, sby + 10*length, str(length) + ' km', transform=tmc,
             horizontalalignment='center', verticalalignment='bottom', size=8)
+
+
+Style = namedtuple('Style', ['color', 'zindex', 'label'])
+Style.__doc__ += """: class to hold an element's styles
+
+Used to generate legend entries, apply uniform style to groups of map elements
+(See network_map.py for example.)
+"""
+
+def legend_from_style_spec(ax, styles, loc='lower left'):
+    """Plot legend
+    """
+    handles = [
+        mpatches.Patch(color=style.color, label=style.label)
+        for style in styles.values()
+    ]
+    ax.legend(
+        handles=handles,
+        loc=loc
+    )
