@@ -17,6 +17,8 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 import matplotlib.patches as mpatches
 
+from scripts.utils import plot_basemap,plot_basemap_labels,scale_bar,set_ax_bg
+
 
 mpl.style.use('ggplot')
 mpl.rcParams['font.size'] = 13.
@@ -95,17 +97,22 @@ def map_distance_per_commune(rp,communes_affected,figure_path,rp_names,data_path
     ax.set_extent([tot_bounds[0]-0.1,tot_bounds[2]+0.1,tot_bounds[1]-0.1,tot_bounds[3]+0.1] , crs=proj_lat_lon)
     
     # load background 
-    world = gpd.read_file(os.path.join(data_path,'Vietnam_boundaries','who_boundaries','who_provinces.shp'))
+#    world = gpd.read_file(os.path.join(data_path,'Vietnam_boundaries','who_boundaries','who_provinces.shp'))
+#    world.plot(ax=ax,color='#FEF9E0',lw=0.3,edgecolor='k')
+    set_ax_bg(ax)
 
-    world.plot(ax=ax,color='#FEF9E0',lw=0.3,edgecolor='k')
-
+    plot_basemap(ax, data_path,country_border=None)
+#    scale_bar(ax, location=(0.8, 0.05))
+    plot_basemap_labels(ax, data_path,province_zoom=True)
+    
     # create cmap
     cmap = cm.get_cmap('Reds', len(bins)) # Colour map (there are many others)
     cmaplist = ['#fee5d9','#fcbba1','#fc9272','#fb6a4a','#de2d26','#a50f15','#442c2d']
     cmap = cmap.from_list('Custom cmap', cmaplist, len(cmaplist))
 
     # plot figure
-    communes_affected.plot(ax=ax,column='binned_{}'.format(rp),cmap=cmap)
+    communes_affected.plot(ax=ax,column='binned_{}'.format(rp),cmap=cmap,zorder=2)
+
 
     # create legend
     handles = []
@@ -118,7 +125,7 @@ def map_distance_per_commune(rp,communes_affected,figure_path,rp_names,data_path
     ax.legend(handles=handles,loc=3, prop={'size': 13}) 
 
     # set figure title
-    plt.title('Distance to major towns in Thanh Hoa for %s' % rp_names[rp],fontweight='bold')
+    plt.title('Distance to major towns in Thanh Hoa for %s' % rp_names[rp],fontweight='bold',fontsize=16)
 
     # save figure
     figure_out= os.path.join(figure_path,'Dist_Major_Towns_Thanh_Hoa_%s.png' % rp)
