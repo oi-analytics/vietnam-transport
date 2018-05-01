@@ -12,6 +12,18 @@ import pandas as pd
 
 #def main():
 
+def create_events(scenario_list,flow_data,ind_des):
+
+    events = {}
+   
+    for event in scenario_list:
+        get_event  = flow_data.loc[event]
+        get_event = get_event.merge(ind_des, left_index=True,right_index=True)
+        get_event['tonnage'] = get_event['tonnage'].div(get_event['total_daily_tonnage'])
+        events[event] = get_event['tonnage']     
+        
+    return pd.DataFrame(events).fillna(0).T
+
 def map_comm_ind(x):
 
     comm_ind_map = { 'sugar' : 'Agriculture',
@@ -74,8 +86,6 @@ if __name__ == "__main__":
     with open(config_path, 'r') as config_fh:
         config = json.load(config_fh)
     data_path = config['paths']['data']
-    output_path = config['paths']['output']
-    figure_path = config['paths']['figures']
 
     # read commodity descriptions
     comm_des = pd.read_excel(os.path.join(data_path,'Results','commodity_descriptions_and_totals.xlsx'),sheet_name='Sheet1')
@@ -88,6 +98,7 @@ if __name__ == "__main__":
     ind_des['industry'] = ind_des.commodity_field.apply(map_comm_ind)
     ind_des['ind'] = ind_des.industry.apply(map_ind)
     ind_des = ind_des.drop(['commodity_name','commodity_field'],axis=1)
+    ind_des = ind_des.groupby('ind').sum()
     
     # convert commodities to industries for EORA impact modelling
     vnm_mpof_dom['industry'] = vnm_mpof_dom.industry.apply(map_comm_ind)
@@ -105,11 +116,11 @@ if __name__ == "__main__":
     # get scenarios and industries for typhoons and regions
     typhoon_region_unique = vnm_mpof_dom.groupby(['region_flooded','typhoon_level','ind']).sum()
     
-    # =============================================================================
-    #     # create disruption events
-    # =============================================================================
+    # create disruption events for typhoon
+    typhoon_events = create_events(list(typhoon_scenarios.index),typhoon_unique,ind_des)
     
-    typhoon_events = {}
+    #  create disruption events for typhoon per region
+    typhoon_region_events = create_events(list(regional_scenarios.index),typhoon_region_unique,ind_des)
     
-    
+   
     
