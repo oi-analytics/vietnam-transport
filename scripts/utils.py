@@ -109,9 +109,24 @@ def plot_basemap(ax, data_path, focus='VNM', neighbours=['VNM', 'CHN', 'LAO', 'K
             facecolor='#c6e0ff',
             zorder=1)
 
+def plot_basemap_labels_large_region(ax, data_path):    
 
-
-def plot_basemap_labels(ax, data_path, labels=None,province_zoom=False,plot_regions = True):
+        labels = [
+            ('Vietnam', 108.633, 13.625, 9),
+            ('Myanmar', 97.383, 21.535, 9),
+            ('Malaysia', 99.404, 8.624, 9),
+            ('Indonesia', 97.822, 3.338, 9),
+            ('Singapore', 103.799, 1.472, 9),
+            ('Cambodia', 105.25, 12.89, 9),
+            ('Laos', 105.64, 16.55, 9),
+            ('Thailand', 101.360, 16.257, 9), 
+            ('China', 108.08, 22.71, 9),
+            ('South China Sea', 108.17, 17.37, 7)
+        ]
+        plot_basemap_labels(ax, data_path, labels, province_zoom=False, plot_regions=False)
+        
+        
+def plot_basemap_labels(ax, data_path, labels=None, province_zoom=False, plot_regions=True):
     """Plot countries and regions background
     """
     proj = ccrs.PlateCarree()
