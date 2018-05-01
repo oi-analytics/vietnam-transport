@@ -50,7 +50,7 @@ def set_ax_bg(ax, color='#c6e0ff'):
     ax.background_patch.set_facecolor(color)
 
 
-def plot_basemap(ax, data_path, focus='VNM', neighbours=['VNM', 'CHN', 'LAO', 'KHM', 'THA'],country_border='white'):
+def plot_basemap(ax, data_path, focus='VNM', neighbours=['VNM', 'CHN', 'LAO', 'KHM', 'THA'],country_border='white',plot_regions=True):
     """Plot countries and regions background
     """
     proj = ccrs.PlateCarree()
@@ -93,9 +93,10 @@ def plot_basemap(ax, data_path, focus='VNM', neighbours=['VNM', 'CHN', 'LAO', 'K
                 zorder=1)
 
     # Regions
-    for record in shpreader.Reader(provinces_filename).records():
-        geom = record.geometry
-        ax.add_geometries([geom], crs=proj, edgecolor='#ffffff', facecolor='#d2d2d2')
+    if plot_regions == True:
+        for record in shpreader.Reader(provinces_filename).records():
+            geom = record.geometry
+            ax.add_geometries([geom], crs=proj, edgecolor='#ffffff', facecolor='#d2d2d2')
 
     # Lakes
     for record in shpreader.Reader(lakes_filename).records():
@@ -110,7 +111,7 @@ def plot_basemap(ax, data_path, focus='VNM', neighbours=['VNM', 'CHN', 'LAO', 'K
 
 
 
-def plot_basemap_labels(ax, data_path, labels=None,province_zoom=False):
+def plot_basemap_labels(ax, data_path, labels=None,province_zoom=False,plot_regions = True):
     """Plot countries and regions background
     """
     proj = ccrs.PlateCarree()
@@ -122,8 +123,10 @@ def plot_basemap_labels(ax, data_path, labels=None,province_zoom=False):
             ('Laos', 105.64, 16.55, 9),
             ('Thailand', 103.64, 15.25, 9),
             ('China', 108.08, 22.71, 9),
-            ('South China Sea', 108.17, 17.37, 7),
+            ('South China Sea', 108.17, 17.37, 7)]
 
+        if plot_regions == True:
+            labels = labels + [
             # Provinces
             ('An Giang', 105.182, 10.491, 5),
             ('Ba Ria-Vung Tau', 107.250, 10.510, 5),
