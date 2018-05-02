@@ -284,3 +284,15 @@ def legend_from_style_spec(ax, styles, loc='lower left'):
         handles=handles,
         loc=loc
     )
+
+def round_sf(x, places=1):
+    """Round number to significant figures
+    """
+    if x == 0:
+        return 0
+    sign = x / abs(x)
+    x = abs(x)
+    exp = floor(log10(x)) + 1
+    shift = 10 ** (exp - places)
+    rounded = round(x / shift) * shift
+    return rounded * sign
