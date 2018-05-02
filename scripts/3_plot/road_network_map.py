@@ -1,4 +1,4 @@
-"""Admin map
+"""Road network map
 """
 import os
 import sys

@@ -1,4 +1,4 @@
-"""Admin map
+"""Rail network flows map
 """
 import os
 import sys
@@ -18,14 +18,14 @@ def main():
     config = load_config()
     output_file = os.path.join(config['paths']['figures'], 'rail_flow-map.png')
     water_edge_file = os.path.join(config['paths']['data'], 'Results', 'Flow_shapefiles', 'railnetworkedges_flows.shp')
-    
+
     color_by_type = {'Rail Line': '#006d2c'}
     ax = get_axes()
     plot_basemap(ax, config['paths']['data'])
     scale_bar(ax, location=(0.8, 0.05))
     plot_basemap_labels(ax, config['paths']['data'])
     proj_lat_lon = ccrs.PlateCarree()
-    
+
     column = 'total_flow'
     column_label_divisors = {
         "total_flow": 1000,
@@ -38,13 +38,13 @@ def main():
                 for record
                 in shpreader.Reader(water_edge_file).records()]
                 )
-                    
+
     max_weight = max(
                 [record.attributes[column]
                 for record
                 in shpreader.Reader(water_edge_file).records()]
                 )
-                
+
     # generate weight bins
     width_by_range = OrderedDict()
     n_steps = 9
@@ -60,7 +60,7 @@ def main():
 
     for i, (min_, max_) in enumerate(zip(mins, maxs)):
         width_by_range[(min_, max_)] = (i+1) * width_step
-    
+
     geoms_by_range = {}
     for value_range in width_by_range:
         geoms_by_range[value_range] = []
@@ -80,7 +80,7 @@ def main():
             edgecolor='none',
             facecolor='#006d2c',
             zorder=2)
-    
+
     x_l = 102.3
     x_r = x_l + 0.4
     base_y = 14
@@ -118,7 +118,7 @@ def main():
             horizontalalignment='left',
             transform=proj_lat_lon,
             size=10)
-    
+
     save_fig(output_file)
 
 if __name__ == '__main__':

@@ -1,4 +1,4 @@
-"""Admin map
+"""Water network map
 """
 import os
 import sys
@@ -17,7 +17,7 @@ def main():
     output_file = os.path.join(config['paths']['figures'], 'water-map.png')
     water_edge_file = os.path.join(config['paths']['data'], 'Waterways', 'waterways', 'wateredges.shp')
     water_node_file = os.path.join(config['paths']['data'], 'Waterways', 'inlandandseaports', 'vietnam_seaport_nodes.shp')
-    
+
     color_by_type = {'Waterway route': '#045a8d','Major port': '#54278f'}
     ax = get_axes()
     plot_basemap(ax, config['paths']['data'])
@@ -35,7 +35,7 @@ def main():
             facecolor='none',
             zorder=3
         )
-    
+
     # Stations
     xs = []
     ys = []
@@ -45,7 +45,7 @@ def main():
         y = geom.y
         xs.append(x)
         ys.append(y)
-            
+
     ax.scatter(xs, ys,transform=proj_lat_lon, facecolor='#54278f', s=12, zorder=5)
     # Legend
     legend_handles = [

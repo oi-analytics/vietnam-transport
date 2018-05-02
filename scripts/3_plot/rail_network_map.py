@@ -1,4 +1,4 @@
-"""Admin map
+"""Rail network map
 """
 import os
 import sys
@@ -17,7 +17,7 @@ def main():
     output_file = os.path.join(config['paths']['figures'], 'rail-map.png')
     rail_edge_file = os.path.join(config['paths']['data'], 'Railways', 'rail2009', 'railnetworkedges.shp')
     rail_node_file = os.path.join(config['paths']['data'], 'Railways', 'rail2009', 'railnetworknodes.shp')
-    
+
     color_by_type = {'Rail line': '#006d2c','Rail stop': '#000000'}
     ax = get_axes()
     plot_basemap(ax, config['paths']['data'])
@@ -36,7 +36,7 @@ def main():
             zorder=3,
             label = 'Rail line'
         )
-    
+
     # Stations
     xs = []
     ys = []
@@ -49,7 +49,7 @@ def main():
             xs.append(x)
             ys.append(y)
             name = record.attributes['name']
-            
+
     ax.scatter(xs, ys,transform=proj_lat_lon, facecolor='#000000', s=4, zorder=5, label = 'Rail station')
     # Legend
     legend_handles = [
