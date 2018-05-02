@@ -16,7 +16,7 @@ from scripts.utils import *
 
 def main():
     config = load_config()
-    water_edge_file = os.path.join(config['paths']['data'], 'Results', 'Flow_shapefiles', 'railnetworkedges_flows.shp')
+    rail_edge_file = os.path.join(config['paths']['data'], 'Results', 'Flow_shapefiles', 'railnetworkedges_flows.shp')
     
     color = '#006d2c'
     color_by_type = {'Rail Line': color}
@@ -43,7 +43,7 @@ def main():
         weights = [
             record.attributes[column]
             for record
-            in shpreader.Reader(water_edge_file).records()
+            in shpreader.Reader(rail_edge_file).records()
         ]
         max_weight = max(weights)
         width_by_range = generate_weight_bins(weights)
@@ -52,7 +52,7 @@ def main():
         for value_range in width_by_range:
             geoms_by_range[value_range] = []
 
-        for record in shpreader.Reader(water_edge_file).records():
+        for record in shpreader.Reader(rail_edge_file).records():
             val = record.attributes[column]
             geom = record.geometry
             for nmin, nmax in geoms_by_range:

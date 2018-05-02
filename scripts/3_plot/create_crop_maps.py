@@ -47,14 +47,16 @@ def main():
             # Read in raster data
             data, lat_lon_extent = get_data(crop_file)
             data[data <= 0] = np.nan
-
+            max_val = np.nanmax(data)
+            norm=mpl.colors.Normalize(vmin=0, vmax=max_val)
+            
             # Plot population data
-            im = ax.imshow(data, extent=lat_lon_extent, cmap=colors, zorder=1)
+            im = ax.imshow(data, extent=lat_lon_extent,transform=proj_lat_lon, cmap=colors,norm =norm, zorder=5)
 
             # Add colorbar
             cbar = plt.colorbar(im, ax=ax,fraction=0.1, shrink=0.87,pad=0.01, drawedges=False, orientation='horizontal',
-                                norm=mpl.colors.Normalize(vmin=0, vmax=155), ticks=[0,25,50,75,100,125,150])
-            cbar.set_clim(vmin=0,vmax=155.0)
+                                norm=mpl.colors.Normalize(vmin=0, vmax=max_val), ticks=list(np.linspace(0,max_val,3)))
+            cbar.set_clim(vmin=0,vmax=max_val)
 
 
             cbar.outline.set_color("none")
