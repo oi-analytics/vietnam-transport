@@ -3,12 +3,13 @@
 import json
 import os
 
-from collections import namedtuple
+from collections import namedtuple, OrderedDict
 
 import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 def load_config():
@@ -109,7 +110,7 @@ def plot_basemap(ax, data_path, focus='VNM', neighbours=['VNM', 'CHN', 'LAO', 'K
             facecolor='#c6e0ff',
             zorder=1)
 
-def plot_basemap_labels_large_region(ax, data_path):    
+def plot_basemap_labels_large_region(ax, data_path):
 
         labels = [
             ('Vietnam', 108.633, 13.625, 9),
@@ -119,13 +120,13 @@ def plot_basemap_labels_large_region(ax, data_path):
             ('Singapore', 103.799, 1.472, 9),
             ('Cambodia', 105.25, 12.89, 9),
             ('Laos', 105.64, 16.55, 9),
-            ('Thailand', 101.360, 16.257, 9), 
+            ('Thailand', 101.360, 16.257, 9),
             ('China', 108.08, 22.71, 9),
             ('South China Sea', 108.17, 17.37, 7)
         ]
         plot_basemap_labels(ax, data_path, labels, province_zoom=False, plot_regions=False)
-        
-        
+
+
 def plot_basemap_labels(ax, data_path, labels=None, province_zoom=False, plot_regions=True):
     """Plot countries and regions background
     """
@@ -264,6 +265,28 @@ def scale_bar(ax, length=100, location=(0.5, 0.05), linewidth=3):
     ax.plot(bar_xs, [sby, sby], transform=tmc, color='k', linewidth=linewidth)
     ax.text(sbx, sby + 10*length, str(length) + ' km', transform=tmc,
             horizontalalignment='center', verticalalignment='bottom', size=8)
+
+
+def generate_weight_bins(weights, n_steps=9, width_step=0.01):
+    """Given a list of weight values, generate <n_steps> bins with a width
+    value to use for plotting e.g. weighted network flow maps.
+    """
+    min_weight = min(weights)
+    max_weight = max(weights)
+
+    width_by_range = OrderedDict()
+
+    mins = np.linspace(min_weight, max_weight, n_steps)
+    maxs = list(mins)
+    maxs.append(max_weight*10)
+    maxs = maxs[1:]
+
+    assert len(maxs) == len(mins)
+
+    for i, (min_, max_) in enumerate(zip(mins, maxs)):
+        width_by_range[(min_, max_)] = (i+1) * width_step
+
+    return width_by_range
 
 
 Style = namedtuple('Style', ['color', 'zindex', 'label'])
