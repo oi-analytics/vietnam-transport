@@ -9,7 +9,7 @@ import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
-
+from osgeo import gdal
 
 def load_config():
     """Read config.json
@@ -296,3 +296,28 @@ def round_sf(x, places=1):
     shift = 10 ** (exp - places)
     rounded = round(x / shift) * shift
     return rounded * sign
+
+def get_data(filename):
+    """Read in data (as array) and extent of each raster
+    """
+    gdal.UseExceptions()
+    ds = gdal.Open(filename)
+    data = ds.ReadAsArray()
+    data[data < 0] = 0
+
+    gt = ds.GetGeoTransform()
+
+    # get the edge coordinates
+    width = ds.RasterXSize
+    height = ds.RasterYSize
+    xres = gt[1]
+    yres = gt[5]
+
+    xmin = gt[0]
+    xmax = gt[0] + (xres * width)
+    ymin = gt[3] + (yres * height)
+    ymax = gt[3]
+
+    lat_lon_extent = (xmin, xmax, ymax, ymin)
+
+    return data, lat_lon_extent
