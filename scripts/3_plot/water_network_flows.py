@@ -33,33 +33,14 @@ def main():
         "centr": 1,
     }
     legend_label = "AADF ('000 tons/day)"
-    min_weight = min(
-                [record.attributes[column]
-                for record
-                in shpreader.Reader(water_edge_file).records()]
-                )
-
-    max_weight = max(
-                [record.attributes[column]
-                for record
-                in shpreader.Reader(water_edge_file).records()]
-                )
-
     # generate weight bins
-    width_by_range = OrderedDict()
-    n_steps = 9
-    width_step = 0.01
-
-    mins = np.linspace(min_weight, max_weight, n_steps)
-
-    maxs = list(mins)
-    maxs.append(max_weight*10)
-    maxs = maxs[1:]
-
-    assert len(maxs) == len(mins)
-
-    for i, (min_, max_) in enumerate(zip(mins, maxs)):
-        width_by_range[(min_, max_)] = (i+1) * width_step
+    weights = [
+        record.attributes[column]
+        for record
+        in shpreader.Reader(water_edge_file).records()
+    ]
+    max_weight = max(weights)
+    width_by_range = generate_weight_bins(weights)
 
     geoms_by_range = {}
     for value_range in width_by_range:
