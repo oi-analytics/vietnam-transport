@@ -1,4 +1,4 @@
-"""Admin map
+"""Air network map
 """
 import os
 import sys
@@ -17,7 +17,7 @@ def main():
     output_file = os.path.join(config['paths']['figures'], 'air-map.png')
     air_edge_file = os.path.join(config['paths']['data'], 'Results', 'Flow_shapefiles', 'airport_edges_flows.shp')
     air_node_file = os.path.join(config['paths']['data'], 'Airports', 'airnetwork', 'airportnodes.shp')
-    
+
     color_by_type = {'Air route': '#252525','Airport': '#d95f0e'}
     ax = get_axes()
     plot_basemap(ax, config['paths']['data'])
@@ -37,7 +37,7 @@ def main():
                 facecolor='none',
                 zorder=3
             )
-    
+
     # Stations
     xs = []
     ys = []
@@ -47,7 +47,7 @@ def main():
         y = geom.y
         xs.append(x)
         ys.append(y)
-            
+
     ax.scatter(xs, ys,transform=proj_lat_lon, facecolor='#d95f0e', s=12, zorder=5)
     # Legend
     legend_handles = [
