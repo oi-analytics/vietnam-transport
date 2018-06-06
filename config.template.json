@@ -4,5 +4,12 @@
         "incoming_data": "./incoming_data",
         "data": "./data",
         "figures": "./figures"
+    },
+    "database": {
+    	"user": "username",
+    	"database": "database_name",
+    	"password": "password",
+    	"host": "localhost",
+    	"port": 5432
     }
 }
