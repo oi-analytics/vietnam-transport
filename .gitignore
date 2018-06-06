@@ -105,5 +105,8 @@ ENV/
 .vscode
 .editorconfig
 
+# Filesystem
+.DS_Store
+
 # Config
 config.json
