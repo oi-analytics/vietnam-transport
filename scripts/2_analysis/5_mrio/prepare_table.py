@@ -132,7 +132,7 @@ def load_output(data_path,provinces):
     
     # prepare index and cols
     region_names = list(provinces.name_eng)
-    rowcol_names = list(vnm_IO_rowcol['mapped'].unique())
+    rowcol_names = list(load_sectors(data_path)['mapped'].unique())
 
     rows = [x for x in rowcol_names if (x.startswith('sec') | x.startswith('row'))]*len(region_names)
     cols = [x for x in rowcol_names if (x.startswith('sec') | x.startswith('col'))]*len(region_names)
