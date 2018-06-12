@@ -9,6 +9,7 @@ import os
 import json
 
 import pandas as pd
+import geopandas as gpd
 
 def load_config():
     # Define current directory and data directory
@@ -37,32 +38,86 @@ def map_sectors(vnm_IO_rowcol):
     
     return dict(zip(row_only.code,row_only.mapped)),dict(zip(col_only.code,col_only.mapped))
 
-if __name__ == "__main__":
-
-    data_path = load_config()['paths']['data']
-
-    vnm_IO = load_table(data_path)
-
-    vnm_IO_rowcol = load_sectors(data_path)
-    
-    # get totals
-    row_sum = vnm_IO.sum(axis=1)
-    col_sum = vnm_IO.sum(axis=0)
-    
-    #check if table is balanced
-    diff = (row_sum-col_sum).sum()
+def aggregate_table(vnm_IO,vnm_IO_rowcol,in_million=True):
     
     #aggregate table
     mapper_row,mapper_col = map_sectors(vnm_IO_rowcol)
     vnm_IO.index = vnm_IO.index.map(mapper_row.get)
     vnm_IO.columns = vnm_IO.columns.to_series().map(mapper_col)
     
-    vnm_IO_agg =  vnm_IO.groupby(vnm_IO.index,axis=0).sum().groupby(vnm_IO.columns, axis=1).sum()
+    aggregated =  vnm_IO.groupby(vnm_IO.index,axis=0).sum().groupby(vnm_IO.columns, axis=1).sum()
     
-    # get totals
-    row_sum_agg = vnm_IO_agg.sum(axis=1)
-    col_sum_agg = vnm_IO_agg.sum(axis=0)
+    if in_million == True:
+        return aggregated/1000000
+    else:
+        return aggregated
+
+def is_balanced(io_table):
+        
+    row = io_table.sum(axis=1)
+    col = io_table.sum(axis=1)
     
-    #check if table is balanced
-    diff_agg = (row_sum-col_sum).sum()
+    if ((row-col).sum() < 1):
+        print('Table is balanced')
+
+def load_provincial_stats(data_path):
+    
+    prov_path = os.path.join(data_path,'Vietnam_boundaries','boundaries_stats','province_level_stats.shp')
+    
+    return gpd.read_file(prov_path)
+
+def estimate_gva(regions,in_million=True):
+ 
+    # load provincial shapefile
+   
+    if in_million == True:
+        return list(((regions.pro_nfirm*regions.laborcost)+(regions.pro_nfirm*regions.capital))/1000000)
+    else:
+        return list(((regions.pro_nfirm*regions.laborcost)+(regions.pro_nfirm*regions.capital))/1000000)
+
+def create_regional_proxy(regions,write_to_csv=True):
+    
+    subset = provinces.loc[:,['name_eng','raw_gva']]
+    subset['year'] = 2010
+    subset['raw_gva'] = subset.raw_gva.apply(int)
+    subset = subset[['year','name_eng','raw_gva']]
+    subset.columns = ['year','id','gdp']
+    
+    if write_to_csv == True:
+        csv_path = os.path.join(data_path,'IO_analysis','MRIO_TABLE','proxy_reg_vnm.csv')
+        subset.to_csv(csv_path,index=False)
+    
+
+if __name__ == "__main__":
+
+    # load path
+    data_path = load_config()['paths']['data']
+
+    # load IO table
+    vnm_IO = load_table(data_path)
+
+    # load row and col table
+    vnm_IO_rowcol = load_sectors(data_path)
+    
+    # aggregate table
+    vnm_IO_agg = aggregate_table(vnm_IO,vnm_IO_rowcol)
+    
+    #check if new table is balanced
+    is_balanced(vnm_IO_agg)
+    
+    # load provincial shapefile
+    provinces = load_provincial_stats(data_path)
+    provinces.name_eng = provinces.name_eng.apply(lambda x: x.replace(' ','_').replace('-','_'))
+    
+    list_names = list(provinces.name_eng)
+    list_string = " , ".join(list_names)
+    
+    # estimate gross value added
+    provinces['raw_gva'] = estimate_gva(provinces,in_million=True)
+    
+    provinces.plot('raw_gva')
+           
+    
+
+    
     
