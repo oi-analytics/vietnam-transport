@@ -31,6 +31,9 @@ def load_sectors(data_path):
 
     return vnmIO_rowcol    
 
+def get_final_sector_classification():
+    return ['secA','secB','secC','secD','secE','secF','secG','secH','secI']
+
 def map_sectors(vnm_IO_rowcol):
     
     row_only = vnm_IO_rowcol[vnm_IO_rowcol['mapped'].str.contains("row") | vnm_IO_rowcol['mapped'].str.contains("sec") ]
@@ -85,10 +88,28 @@ def create_regional_proxy(regions,write_to_csv=True):
         csv_path = os.path.join(data_path,'IO_analysis','MRIO_TABLE','proxy_reg_vnm.csv')
         subset.to_csv(csv_path,index=False)
 
+def create_indices(data_path,provinces,write_to_csv=True):
+
+    # prepare index and cols
+    region_names = list(provinces.name_eng)
+    rowcol_names = list(load_sectors(data_path)['mapped'].unique())
+
+    rows = [x for x in rowcol_names if (x.startswith('sec') | x.startswith('row'))]*len(region_names)
+    
+    region_names_list = [item for sublist in [[x]*12 for x in region_names] for item in sublist]
+    
+    indices = pd.DataFrame([region_names_list,rows]).T
+    indices.columns = ['region','sector']
+    indices['sector'] = indices['sector'].apply(lambda x: x.replace('row','other'))
+
+    if write_to_csv == True:
+        csv_path = os.path.join(data_path,'IO_analysis','MRIO_TABLE','indices_mrio.csv')
+        indices.to_csv(csv_path,index=False)
+
 def create_sector_proxies(regions,write_to_csv=True):
     
     #list of sectors
-    sector_list = ['secA','secB','secC','secD','secE','secF','secG','secH','secI']
+    sector_list = get_final_sector_classification()
     
     #get own sector classification for region file
     map_dict = map_sect_vnm_to_eng()
@@ -151,7 +172,7 @@ def load_output(data_path,provinces):
     row_sum = output_df.loc[[x.find('sec')==0 for x in list(output_df.index.get_level_values(1))]].sum(axis=1)
     col_sum = output_df[[x for x in list(output_df.columns) if x[1].find('sec')==0]].sum(axis=0)
     
-    balanced = (row_sum - col_sum).sum() < 1
+#    balanced = (row_sum - col_sum).sum() < 1
     
     # create predefined index and col, which is easier to read
     sector_only = [x for x in rowcol_names if x.startswith('sec')]*len(region_names)
@@ -208,10 +229,10 @@ if __name__ == "__main__":
     mrio_vnm = load_output(data_path,provinces)
     
     # get sums per region 
-    X = mrio_vnm.sum(axis='columns')
-    X = X.unstack(1)
-    X = X[['secA','secB','secC','secD','secE','secF','secG','secH','secI']]
-    X = X.T    
-    
+#    X = mrio_vnm.sum(axis='columns')
+#    X = X.unstack(1)
+#    X = X[['secA','secB','secC','secD','secE','secF','secG','secH','secI']]
+#    X = X.T    
+#    
     
     
