@@ -43,12 +43,18 @@ def map_sectors(vnm_IO_rowcol):
 
 def aggregate_table(vnm_IO,vnm_IO_rowcol,in_million=True):
     
+    sectors = get_final_sector_classification()
+    
     #aggregate table
     mapper_row,mapper_col = map_sectors(vnm_IO_rowcol)
     vnm_IO.index = vnm_IO.index.map(mapper_row.get)
     vnm_IO.columns = vnm_IO.columns.to_series().map(mapper_col)
     
     aggregated =  vnm_IO.groupby(vnm_IO.index,axis=0).sum().groupby(vnm_IO.columns, axis=1).sum()
+
+    aggregated = aggregated.reindex(sectors+['col1','col2','col3'],axis='columns')
+    aggregated = aggregated.reindex(sectors+['row1','row2','row3'],axis='index')
+
     
     if in_million == True:
         return aggregated/1000000
