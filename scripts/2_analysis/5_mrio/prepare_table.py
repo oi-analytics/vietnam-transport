@@ -80,7 +80,7 @@ def create_regional_proxy(regions,write_to_csv=True):
     
     subset = regions.loc[:,['name_eng','raw_gva']]
     subset['year'] = 2010
-    subset['raw_gva'] = subset.raw_gva.apply(int)
+    subset['raw_gva'] = subset.raw_gva.apply(int)/(subset['raw_gva'].sum(axis='index'))
     subset = subset[['year','name_eng','raw_gva']]
     subset.columns = ['year','id','gdp']
     

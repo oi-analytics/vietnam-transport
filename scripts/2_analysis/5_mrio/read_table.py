@@ -46,17 +46,25 @@ def load_output(data_path,provinces):
     region_row = [item for sublist in [[x]*9 for x in region_names] for item in sublist] + [item for sublist in [[x]*3 for x in region_names] for item in sublist] 
     region_col = [item for sublist in [[x]*9 for x in region_names] for item in sublist] + [item for sublist in [[x]*3 for x in region_names] for item in sublist] 
 
-    index_mi_reorder = pd.MultiIndex.from_arrays([region_row,sector_only+row_only], names=('region', 'row'))
+#    index_mi_reorder = pd.MultiIndex.from_arrays([region_row,sector_only+row_only], names=('region', 'row'))
     column_mi_reorder = pd.MultiIndex.from_arrays([region_col,sector_only+col_only], names=('region', 'col'))
  
-    output_df = output_df.reindex(index_mi_reorder,axis='index')
-    output_df = output_df.reindex(column_mi_reorder,axis='columns')
+    #sum va and imports
+    tax_sub = output_df.loc[output_df.index.get_level_values(1)=='row1'].sum(axis='index')
+    import_ = output_df.loc[output_df.index.get_level_values(1)=='row2'].sum(axis='index')
+    valueA = output_df.loc[output_df.index.get_level_values(1)=='row3'].sum(axis='index')
+    
+    output_new = pd.concat([output_df.loc[~output_df.index.get_level_values(1).isin(['row1','row2','row3'])],pd.DataFrame(tax_sub).T,
+                             pd.DataFrame(import_).T,pd.DataFrame(valueA).T])
+    
+#    output_new = output_new.reindex(index_mi_reorder,axis='index')
+    output_new = output_new.reindex(column_mi_reorder,axis='columns')
 
     # write to new csv    
     output_path_new = os.path.join(data_path,'IO_analysis','MRIO_TABLE','output_reordered.csv')
-    output_df.to_csv(output_path_new)
+    output_new.to_csv(output_path_new)
 
-    return output_df
+    return output_new
 
 if __name__ == "__main__":
 
@@ -78,10 +86,13 @@ if __name__ == "__main__":
     mrio_vnm = load_output(data_path,provinces)
     
     # get sums per region 
-#    X = mrio_vnm.sum(axis='columns')
+    Xcol = mrio_vnm.sum(axis='columns')
+    Xrow = mrio_vnm.sum(axis='index')
+    
+#    
 #    X = X.unstack(1)
 #    X = X[['secA','secB','secC','secD','secE','secF','secG','secH','secI']]
 #    X = X.T    
-#    
+    
     
     

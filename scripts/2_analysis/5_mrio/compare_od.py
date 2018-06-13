@@ -11,7 +11,8 @@ import json
 import pandas as pd
 import geopandas as gpd
 
-from prepare_table import load_config,load_provincial_stats,load_output,estimate_gva,get_final_sector_classification
+from prepare_table import load_config,load_provincial_stats,estimate_gva,get_final_sector_classification
+from read_table import load_output
 
 
 def load_od(data_path):
@@ -122,27 +123,27 @@ def create_zero_proxies(od_table,write_to_csv=True):
     od_sum.columns = ['Destination','Origin','gdp']
     
     for sector in sector_list:
-        if sector in ['other1','other2','other3']:
-            subset = od_sum.copy()
-            subset['year'] = 2010
-            subset['sector'] = sector
-            subset['gdp'] = 0
-            combine = []
-            for sector2 in sector_list:
-                sub_subset = subset.copy()
-                sub_subset['subsector'] = sector2
-                combine.append(sub_subset)
-        else:
-            subset = od_sum.copy()
-            subset = subset.loc[od_sum.gdp == 0]
-            subset['year'] = 2010
-            subset['sector'] = sector
-            subset['gdp'] = subset['gdp'].apply(lambda x: round(x,2))
-            combine = []
-            for sector2 in sector_list:
-                sub_subset = subset.copy()
-                sub_subset['subsector'] = sector2
-                combine.append(sub_subset)
+#        if sector in ['other1','other2','other3']:
+        subset = od_sum.copy()
+        subset['year'] = 2010
+        subset['sector'] = sector
+        subset['gdp'] = 0
+        combine = []
+        for sector2 in sector_list:
+            sub_subset = subset.copy()
+            sub_subset['subsector'] = sector2
+            combine.append(sub_subset)
+#        else:
+#            subset = od_sum.copy()
+#            subset = subset.loc[od_sum.gdp == 0]
+#            subset['year'] = 2010
+#            subset['sector'] = sector
+#            subset['gdp'] = subset['gdp'].apply(lambda x: round(x,2))
+#            combine = []
+#            for sector2 in sector_list:
+#                sub_subset = subset.copy()
+#                sub_subset['subsector'] = sector2
+#                combine.append(sub_subset)
     
         all_ = pd.concat(combine)
         final_sub = all_[['year','sector','Origin','subsector','Destination','gdp']]
