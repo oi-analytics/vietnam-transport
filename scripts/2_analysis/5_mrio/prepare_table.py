@@ -119,13 +119,16 @@ def create_sector_proxies(regions,write_to_csv=True):
     sector_shares = regions[sector_list].multiply(regions['raw_gva'],axis='index')
     sector_shares.index = regions.name_eng
     
-    for sector in sector_list:
-
-        subset = pd.DataFrame(sector_shares.loc[:,sector])
+    for sector in sector_list+['other1','other2','other3']:
+        if sector in ['other1','other2','other3']:
+            subset = pd.DataFrame(sector_shares.sum(axis='columns')).divide(pd.DataFrame(sector_shares.sum(axis='columns')).sum(axis='index'))
+            subset.columns  = [sector]
+        else:
+            subset = pd.DataFrame(sector_shares.loc[:,sector]).divide(pd.DataFrame(sector_shares.loc[:,sector]).sum(axis='index'))
         subset.reset_index(inplace=True,drop=False)
         subset['year'] = 2010
         subset['sector'] = sector+str(1)
-        subset[sector] = subset[sector].apply(lambda x: round(x,2))
+        subset[sector] = subset[sector].apply(lambda x: round(x,5))
         subset = subset[['year','sector','name_eng',sector]]
         subset.columns = ['year','sector','region','gdp']
         
@@ -133,8 +136,6 @@ def create_sector_proxies(regions,write_to_csv=True):
             csv_path = os.path.join(data_path,'IO_analysis','MRIO_TABLE','proxy_{}.csv'.format(sector))
             subset.to_csv(csv_path,index=False)
         
-    
-
 def map_sect_vnm_to_eng():
     
     map_dict = { 'nongnghiep' : 'secA',
@@ -172,7 +173,8 @@ def load_output(data_path,provinces):
     row_sum = output_df.loc[[x.find('sec')==0 for x in list(output_df.index.get_level_values(1))]].sum(axis=1)
     col_sum = output_df[[x for x in list(output_df.columns) if x[1].find('sec')==0]].sum(axis=0)
     
-#    balanced = (row_sum - col_sum).sum() < 1
+    diff =  (row_sum - col_sum).unstack(1)
+    balanced = (row_sum - col_sum).sum() < 1
     
     # create predefined index and col, which is easier to read
     sector_only = [x for x in rowcol_names if x.startswith('sec')]*len(region_names)

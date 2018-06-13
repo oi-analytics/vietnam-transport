@@ -107,7 +107,8 @@ def map_regions():
 def create_zero_proxies(od_table,write_to_csv=True):
  
     # get sector list
-    sector_list = get_final_sector_classification()
+    sector_list = get_final_sector_classification()+['other1','other2','other3']
+    sector_list = [x+str(1) for x in sector_list]
 
     #map sectors to be the same
     mapper = map_regions()
@@ -119,26 +120,36 @@ def create_zero_proxies(od_table,write_to_csv=True):
     od_sum = pd.DataFrame(od_table.groupby(['Destination','Origin']).sum().sum(axis=1))
     od_sum.reset_index(inplace=True)
     od_sum.columns = ['Destination','Origin','gdp']
-    od_sum = od_sum.loc[od_sum.gdp == 0]
     
     for sector in sector_list:
-        subset = od_sum.copy()
-        subset['year'] = 2010
-        subset['sector'] = sector+str(1)
-        subset['gdp'] = subset['gdp'].apply(lambda x: round(x,2))
-        combine = []
-        sector_list2 = [x+str(1) for x in sector_list]
-        for sector2 in sector_list2:
-            sub_subset = subset.copy()
-            sub_subset['subsector'] = sector2
-            combine.append(sub_subset)
-        
+        if sector in ['other1','other2','other3']:
+            subset = od_sum.copy()
+            subset['year'] = 2010
+            subset['sector'] = sector
+            subset['gdp'] = 0
+            combine = []
+            for sector2 in sector_list:
+                sub_subset = subset.copy()
+                sub_subset['subsector'] = sector2
+                combine.append(sub_subset)
+        else:
+            subset = od_sum.copy()
+            subset = subset.loc[od_sum.gdp == 0]
+            subset['year'] = 2010
+            subset['sector'] = sector
+            subset['gdp'] = subset['gdp'].apply(lambda x: round(x,2))
+            combine = []
+            for sector2 in sector_list:
+                sub_subset = subset.copy()
+                sub_subset['subsector'] = sector2
+                combine.append(sub_subset)
+    
         all_ = pd.concat(combine)
         final_sub = all_[['year','sector','Origin','subsector','Destination','gdp']]
         final_sub.columns = ['year','sector','region','sector','region','gdp']
         
         if write_to_csv == True:
-            csv_path = os.path.join(data_path,'IO_analysis','MRIO_TABLE','proxy_trade_{}.csv'.format(sector))
+            csv_path = os.path.join(data_path,'IO_analysis','MRIO_TABLE','proxy_trade_{}.csv'.format(sector[:-1]))
             final_sub.to_csv(csv_path,index=False)
    
 
