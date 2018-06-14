@@ -86,8 +86,8 @@ if __name__ == "__main__":
     mrio_vnm = load_output(data_path,provinces)
     
     # get sums per region 
-    Xcol = mrio_vnm.sum(axis='columns')
-    Xrow = mrio_vnm.sum(axis='index')
+    Xrow = mrio_vnm.sum(axis='columns')
+    Xcol = mrio_vnm.sum(axis='index')
     
 #    
 #    X = X.unstack(1)
