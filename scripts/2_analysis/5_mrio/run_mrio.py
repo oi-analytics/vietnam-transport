@@ -10,7 +10,7 @@ import pandas as pd
 
 import subprocess
 
-from prepare_table import load_config,load_sectors,load_table,load_provincial_stats,estimate_gva
+from prepare_table import load_config,load_sectors,load_table,load_provincial_stats,estimate_gva,create_proxies
 from read_table import load_output
 from ras_method import ras_method
 
@@ -32,6 +32,9 @@ if __name__ == "__main__":
 
     # estimate gross value added
     provinces['raw_gva'] = estimate_gva(provinces,in_million=True)
+    
+    # prepare proxies for settings_trade
+    create_proxies(data_path)
 
     # run mrio_disaggregate
     mrio_tool_path = os.path.join(data_path,'IO_analysis','MRIO_TABLE','mrio_disaggregate')
@@ -39,6 +42,7 @@ if __name__ == "__main__":
 
     p = subprocess.Popen(['mrio_disaggregate','settings_trade.yml'], cwd=os.path.join(data_path,'IO_analysis','MRIO_TABLE'))
     p.wait()
+    
     # get reordered mrio with new region classification
     Xin = load_output(data_path,provinces)
 
