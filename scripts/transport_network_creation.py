@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Python script to assign commodity flows on the road network in Tanzania
-Created on Wed Feb 28 2018
+Python script to create transport networks in Vietnam  
+Created on Wed June 27 2018
 
 @author: Raghav Pant
 """
@@ -13,6 +13,88 @@ import networkx as nx
 import csv
 import igraph as ig 
 import numpy as np
+
+def assign_assumed_width_to_roads(asset_width,width_range_list):
+	'''
+	==========================================================================================
+	Assign widths to roads assets in Vietnam
+	The widths are assigned based on our understanding of: 
+	1. The reported width in the data which is not reliable
+	2. A design specification based understanding of the assumed width based on ranges of values
+	
+	Inputs are:
+	asset_width - Numeric value for width of asset
+	width_range_list - List of tuples containing (from_width,to_width,assumed_width)
+	
+	Outputs are:
+	assumed_width - assigned width of the raod asset based on design specifications
+	============================================================================================ 
+	'''
+	assumed_width = asset_width
+	for width_vals in width_range_list:
+		if width_range_list[0] <= assumed_width <= width_range_list[1]:
+			asset_width = width_range_list[2]
+			break
+
+	return assumed_width
+
+
+def assign_minmax_travel_speeds_roads(asset_code,asset_level,asset_terrain):
+	'''
+	====================================================================================
+	Assign travel speeds to roads assets in Vietnam
+	The speeds are assigned based on our understanding of: 
+	1. The types of assets
+	2. The levels of classification of assets: 0-National,1-Provinical,2-Local,3-Other
+	3. The terrain where the assets are located: Flat or Mountain or No information
+	
+	Inputs are:
+	asset_code - Numeric code for type of asset
+	asset_level - Numeric code for level of asset
+	asset_terrain - String value of the terrain of asset
+	
+	Outputs are:
+	speed_min - Minimum assigned speed in km/hr
+	speed_max - Maximum assigned speed in km/hr
+	==================================================================================== 
+	'''
+
+	if (not asset_terrain) or (asset_terrain == 'flat'):
+		if asset_code == 17:
+			# This is an expressway
+			speed_min = 100
+			speed_max = 120
+		elif asset_code in (15,4):
+			# This is a residential road or a mountain pass
+			speed_min = 40
+			speed_max = 60
+		elif asset_level == 0:
+			# This is any other national network asset
+			speed_min = 80
+			speed_max = 100
+		elif asset_level == 1:
+			# This is any other provincial network asset
+			speed_min = 60
+			speed_max = 80
+		elif asset_level == 2:
+			# This is any other local network asset
+			speed_min = 40
+			speed_max = 60
+		else:
+			# Anything else not included above
+			speed_min = 20
+			speed_max = 40
+
+	else:
+		if asset_level < 3:
+			speed_min = 60
+			speed_max = 40
+		else:
+			speed_min = 20
+			speed_max = 40
+
+	return speed_min, speed_max
+
 
 def assign_travel_times_and_variability(speed_attributes,variability_attributes,mode_type,variability_location,mode_attribute,distance):
 	travel_time = 0
