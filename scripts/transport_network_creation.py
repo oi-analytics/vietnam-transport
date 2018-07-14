@@ -15,6 +15,9 @@ import igraph as ig
 import numpy as np
 import geopandas as gpd
 
+from geopy.distance import vincenty
+from boltons.iterutils import pairwise
+
 def assign_assumed_width_to_roads(asset_width,width_range_list):
 	'''
 	==========================================================================================
@@ -258,10 +261,12 @@ def shapefile_to_network(edges_in):
     edges = gpd.read_file(edges_in)
     
     # assign minimum and maximum speed to network
-    edges['speed'] = edges.apply(assign_minmax_travel_speeds_roads_apply,axis=1)
-    edges[['min_speed', 'max_speed']] = edges['speed'].apply(pd.Series)
-    edges.drop('speed',axis=1,inplace=True)
-
+    edges['SPEED'] = edges.apply(assign_minmax_travel_speeds_roads_apply,axis=1)
+    edges[['MIN_SPEED', 'MAX_SPEED']] = edges['SPEED'].apply(pd.Series)
+    edges.drop('SPEED',axis=1,inplace=True)
+    
+    # get the right linelength
+    edges['LENGTH'] = edges.geometry.apply(line_length)
 
     # make sure that From and To node are the first two columns of the dataframe
     # to make sure the conversion from dataframe to igraph network goes smooth
@@ -301,3 +306,24 @@ def get_igraph_edges(G,edge_path,data_cond):
 	t_list = [G.es[n][data_cond] for n in edge_path]
 
 	return (t_list)
+
+def line_length(line, ellipsoid='WGS-84'):
+    """Length of a line in meters, given in geographic coordinates.
+
+    Adapted from https://gis.stackexchange.com/questions/4022/looking-for-a-pythonic-way-to-calculate-the-length-of-a-wkt-linestring#answer-115285
+
+    Args:
+        line: a shapely LineString object with WGS-84 coordinates.
+        
+        ellipsoid: string name of an ellipsoid that `geopy` understands (see http://geopy.readthedocs.io/en/latest/#module-geopy.distance).
+
+    Returns:
+        Length of line in meters.
+    """
+    if line.geometryType() == 'MultiLineString':
+        return sum(line_length(segment) for segment in line)
+
+    return sum(
+        vincenty(a, b, ellipsoid=ellipsoid).kilometers
+        for a, b in pairwise(line.coords)
+    )
