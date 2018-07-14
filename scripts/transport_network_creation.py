@@ -80,6 +80,48 @@ def assign_minmax_travel_speeds_roads(asset_code,asset_level,asset_terrain):
         else:
             return 20,40
 
+def assign_minmax_travel_speeds_roads_apply(x):
+    '''
+    ====================================================================================
+    Assign travel speeds to roads assets in Vietnam
+    The speeds are assigned based on our understanding of: 
+    1. The types of assets
+    2. The levels of classification of assets: 0-National,1-Provinical,2-Local,3-Other
+    3. The terrain where the assets are located: Flat or Mountain or No information
+    	
+    Inputs are:
+    asset_code - Numeric code for type of asset
+    asset_level - Numeric code for level of asset
+    asset_terrain - String value of the terrain of asset
+    	
+    Outputs are:
+    speed_min - Minimum assigned speed in km/hr
+    speed_max - Maximum assigned speed in km/hr
+    ==================================================================================== 
+    '''
+    asset_code = x.CODE
+    asset_level = x.LEVEL
+    asset_terrain='flat'
+
+    if (not asset_terrain) or (asset_terrain == 'flat'):
+        if asset_code == 17: # This is an expressway
+            return 100,120
+        elif asset_code in (15,4): # This is a residential road or a mountain pass
+            return 40,60
+        elif asset_level == 0: # This is any other national network asset
+            return 80,100
+        elif asset_level == 1:# This is any other provincial network asset
+            return 60,80
+        elif asset_level == 2: # This is any other local network asset
+            return 40,60
+        else:			# Anything else not included above
+            return 20,40
+
+    else:
+        if asset_level < 3:
+            return 40, 60
+        else:
+            return 20,40
 
 def assign_travel_times_and_variability(speed_attributes,variability_attributes,mode_type,variability_location,mode_attribute,distance):
 	travel_time = 0
@@ -216,7 +258,7 @@ def shapefile_to_network(edges_in):
     edges = gpd.read_file(edges_in)
     
     # assign minimum and maximum speed to network
-    edges['speed'] = edges.apply(assign_minmax_travel_speeds_roads,axis=1)
+    edges['speed'] = edges.apply(assign_minmax_travel_speeds_roads_apply,axis=1)
     edges[['min_speed', 'max_speed']] = edges['speed'].apply(pd.Series)
     edges.drop('speed',axis=1,inplace=True)
 
