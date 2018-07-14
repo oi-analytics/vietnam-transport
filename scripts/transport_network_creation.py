@@ -13,6 +13,7 @@ import networkx as nx
 import csv
 import igraph as ig 
 import numpy as np
+import geopandas as gpd
 
 def assign_assumed_width_to_roads(asset_width,width_range_list):
 	'''
@@ -201,6 +202,35 @@ def create_igraph_topology(network_dictionary):
 	G.es['travel_cost'] = network_dictionary['travel_cost'] 
 
 	return G
+
+def shapefile_to_network(edges_in):
+    """
+    input parameters:
+        edges_in : string of path to edges file/network file. 
+        
+    output:
+        SG: connected graph of the shapefile
+    
+    """
+    
+    edges = gpd.read_file(edges_in)
+    
+    # assign minimum and maximum speed to network
+    edges['speed'] = edges.apply(assign_minmax_travel_speeds_roads,axis=1)
+    edges[['min_speed', 'max_speed']] = edges['speed'].apply(pd.Series)
+    edges.drop('speed',axis=1,inplace=True)
+
+
+    # make sure that From and To node are the first two columns of the dataframe
+    # to make sure the conversion from dataframe to igraph network goes smooth
+    edges = edges.reindex(list(edges.columns)[2:]+list(edges.columns)[:2],axis=1)
+    
+    # create network from edge file
+    G = ig.Graph.TupleList(edges.itertuples(index=False), edge_attrs=list(edges.columns)[2:])
+
+    # only keep connected network
+    return G.clusters().giant()
+
 
 def add_igraph_costs(G,tonnage,teus):
 	# all_net_dict = {'edge':[],'from_node':[],'to_node':[],'waiting_cost':[],'travel_cost':[],'transport_price_ton':[],
