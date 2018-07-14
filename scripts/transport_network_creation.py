@@ -40,60 +40,44 @@ def assign_assumed_width_to_roads(asset_width,width_range_list):
 
 
 def assign_minmax_travel_speeds_roads(asset_code,asset_level,asset_terrain):
-	'''
-	====================================================================================
-	Assign travel speeds to roads assets in Vietnam
-	The speeds are assigned based on our understanding of: 
-	1. The types of assets
-	2. The levels of classification of assets: 0-National,1-Provinical,2-Local,3-Other
-	3. The terrain where the assets are located: Flat or Mountain or No information
-	
-	Inputs are:
-	asset_code - Numeric code for type of asset
-	asset_level - Numeric code for level of asset
-	asset_terrain - String value of the terrain of asset
-	
-	Outputs are:
-	speed_min - Minimum assigned speed in km/hr
-	speed_max - Maximum assigned speed in km/hr
-	==================================================================================== 
-	'''
+    '''
+    ====================================================================================
+    Assign travel speeds to roads assets in Vietnam
+    The speeds are assigned based on our understanding of: 
+    1. The types of assets
+    2. The levels of classification of assets: 0-National,1-Provinical,2-Local,3-Other
+    3. The terrain where the assets are located: Flat or Mountain or No information
+    	
+    Inputs are:
+    asset_code - Numeric code for type of asset
+    asset_level - Numeric code for level of asset
+    asset_terrain - String value of the terrain of asset
+    	
+    Outputs are:
+    speed_min - Minimum assigned speed in km/hr
+    speed_max - Maximum assigned speed in km/hr
+    ==================================================================================== 
+    '''
 
-	if (not asset_terrain) or (asset_terrain == 'flat'):
-		if asset_code == 17:
-			# This is an expressway
-			speed_min = 100
-			speed_max = 120
-		elif asset_code in (15,4):
-			# This is a residential road or a mountain pass
-			speed_min = 40
-			speed_max = 60
-		elif asset_level == 0:
-			# This is any other national network asset
-			speed_min = 80
-			speed_max = 100
-		elif asset_level == 1:
-			# This is any other provincial network asset
-			speed_min = 60
-			speed_max = 80
-		elif asset_level == 2:
-			# This is any other local network asset
-			speed_min = 40
-			speed_max = 60
-		else:
-			# Anything else not included above
-			speed_min = 20
-			speed_max = 40
+    if (not asset_terrain) or (asset_terrain == 'flat'):
+        if asset_code == 17: # This is an expressway
+            return 100,120
+        elif asset_code in (15,4): # This is a residential road or a mountain pass
+            return 40,60
+        elif asset_level == 0: # This is any other national network asset
+            return 80,100
+        elif asset_level == 1:# This is any other provincial network asset
+            return 60,80
+        elif asset_level == 2: # This is any other local network asset
+            return 40,60
+        else:			# Anything else not included above
+            return 20,40
 
-	else:
-		if asset_level < 3:
-			speed_min = 60
-			speed_max = 40
-		else:
-			speed_min = 20
-			speed_max = 40
-
-	return speed_min, speed_max
+    else:
+        if asset_level < 3:
+            return 40, 60
+        else:
+            return 20,40
 
 
 def assign_travel_times_and_variability(speed_attributes,variability_attributes,mode_type,variability_location,mode_attribute,distance):
