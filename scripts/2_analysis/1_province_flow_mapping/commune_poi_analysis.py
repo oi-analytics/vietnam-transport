@@ -106,9 +106,9 @@ def shapefile_to_network(edges_in):
     edges = gpd.read_file(edges_in)
     
     # assign minimum and maximum speed to network
-    edges['speed'] = edges.apply(assign_minmax_travel_speeds_roads_apply,axis=1)
-    edges[['min_speed', 'max_speed']] = edges['speed'].apply(pd.Series)
-    edges.drop('speed',axis=1,inplace=True)
+    edges['SPEED'] = edges.apply(assign_minmax_travel_speeds_roads_apply,axis=1)
+    edges[['MIN_SPEED', 'MAX_SPEED']] = edges['SPEED'].apply(pd.Series)
+    edges.drop('SPEED',axis=1,inplace=True)
 
     edges['LENGTH'] = edges.geometry.apply(line_length)
 
@@ -120,9 +120,25 @@ def shapefile_to_network(edges_in):
     G = ig.Graph.TupleList(edges.itertuples(index=False), edge_attrs=list(edges.columns)[2:])
 
     # only keep connected network
-    return G #.clusters().giant()
+    return G 
 
 def netrev_edges(province,start_points,end_points,G,save_edges = True,output_path=''):
+    """
+   ====================================================================================
+    Assign net revenue to roads assets in Vietnam
+    	
+    Inputs are:
+    start_points - GeoDataFrame of start points for shortest path analysis.
+    end_points - GeoDataFrame of potential end points for shorest path analysis.
+    G - iGraph network of the province.
+    save_edges - 
+    	
+    Outputs are:
+    Shapefile with all edges and the total net reveneu transferred along each edge
+    GeoDataFrame of total net revenue transferred along each edge
+    ==================================================================================== 
+ 
+    """
     save_paths = []
     for iter_,place in start_points.iterrows():
         try:
@@ -154,23 +170,49 @@ def netrev_edges(province,start_points,end_points,G,save_edges = True,output_pat
     return gdf_edges
      
     
-def province_clip(shape_in,province_geom):
+def gdf_clip(shape_in,clip_geom):
+    """
+    Inputs are:
+        shape_in -- path string to shapefile to be clipped
+    Outputs are:
+        province_geom -- shapely geometry of province for what we do the calculation
+    """
     gdf = gpd.read_file(shape_in)
-    return gdf.loc[gdf['geometry'].apply(lambda x: x.within(province_geom))].reset_index(drop=True)
+    return gdf.loc[gdf['geometry'].apply(lambda x: x.within(clip_geom))].reset_index(drop=True)
  
-def get_nearest_node(x,sindex_nodes,nodes):
-    return nodes.loc[list(sindex_nodes.nearest(x.bounds[:2]))]['NODE_ID'].values[0]
+def get_nearest_node(x,sindex_nodes,nodes,id_column):
+    """
+    Inputs are:
+        x -- row of dataframe
+        sindex_nodes -- spatial index of dataframe of nodes in the network
+        nodes -- dataframe of nodes in the network
+        id_column -- name of column of id of closest node
+    Outputs are:
+        Nearest node to geometry of row
+    """
+    return nodes.loc[list(sindex_nodes.nearest(x.bounds[:2]))][id_column].values[0]
 
-def get_nearest_center(x,sindex_nodes,nodes):
-    return nodes.loc[list(sindex_nodes.nearest(x.bounds[:2]))]['OBJECTID'].values[0]
-    
-
-def count_points_in_polygon(x,prov_pop_sindex):
+def count_points_in_polygon(x,points_sindex):
+    """
+   Inputs are:
+        x -- row of dataframe
+        points_sindex -- spatial index of dataframe with points in the region to consider
+    Outputs are:
+        Amount of points in polygon
+    """
     return len(list(prov_pop_sindex.intersection(x.bounds)))
 
-def get_netrev(x,commune_sindex,prov_communes):
-        return prov_communes.loc[list(commune_sindex.intersection(x.bounds[:2]))]['netrev_village'].values[0]
-
+def get_value_from_gdf(x,gdf_sindex,gdf):
+    """
+   Inputs are:
+        x -- row of dataframe
+        gdf_sindex -- spatial index of dataframe of which we want to extract the value
+        gdf -- GeoDataFrame of which we want to extract the value
+        
+    Outputs are:
+        extracted value from other gdf
+    """
+    return prov_communes.loc[list(commune_sindex.intersection(x.bounds[:2]))]['netrev_village'].values[0]
 
 
 if __name__ == '__main__':
@@ -181,8 +223,8 @@ if __name__ == '__main__':
 #     #province to consider 
 # =============================================================================
 #    province = 'Thanh Hoa'
-#    province = 'Binh Dinh'
-    province = 'Lao Cai'
+    province = 'Binh Dinh'
+#    province = 'Lao Cai'
     
 # =============================================================================
 #     # set all paths for all input files we are going to use
@@ -202,9 +244,9 @@ if __name__ == '__main__':
     province_geom = provinces.loc[provinces.NAME_ENG == province].geometry.values[0]
         
     #clip all to province
-    prov_pop = province_clip(population_points_in,province_geom)
-    prov_commune_center = province_clip(commune_center_in,province_geom)
-    prov_communes = province_clip(commune_path,province_geom)
+    prov_pop = gdf_clip(population_points_in,province_geom)
+    prov_commune_center = gdf_clip(commune_center_in,province_geom)
+    prov_communes = gdf_clip(commune_path,province_geom)
 
 # =============================================================================
 #     # load nodes and edges
@@ -233,15 +275,15 @@ if __name__ == '__main__':
 # =============================================================================
 #     # get nearest node in network for all start and end points
 # =============================================================================
-    prov_pop['NEAREST_G_NODE'] = prov_pop.geometry.apply(lambda x: get_nearest_node(x,sindex_nodes,nodes))
-    prov_commune_center['NEAREST_G_NODE'] = prov_commune_center.geometry.apply(lambda x: get_nearest_node(x,sindex_nodes,nodes))
+    prov_pop['NEAREST_G_NODE'] = prov_pop.geometry.apply(lambda x: get_nearest_node(x,sindex_nodes,nodes,'NODE_ID'))
+    prov_commune_center['NEAREST_G_NODE'] = prov_commune_center.geometry.apply(lambda x: get_nearest_node(x,sindex_nodes,nodes,'NODE_ID'))
 
 # =============================================================================
 #     # prepare for shortest path routing, we'll use the spatial index of the centers
 #     # to find the nearest center for each population point
 # =============================================================================
     sindex_commune_center = prov_commune_center.sindex
-    prov_pop['NEAREST_C_CENTER'] = prov_pop.geometry.apply(lambda x: get_nearest_center(x,sindex_commune_center,prov_commune_center))
+    prov_pop['NEAREST_C_CENTER'] = prov_pop.geometry.apply(lambda x: get_nearest_node(x,sindex_commune_center,prov_commune_center,'OBJECTID'))
 
 # =============================================================================
 #     # load network
@@ -253,6 +295,6 @@ if __name__ == '__main__':
     node_dict = dict(zip(nodes_name,nodes_index))
 
 # =============================================================================
-#     # loop through population points
+#     # get updated edges
 # =============================================================================
     edges_updated = netrev_edges(province_name,prov_pop,prov_commune_center,G,save_edges = True,output_path=output_path)
