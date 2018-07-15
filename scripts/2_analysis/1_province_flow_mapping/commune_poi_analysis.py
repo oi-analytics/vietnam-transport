@@ -180,13 +180,17 @@ if __name__ == '__main__':
 # =============================================================================
 #     #province to consider 
 # =============================================================================
-    province = 'Thanh Hoa'
+#    province = 'Thanh Hoa'
+#    province = 'Binh Dinh'
+    province = 'Lao Cai'
     
 # =============================================================================
 #     # set all paths for all input files we are going to use
 # =============================================================================
-    edges_in = os.path.join(data_path,'Roads','thanhhoa_roads','vietbando_thanhhoa_edges.shp')
-    nodes_in = os.path.join(data_path,'Roads','thanhhoa_roads','vietbando_thanhhoa_nodes.shp')
+    province_name = province.replace(' ','').lower()
+    
+    edges_in = os.path.join(data_path,'Roads','{}_roads'.format(province_name),'vietbando_{}_edges.shp'.format(province_name))
+    nodes_in = os.path.join(data_path,'Roads','{}_roads'.format(province_name),'vietbando_{}_nodes.shp'.format(province_name))
     population_points_in = os.path.join(data_path,'Points_of_interest','population_points.shp')
     commune_center_in = os.path.join(data_path,'Points_of_interest','commune_committees_points.shp')
 
@@ -251,4 +255,4 @@ if __name__ == '__main__':
 # =============================================================================
 #     # loop through population points
 # =============================================================================
-    edges_updated = netrev_edges(province,prov_pop,prov_commune_center,G,save_edges = True,output_path='')
+    edges_updated = netrev_edges(province_name,prov_pop,prov_commune_center,G,save_edges = True,output_path=output_path)
