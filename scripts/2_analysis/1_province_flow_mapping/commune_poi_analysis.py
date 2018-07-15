@@ -122,7 +122,7 @@ def shapefile_to_network(edges_in):
     # only keep connected network
     return G 
 
-def netrev_edges(province,start_points,end_points,G,save_edges = True,output_path=''):
+def netrev_edges(region_name,start_points,end_points,graph,save_edges = True,output_path=''):
     """
    ====================================================================================
     Assign net revenue to roads assets in Vietnam
@@ -137,7 +137,6 @@ def netrev_edges(province,start_points,end_points,G,save_edges = True,output_pat
     Shapefile with all edges and the total net reveneu transferred along each edge
     GeoDataFrame of total net revenue transferred along each edge
     ==================================================================================== 
- 
     """
     save_paths = []
     for iter_,place in start_points.iterrows():
@@ -145,18 +144,18 @@ def netrev_edges(province,start_points,end_points,G,save_edges = True,output_pat
             closest_center = end_points.loc[end_points['OBJECTID'] 
             == place['NEAREST_C_CENTER']]['NEAREST_G_NODE'].values[0]
            
-            pos0_i = G.vs[node_dict[place['NEAREST_G_NODE']]]
-            pos1_i = G.vs[node_dict[closest_center]]
+            pos0_i = graph.vs[node_dict[place['NEAREST_G_NODE']]]
+            pos1_i = graph.vs[node_dict[closest_center]]
     
-            path = G.get_shortest_paths(pos0_i,pos1_i,weights='LENGTH',output="epath")
+            path = graph.get_shortest_paths(pos0_i,pos1_i,weights='LENGTH',output="epath")
     
-            get_path = [G.es[n]['EDGE_ID'] for n in path][0]
+            get_path = [graph.es[n]['EDGE_ID'] for n in path][0]
             save_paths.append((place['netrev'],get_path))
         except:
             print(iter_)
                     
-    all_edges = [x['EDGE_ID'] for x in G.es]
-    all_edges_geom = [x['geometry'] for x in G.es]
+    all_edges = [x['EDGE_ID'] for x in graph.es]
+    all_edges_geom = [x['geometry'] for x in graph.es]
     
     gdf_edges = gpd.GeoDataFrame(pd.DataFrame([all_edges,all_edges_geom]).T,crs='epsg:4326')
     gdf_edges.columns = ['EDGE_ID','geometry']
@@ -166,9 +165,8 @@ def netrev_edges(province,start_points,end_points,G,save_edges = True,output_pat
         gdf_edges.loc[gdf_edges['EDGE_ID'].isin(path[1]),'netrev'] += path[0]
     
     if save_edges == True:
-        gdf_edges.to_file(os.path.join(output_path,'weighted_edges_{}.shp'.format(province)))
+        gdf_edges.to_file(os.path.join(output_path,'weighted_edges_{}.shp'.format(region_name)))
     return gdf_edges
-     
     
 def gdf_clip(shape_in,clip_geom):
     """
@@ -267,7 +265,7 @@ if __name__ == '__main__':
 
     commune_sindex = prov_communes.sindex
     # give each village a net revenue based on average per village in commune
-    prov_pop['netrev'] = prov_pop.geometry.apply(lambda x: get_netrev(x,commune_sindex,prov_communes))
+    prov_pop['netrev'] = prov_pop.geometry.apply(lambda x: get_value_from_gdf(x,commune_sindex,prov_communes))
     
     # and use average if commune has no stats
     prov_pop.loc[prov_pop['netrev'] == 0,'netrev'] = prov_pop['netrev'].mean()
