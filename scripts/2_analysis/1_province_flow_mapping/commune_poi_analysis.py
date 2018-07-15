@@ -122,6 +122,37 @@ def shapefile_to_network(edges_in):
     # only keep connected network
     return G #.clusters().giant()
 
+def netrev_edges(province,start_points,end_points,G,save_edges = True,output_path=''):
+    save_paths = []
+    for iter_,place in start_points.iterrows():
+        try:
+            closest_center = end_points.loc[end_points['OBJECTID'] 
+            == place['NEAREST_C_CENTER']]['NEAREST_G_NODE'].values[0]
+           
+            pos0_i = G.vs[node_dict[place['NEAREST_G_NODE']]]
+            pos1_i = G.vs[node_dict[closest_center]]
+    
+            path = G.get_shortest_paths(pos0_i,pos1_i,weights='LENGTH',output="epath")
+    
+            get_path = [G.es[n]['EDGE_ID'] for n in path][0]
+            save_paths.append((place['netrev'],get_path))
+        except:
+            print(iter_)
+                    
+    all_edges = [x['EDGE_ID'] for x in G.es]
+    all_edges_geom = [x['geometry'] for x in G.es]
+    
+    gdf_edges = gpd.GeoDataFrame(pd.DataFrame([all_edges,all_edges_geom]).T,crs='epsg:4326')
+    gdf_edges.columns = ['EDGE_ID','geometry']
+    
+    gdf_edges['netrev'] = 0
+    for path in save_paths:
+        gdf_edges.loc[gdf_edges['EDGE_ID'].isin(path[1]),'netrev'] += path[0]
+    
+    if save_edges == True:
+        gdf_edges.to_file(os.path.join(output_path,'weighted_edges_{}.shp'.format(province)))
+    return gdf_edges
+     
     
 def province_clip(shape_in,province_geom):
     gdf = gpd.read_file(shape_in)
@@ -139,6 +170,7 @@ def count_points_in_polygon(x,prov_pop_sindex):
 
 def get_netrev(x,commune_sindex,prov_communes):
         return prov_communes.loc[list(commune_sindex.intersection(x.bounds[:2]))]['netrev_village'].values[0]
+
 
 
 if __name__ == '__main__':
@@ -174,10 +206,8 @@ if __name__ == '__main__':
 #     # load nodes and edges
 # =============================================================================
     nodes = gpd.read_file(nodes_in)
-    edges = gpd.read_file(edges_in)
     sindex_nodes = nodes.sindex
     
-
 # =============================================================================
 #     # get revenue values for each village
 # =============================================================================
@@ -221,35 +251,4 @@ if __name__ == '__main__':
 # =============================================================================
 #     # loop through population points
 # =============================================================================
-
-def netrev_edges(province,start_points,end_points,G,save_edges = True,output_path=''):
-    save_paths = []
-    for iter_,place in start_points.iterrows():
-        try:
-            closest_center = end_points.loc[end_points['OBJECTID'] 
-            == place['NEAREST_C_CENTER']]['NEAREST_G_NODE'].values[0]
-           
-            pos0_i = G.vs[node_dict[place['NEAREST_G_NODE']]]
-            pos1_i = G.vs[node_dict[closest_center]]
-    
-            path = G.get_shortest_paths(pos0_i,pos1_i,weights='LENGTH',output="epath")
-    
-            get_path = [G.es[n]['EDGE_ID'] for n in path][0]
-            save_paths.append((place['netrev'],get_path))
-        except:
-            print(iter_)
-                    
-    all_edges = [x['EDGE_ID'] for x in G.es]
-    all_edges_geom = [x['geometry'] for x in G.es]
-    
-    gdf_edges = gpd.GeoDataFrame(pd.DataFrame([all_edges,all_edges_geom]).T,crs='epsg:4326')
-    gdf_edges.columns = ['EDGE_ID','geometry']
-    
-    gdf_edges['netrev'] = 0
-    for path in save_paths:
-        gdf_edges.loc[gdf_edges['EDGE_ID'].isin(path[1]),'netrev'] += path[0]
-    
-    if save_edges == True:
-        gdf_edges.to_file(os.path.join(output_path,'weighted_edges_{}.shp'.format(province)))
-    return gdf_edges
-     
+    edges_updated = netrev_edges(province,prov_pop,prov_commune_center,G,save_edges = True,output_path='')
