@@ -65,85 +65,90 @@ def netrev_edges(region_name,start_points,end_points,graph,save_edges = True,out
     
 
 if __name__ == '__main__':
-    
+
     data_path,calc_path,output_path = load_config()['paths']['data'],load_config()['paths']['calc'],load_config()['paths']['output']
     
 # =============================================================================
 #     #province to consider 
 # =============================================================================
-#    province = 'Thanh Hoa'
-    province = 'Binh Dinh'
-#    province = 'Lao Cai'
-    
-# =============================================================================
-#     # set all paths for all input files we are going to use
-# =============================================================================
-    province_name = province.replace(' ','').lower()
-    
-    edges_in = os.path.join(data_path,'Roads','{}_roads'.format(province_name),'vietbando_{}_edges.shp'.format(province_name))
-    nodes_in = os.path.join(data_path,'Roads','{}_roads'.format(province_name),'vietbando_{}_nodes.shp'.format(province_name))
-    population_points_in = os.path.join(data_path,'Points_of_interest','population_points.shp')
-    commune_center_in = os.path.join(data_path,'Points_of_interest','commune_committees_points.shp')
+    provinces = ['Thanh Hoa','Binh Dinh','Lao Cai']
 
-    province_path = os.path.join(data_path,'Vietnam_boundaries','who_boundaries','who_provinces.shp')
-    commune_path = os.path.join(data_path,'Vietnam_boundaries','boundaries_stats','commune_level_stats.shp')
-
-    # load provinces and get geometry of the right province
-    provinces = gpd.read_file(province_path)
-    province_geom = provinces.loc[provinces.NAME_ENG == province].geometry.values[0]
+    for province in provinces:
         
-    #clip all to province
-    prov_pop = gdf_clip(population_points_in,province_geom)
-    prov_commune_center = gdf_clip(commune_center_in,province_geom)
-    prov_communes = gdf_clip(commune_path,province_geom)
-
-# =============================================================================
-#     # load nodes and edges
-# =============================================================================
-    nodes = gpd.read_file(nodes_in)
-    sindex_nodes = nodes.sindex
+    # =============================================================================
+    #     # set all paths for all input files we are going to use
+    # =============================================================================
+        province_name = province.replace(' ','').lower()
+        
+        edges_in = os.path.join(data_path,'Roads','{}_roads'.format(province_name),'vietbando_{}_edges.shp'.format(province_name))
+        nodes_in = os.path.join(data_path,'Roads','{}_roads'.format(province_name),'vietbando_{}_nodes.shp'.format(province_name))
+        population_points_in = os.path.join(data_path,'Points_of_interest','population_points.shp')
+        commune_center_in = os.path.join(data_path,'Points_of_interest','commune_committees_points.shp')
     
-# =============================================================================
-#     # get revenue values for each village
-# =============================================================================
+        province_path = os.path.join(data_path,'Vietnam_boundaries','who_boundaries','who_provinces.shp')
+        commune_path = os.path.join(data_path,'Vietnam_boundaries','boundaries_stats','commune_level_stats.shp')
     
-    # first create sindex of all villages to count number of villages in commune
-    prov_pop_sindex = prov_pop.sindex
+        path_width_table = os.path.join(data_path,'Roads','road_properties','road_properties.xlsx')
     
-    # create new column in prov_communes with amount of villages
-    prov_communes['n_villages'] = prov_communes.geometry.apply(lambda x: count_points_in_polygon(x,prov_pop_sindex)) 
-    prov_communes['netrev_village'] = (prov_communes['netrevenue']*prov_communes['nfirm'])/prov_communes['n_villages'] 
-
-    commune_sindex = prov_communes.sindex
-    # give each village a net revenue based on average per village in commune
-    prov_pop['netrev'] = prov_pop.geometry.apply(lambda x: extract_value_from_gdf(x,commune_sindex,prov_communes,'netrev_village'))
     
-    # and use average if commune has no stats
-    prov_pop.loc[prov_pop['netrev'] == 0,'netrev'] = prov_pop['netrev'].mean()
-   
-# =============================================================================
-#     # get nearest node in network for all start and end points
-# =============================================================================
-    prov_pop['NEAREST_G_NODE'] = prov_pop.geometry.apply(lambda x: get_nearest_node(x,sindex_nodes,nodes,'NODE_ID'))
-    prov_commune_center['NEAREST_G_NODE'] = prov_commune_center.geometry.apply(lambda x: get_nearest_node(x,sindex_nodes,nodes,'NODE_ID'))
-
-# =============================================================================
-#     # prepare for shortest path routing, we'll use the spatial index of the centers
-#     # to find the nearest center for each population point
-# =============================================================================
-    sindex_commune_center = prov_commune_center.sindex
-    prov_pop['NEAREST_C_CENTER'] = prov_pop.geometry.apply(lambda x: get_nearest_node(x,sindex_commune_center,prov_commune_center,'OBJECTID'))
-
-# =============================================================================
-#     # load network
-# =============================================================================
-    G = shapefile_to_network(edges_in)
-
-    nodes_name = np.asarray([x['name'] for x in G.vs])
-    nodes_index = np.asarray([x.index for x in G.vs])
-    node_dict = dict(zip(nodes_name,nodes_index))
-
-# =============================================================================
-#     # get updated edges
-# =============================================================================
-    edges_updated = netrev_edges(province_name,prov_pop,prov_commune_center,G,save_edges = True,output_path=output_path)
+        # load provinces and get geometry of the right province
+        provinces = gpd.read_file(province_path)
+        province_geom = provinces.loc[provinces.NAME_ENG == province].geometry.values[0]
+            
+        #clip all to province
+        prov_pop = gdf_clip(population_points_in,province_geom)
+        prov_commune_center = gdf_clip(commune_center_in,province_geom)
+        prov_communes = gdf_clip(commune_path,province_geom)
+    
+    # =============================================================================
+    #     # load nodes and edges
+    # =============================================================================
+        nodes = gpd.read_file(nodes_in)
+        sindex_nodes = nodes.sindex
+        
+    # =============================================================================
+    #     # get revenue values for each village
+    # =============================================================================
+        
+        # first create sindex of all villages to count number of villages in commune
+        prov_pop_sindex = prov_pop.sindex
+        
+        # create new column in prov_communes with amount of villages
+        prov_communes['n_villages'] = prov_communes.geometry.apply(lambda x: count_points_in_polygon(x,prov_pop_sindex)) 
+        prov_communes['netrev_village'] = (prov_communes['netrevenue']*prov_communes['nfirm'])/prov_communes['n_villages'] 
+    
+        commune_sindex = prov_communes.sindex
+        # give each village a net revenue based on average per village in commune
+        prov_pop['netrev'] = prov_pop.geometry.apply(lambda x: extract_value_from_gdf(x,commune_sindex,prov_communes,'netrev_village'))
+        
+        # and use average if commune has no stats
+        prov_pop.loc[prov_pop['netrev'] == 0,'netrev'] = prov_pop['netrev'].mean()
+       
+    # =============================================================================
+    #     # get nearest node in network for all start and end points
+    # =============================================================================
+        prov_pop['NEAREST_G_NODE'] = prov_pop.geometry.apply(lambda x: get_nearest_node(x,sindex_nodes,nodes,'NODE_ID'))
+        prov_commune_center['NEAREST_G_NODE'] = prov_commune_center.geometry.apply(lambda x: get_nearest_node(x,sindex_nodes,nodes,'NODE_ID'))
+    
+    # =============================================================================
+    #     # prepare for shortest path routing, we'll use the spatial index of the centers
+    #     # to find the nearest center for each population point
+    # =============================================================================
+        sindex_commune_center = prov_commune_center.sindex
+        prov_pop['NEAREST_C_CENTER'] = prov_pop.geometry.apply(lambda x: get_nearest_node(x,sindex_commune_center,prov_commune_center,'OBJECTID'))
+    
+    # =============================================================================
+    #     # load network
+    # =============================================================================
+       
+        G = shapefile_to_network(edges_in,path_width_table)
+    
+        nodes_name = np.asarray([x['name'] for x in G.vs])
+        nodes_index = np.asarray([x.index for x in G.vs])
+        node_dict = dict(zip(nodes_name,nodes_index))
+    
+    # =============================================================================
+    #     # get updated edges
+    # =============================================================================
+        edges_updated = netrev_edges(province_name,prov_pop,prov_commune_center,G,save_edges = True,output_path=output_path)
+        
