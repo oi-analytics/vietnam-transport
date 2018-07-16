@@ -12,6 +12,9 @@ import matplotlib.pyplot as plt
 from osgeo import gdal
 import numpy as np
 
+from geopy.distance import vincenty
+from boltons.iterutils import pairwise
+import geopandas as gpd
 
 def load_config():
     """Read config.json
@@ -345,3 +348,70 @@ def get_data(filename):
     lat_lon_extent = (xmin, xmax, ymax, ymin)
 
     return data, lat_lon_extent
+
+def line_length(line, ellipsoid='WGS-84'):
+    """Length of a line in meters, given in geographic coordinates.
+
+    Adapted from https://gis.stackexchange.com/questions/4022/looking-for-a-pythonic-way-to-calculate-the-length-of-a-wkt-linestring#answer-115285
+
+    Args:
+        line: a shapely LineString object with WGS-84 coordinates.
+        
+        ellipsoid: string name of an ellipsoid that `geopy` understands (see http://geopy.readthedocs.io/en/latest/#module-geopy.distance).
+
+    Returns:
+        Length of line in meters.
+    """
+    if line.geometryType() == 'MultiLineString':
+        return sum(line_length(segment) for segment in line)
+
+    return sum(
+        vincenty(tuple(reversed(a)), tuple(reversed(b)), ellipsoid=ellipsoid).kilometers
+        for a, b in pairwise(line.coords)
+    )
+
+def gdf_clip(shape_in,clip_geom):
+    """
+    Inputs are:
+        shape_in -- path string to shapefile to be clipped
+    Outputs are:
+        province_geom -- shapely geometry of province for what we do the calculation
+    """
+    gdf = gpd.read_file(shape_in)
+    return gdf.loc[gdf['geometry'].apply(lambda x: x.within(clip_geom))].reset_index(drop=True)
+ 
+def get_nearest_node(x,sindex_nodes,nodes,id_column):
+    """
+    Inputs are:
+        x -- row of dataframe
+        sindex_nodes -- spatial index of dataframe of nodes in the network
+        nodes -- dataframe of nodes in the network
+        id_column -- name of column of id of closest node
+    Outputs are:
+        Nearest node to geometry of row
+    """
+    return nodes.loc[list(sindex_nodes.nearest(x.bounds[:2]))][id_column].values[0]
+
+def count_points_in_polygon(x,points_sindex):
+    """
+   Inputs are:
+        x -- row of dataframe
+        points_sindex -- spatial index of dataframe with points in the region to consider
+    Outputs are:
+        Amount of points in polygon
+    """
+    return len(list(points_sindex.intersection(x.bounds)))
+
+def extract_value_from_gdf(x,gdf_sindex,gdf,column_name):
+    """
+   Inputs are:
+        x -- row of dataframe
+        gdf_sindex -- spatial index of dataframe of which we want to extract the value
+        gdf -- GeoDataFrame of which we want to extract the value
+        column_name -- column that contains the value we want to extract
+        
+    Outputs are:
+        extracted value from other gdf
+    """
+    return gdf.loc[list(gdf_sindex.intersection(x.bounds[:2]))][column_name].values[0]
+

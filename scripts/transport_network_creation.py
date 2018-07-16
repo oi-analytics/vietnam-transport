@@ -15,8 +15,7 @@ import igraph as ig
 import numpy as np
 import geopandas as gpd
 
-from geopy.distance import vincenty
-from boltons.iterutils import pairwise
+from scripts.utils import line_length
 
 def assign_assumed_width_to_roads(asset_width,width_range_list):
 	'''
@@ -306,24 +305,3 @@ def get_igraph_edges(G,edge_path,data_cond):
 	t_list = [G.es[n][data_cond] for n in edge_path]
 
 	return (t_list)
-
-def line_length(line, ellipsoid='WGS-84'):
-    """Length of a line in meters, given in geographic coordinates.
-
-    Adapted from https://gis.stackexchange.com/questions/4022/looking-for-a-pythonic-way-to-calculate-the-length-of-a-wkt-linestring#answer-115285
-
-    Args:
-        line: a shapely LineString object with WGS-84 coordinates.
-        
-        ellipsoid: string name of an ellipsoid that `geopy` understands (see http://geopy.readthedocs.io/en/latest/#module-geopy.distance).
-
-    Returns:
-        Length of line in meters.
-    """
-    if line.geometryType() == 'MultiLineString':
-        return sum(line_length(segment) for segment in line)
-
-    return sum(
-        vincenty(a, b, ellipsoid=ellipsoid).kilometers
-        for a, b in pairwise(line.coords)
-    )

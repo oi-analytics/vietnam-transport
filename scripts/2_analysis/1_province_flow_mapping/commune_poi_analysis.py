@@ -8,119 +8,14 @@ Created on Sat Jul 14 15:41:39 2018
 import geopandas as gpd
 import pandas as pd
 import os
-import json
 import igraph as ig
 import numpy as np
+import sys
 
-from geopy.distance import vincenty
-from boltons.iterutils import pairwise
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
-def load_config():
-    
-   # Define current directory and data directory
-    config_path = os.path.realpath(
-        os.path.join(os.path.dirname(__file__), '..', '..','..', 'config.json')
-    )
-    with open(config_path, 'r') as config_fh:
-        config = json.load(config_fh)
-    data_path = config['paths']['data']
-    calc_path = config['paths']['calc']
-    output_path = config['paths']['output']
-    
-    return data_path,calc_path,output_path
-
-def line_length(line, ellipsoid='WGS-84'):
-    """Length of a line in meters, given in geographic coordinates.
-
-    Adapted from https://gis.stackexchange.com/questions/4022/looking-for-a-pythonic-way-to-calculate-the-length-of-a-wkt-linestring#answer-115285
-
-    Args:
-        line: a shapely LineString object with WGS-84 coordinates.
-        
-        ellipsoid: string name of an ellipsoid that `geopy` understands (see http://geopy.readthedocs.io/en/latest/#module-geopy.distance).
-
-    Returns:
-        Length of line in meters.
-    """
-    if line.geometryType() == 'MultiLineString':
-        return sum(line_length(segment) for segment in line)
-
-    return sum(
-        vincenty(a, b, ellipsoid=ellipsoid).kilometers
-        for a, b in pairwise(line.coords)
-    )
-
-def assign_minmax_travel_speeds_roads_apply(x):
-    '''
-    ====================================================================================
-    Assign travel speeds to roads assets in Vietnam
-    The speeds are assigned based on our understanding of: 
-    1. The types of assets
-    2. The levels of classification of assets: 0-National,1-Provinical,2-Local,3-Other
-    3. The terrain where the assets are located: Flat or Mountain or No information
-    	
-    Inputs are:
-    asset_code - Numeric code for type of asset
-    asset_level - Numeric code for level of asset
-    asset_terrain - String value of the terrain of asset
-    	
-    Outputs are:
-    speed_min - Minimum assigned speed in km/hr
-    speed_max - Maximum assigned speed in km/hr
-    ==================================================================================== 
-    '''
-    asset_code = x.CODE
-    asset_level = x.LEVEL
-    asset_terrain='flat'
-
-    if (not asset_terrain) or (asset_terrain == 'flat'):
-        if asset_code == 17: # This is an expressway
-            return 100,120
-        elif asset_code in (15,4): # This is a residential road or a mountain pass
-            return 40,60
-        elif asset_level == 0: # This is any other national network asset
-            return 80,100
-        elif asset_level == 1:# This is any other provincial network asset
-            return 60,80
-        elif asset_level == 2: # This is any other local network asset
-            return 40,60
-        else:			# Anything else not included above
-            return 20,40
-
-    else:
-        if asset_level < 3:
-            return 40, 60
-        else:
-            return 20,40
-
-
-def shapefile_to_network(edges_in):
-    """
-    input parameters:
-        edges_in : string of path to edges file/network file. 
-        
-    output:
-        SG: connected graph of the shapefile
-    
-    """
-    edges = gpd.read_file(edges_in)
-    
-    # assign minimum and maximum speed to network
-    edges['SPEED'] = edges.apply(assign_minmax_travel_speeds_roads_apply,axis=1)
-    edges[['MIN_SPEED', 'MAX_SPEED']] = edges['SPEED'].apply(pd.Series)
-    edges.drop('SPEED',axis=1,inplace=True)
-
-    edges['LENGTH'] = edges.geometry.apply(line_length)
-
-    # make sure that From and To node are the first two columns of the dataframe
-    # to make sure the conversion from dataframe to igraph network goes smooth
-    edges = edges.reindex(list(edges.columns)[2:]+list(edges.columns)[:2],axis=1)
-    
-    # create network from edge file
-    G = ig.Graph.TupleList(edges.itertuples(index=False), edge_attrs=list(edges.columns)[2:])
-
-    # only keep connected network
-    return G 
+from scripts.utils import load_config,extract_value_from_gdf,get_nearest_node,gdf_clip,count_points_in_polygon
+from scripts.transport_network_creation import shapefile_to_network
 
 def netrev_edges(region_name,start_points,end_points,graph,save_edges = True,output_path=''):
     """
@@ -168,54 +63,10 @@ def netrev_edges(region_name,start_points,end_points,graph,save_edges = True,out
         gdf_edges.to_file(os.path.join(output_path,'weighted_edges_{}.shp'.format(region_name)))
     return gdf_edges
     
-def gdf_clip(shape_in,clip_geom):
-    """
-    Inputs are:
-        shape_in -- path string to shapefile to be clipped
-    Outputs are:
-        province_geom -- shapely geometry of province for what we do the calculation
-    """
-    gdf = gpd.read_file(shape_in)
-    return gdf.loc[gdf['geometry'].apply(lambda x: x.within(clip_geom))].reset_index(drop=True)
- 
-def get_nearest_node(x,sindex_nodes,nodes,id_column):
-    """
-    Inputs are:
-        x -- row of dataframe
-        sindex_nodes -- spatial index of dataframe of nodes in the network
-        nodes -- dataframe of nodes in the network
-        id_column -- name of column of id of closest node
-    Outputs are:
-        Nearest node to geometry of row
-    """
-    return nodes.loc[list(sindex_nodes.nearest(x.bounds[:2]))][id_column].values[0]
-
-def count_points_in_polygon(x,points_sindex):
-    """
-   Inputs are:
-        x -- row of dataframe
-        points_sindex -- spatial index of dataframe with points in the region to consider
-    Outputs are:
-        Amount of points in polygon
-    """
-    return len(list(prov_pop_sindex.intersection(x.bounds)))
-
-def get_value_from_gdf(x,gdf_sindex,gdf):
-    """
-   Inputs are:
-        x -- row of dataframe
-        gdf_sindex -- spatial index of dataframe of which we want to extract the value
-        gdf -- GeoDataFrame of which we want to extract the value
-        
-    Outputs are:
-        extracted value from other gdf
-    """
-    return prov_communes.loc[list(commune_sindex.intersection(x.bounds[:2]))]['netrev_village'].values[0]
-
 
 if __name__ == '__main__':
     
-    data_path,calc_path,output_path = load_config()
+    data_path,calc_path,output_path = load_config()['paths']['data'],load_config()['paths']['calc'],load_config()['paths']['output']
     
 # =============================================================================
 #     #province to consider 
@@ -265,7 +116,7 @@ if __name__ == '__main__':
 
     commune_sindex = prov_communes.sindex
     # give each village a net revenue based on average per village in commune
-    prov_pop['netrev'] = prov_pop.geometry.apply(lambda x: get_value_from_gdf(x,commune_sindex,prov_communes))
+    prov_pop['netrev'] = prov_pop.geometry.apply(lambda x: extract_value_from_gdf(x,commune_sindex,prov_communes,'netrev_village'))
     
     # and use average if commune has no stats
     prov_pop.loc[prov_pop['netrev'] == 0,'netrev'] = prov_pop['netrev'].mean()
