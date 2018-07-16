@@ -13,8 +13,12 @@ import networkx as nx
 import csv
 import igraph as ig 
 import numpy as np
+import geopandas as gpd
 
-def assign_assumed_width_to_roads(asset_width,width_range_list):
+from geopy.distance import vincenty
+from boltons.iterutils import pairwise
+
+def assign_assumed_width_to_roads(x):
 	'''
 	==========================================================================================
 	Assign widths to roads assets in Vietnam
@@ -24,19 +28,54 @@ def assign_assumed_width_to_roads(asset_width,width_range_list):
 	
 	Inputs are:
 	asset_width - Numeric value for width of asset
-	width_range_list - List of tuples containing (from_width,to_width,assumed_width)
 	
 	Outputs are:
-	assumed_width - assigned width of the raod asset based on design specifications
+	modified_width - assigned width of the road asset based on design specifications
 	============================================================================================ 
 	'''
-	assumed_width = asset_width
-	for width_vals in width_range_list:
-		if width_range_list[0] <= assumed_width <= width_range_list[1]:
-			asset_width = width_range_list[2]
-			break
+	if 0 <= x.WIDTH < 4.25:
+		return 3.5
+	elif 4.25 <= x.WIDTH < 6.0:
+		return 5.0
+	elif 6.0 <= x.WIDTH < 8.0:
+		return 7.0
+	elif 8.0 <= x.WIDTH < 11.5:
+		return 9.0
+	elif 11.5 <= x.WIDTH < 17.5:
+		return 14.0
+	elif 17.5 <= x.WIDTH < 24.5:
+		return 21.0
+	elif 24.5 <= x.WIDTH < 100:
+		return 9.0
+	else:
+		return x.WIDTH
 
-	return assumed_width
+def assign_asset_type_to_roads(x):
+	'''
+	==========================================================================================
+	Assign asset types to roads assets in Vietnam
+	The types are assigned based on our understanding of: 
+	1. The reported asset code in the data
+	
+	Inputs are:
+	asset code - Numeric value for code of asset
+	
+	Outputs are:
+	asset type - Which is either of (Bridge,Dam,Culvert,Tunnel,Spillway,Road)
+	============================================================================================ 
+	'''
+	if x.CODE in (12,25):
+		return 'Bridge'
+	elif x.CODE == (23):
+		return 'Dam'
+	elif x.CODE == (24):
+		return 'Culvert'
+	elif x.CODE == (26):
+		return 'Tunnel'
+	elif x.CODE == (27):
+		return 'Spillway'
+	else:
+		return 'Road'
 
 
 def assign_minmax_travel_speeds_roads(asset_code,asset_level,asset_terrain):
@@ -47,12 +86,12 @@ def assign_minmax_travel_speeds_roads(asset_code,asset_level,asset_terrain):
 	1. The types of assets
 	2. The levels of classification of assets: 0-National,1-Provinical,2-Local,3-Other
 	3. The terrain where the assets are located: Flat or Mountain or No information
-	
+		
 	Inputs are:
 	asset_code - Numeric code for type of asset
 	asset_level - Numeric code for level of asset
 	asset_terrain - String value of the terrain of asset
-	
+		
 	Outputs are:
 	speed_min - Minimum assigned speed in km/hr
 	speed_max - Maximum assigned speed in km/hr
@@ -60,41 +99,67 @@ def assign_minmax_travel_speeds_roads(asset_code,asset_level,asset_terrain):
 	'''
 
 	if (not asset_terrain) or (asset_terrain == 'flat'):
-		if asset_code == 17:
-			# This is an expressway
-			speed_min = 100
-			speed_max = 120
-		elif asset_code in (15,4):
-			# This is a residential road or a mountain pass
-			speed_min = 40
-			speed_max = 60
-		elif asset_level == 0:
-			# This is any other national network asset
-			speed_min = 80
-			speed_max = 100
-		elif asset_level == 1:
-			# This is any other provincial network asset
-			speed_min = 60
-			speed_max = 80
-		elif asset_level == 2:
-			# This is any other local network asset
-			speed_min = 40
-			speed_max = 60
-		else:
-			# Anything else not included above
-			speed_min = 20
-			speed_max = 40
+		if asset_code == 17: # This is an expressway
+			return 100,120
+		elif asset_code in (15,4): # This is a residential road or a mountain pass
+			return 40,60
+		elif asset_level == 0: # This is any other national network asset
+			return 80,100
+		elif asset_level == 1:# This is any other provincial network asset
+			return 60,80
+		elif asset_level == 2: # This is any other local network asset
+			return 40,60
+		else:			# Anything else not included above
+			return 20,40
 
 	else:
 		if asset_level < 3:
-			speed_min = 60
-			speed_max = 40
+			return 40, 60
 		else:
-			speed_min = 20
-			speed_max = 40
+			return 20,40
 
-	return speed_min, speed_max
+def assign_minmax_travel_speeds_roads_apply(x):
+	'''
+	====================================================================================
+	Assign travel speeds to roads assets in Vietnam
+	The speeds are assigned based on our understanding of: 
+	1. The types of assets
+	2. The levels of classification of assets: 0-National,1-Provinical,2-Local,3-Other
+	3. The terrain where the assets are located: Flat or Mountain or No information
+		
+	Inputs are:
+	asset_code - Numeric code for type of asset
+	asset_level - Numeric code for level of asset
+	asset_terrain - String value of the terrain of asset
+		
+	Outputs are:
+	speed_min - Minimum assigned speed in km/hr
+	speed_max - Maximum assigned speed in km/hr
+	==================================================================================== 
+	'''
+	asset_code = x.CODE
+	asset_level = x.LEVEL
+	asset_terrain='flat'
 
+	if (not asset_terrain) or (asset_terrain == 'flat'):
+		if asset_code == 17: # This is an expressway
+			return 100,120
+		elif asset_code in (15,4): # This is a residential road or a mountain pass
+			return 40,60
+		elif asset_level == 0: # This is any other national network asset
+			return 80,100
+		elif asset_level == 1:# This is any other provincial network asset
+			return 60,80
+		elif asset_level == 2: # This is any other local network asset
+			return 40,60
+		else:			# Anything else not included above
+			return 20,40
+
+	else:
+		if asset_level < 3:
+			return 40, 60
+		else:
+			return 20,40
 
 def assign_travel_times_and_variability(speed_attributes,variability_attributes,mode_type,variability_location,mode_attribute,distance):
 	travel_time = 0
@@ -218,6 +283,50 @@ def create_igraph_topology(network_dictionary):
 
 	return G
 
+def shapefile_to_network(edges_in):
+	"""
+	input parameters:
+		edges_in : string of path to edges file/network file. 
+		
+	output:
+		SG: connected graph of the shapefile
+	
+	"""
+	
+	edges = gpd.read_file(edges_in)
+	
+	# assign minimum and maximum speed to network
+	edges['SPEED'] = edges.apply(assign_minmax_travel_speeds_roads_apply,axis=1)
+	edges[['MIN_SPEED', 'MAX_SPEED']] = edges['SPEED'].apply(pd.Series)
+	edges.drop('SPEED',axis=1,inplace=True)
+	
+	# correct the widths of the road assets
+	edges['MOD_WIDTH'] = edges.apply(assign_assumed_width_to_roads,axis=1)
+	# edges.drop('WIDTH',axis=1,inplace=True)
+
+	# create an asset type column
+	edges['ASSET_TYPE'] = edges.apply(assign_asset_type_to_roads,axis=1)
+
+	# get the right linelength
+	edges['LENGTH'] = edges.geometry.apply(line_length)
+
+	# make sure that From and To node are the first two columns of the dataframe
+	# to make sure the conversion from dataframe to igraph network goes smooth
+	edges = edges.reindex(list(edges.columns)[2:]+list(edges.columns)[:2],axis=1)
+	# print (edges)
+	
+	# create network from edge file
+	G = ig.Graph.TupleList(edges.itertuples(index=False), edge_attrs=list(edges.columns)[2:])
+
+	# only keep connected network
+	return G.clusters().giant()
+
+def add_igraph_costs_province_roads(G,cost_param):
+	G.es['MAX_COST'] = list(cost_param*(np.array(G.es['LENGTH'])/np.array(G.es['MAX_SPEED'])))
+	G.es['MIN_COST'] = list(cost_param*(np.array(G.es['LENGTH'])/np.array(G.es['MIN_SPEED'])))
+
+	return G
+
 def add_igraph_costs(G,tonnage,teus):
 	# all_net_dict = {'edge':[],'from_node':[],'to_node':[],'waiting_cost':[],'travel_cost':[],'transport_price_ton':[],
 	# 			'transport_price_teu':[],'variability_cost':[]}
@@ -245,3 +354,24 @@ def get_igraph_edges(G,edge_path,data_cond):
 	t_list = [G.es[n][data_cond] for n in edge_path]
 
 	return (t_list)
+
+def line_length(line, ellipsoid='WGS-84'):
+	"""Length of a line in meters, given in geographic coordinates.
+
+	Adapted from https://gis.stackexchange.com/questions/4022/looking-for-a-pythonic-way-to-calculate-the-length-of-a-wkt-linestring#answer-115285
+
+	Args:
+		line: a shapely LineString object with WGS-84 coordinates.
+		
+		ellipsoid: string name of an ellipsoid that `geopy` understands (see http://geopy.readthedocs.io/en/latest/#module-geopy.distance).
+
+	Returns:
+		Length of line in meters.
+	"""
+	if line.geometryType() == 'MultiLineString':
+		return sum(line_length(segment) for segment in line)
+
+	return sum(
+		vincenty(a, b, ellipsoid=ellipsoid).kilometers
+		for a, b in pairwise(line.coords)
+	)
