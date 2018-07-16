@@ -18,69 +18,29 @@ import geopandas as gpd
 from scripts.utils import line_length
 
 def assign_assumed_width_to_roads(asset_width,width_range_list):
-	'''
-	==========================================================================================
-	Assign widths to roads assets in Vietnam
-	The widths are assigned based on our understanding of: 
-	1. The reported width in the data which is not reliable
-	2. A design specification based understanding of the assumed width based on ranges of values
-	
-	Inputs are:
-	asset_width - Numeric value for width of asset
-	width_range_list - List of tuples containing (from_width,to_width,assumed_width)
-	
-	Outputs are:
-	assumed_width - assigned width of the raod asset based on design specifications
-	============================================================================================ 
-	'''
-	assumed_width = asset_width
-	for width_vals in width_range_list:
-		if width_range_list[0] <= assumed_width <= width_range_list[1]:
-			asset_width = width_range_list[2]
-			break
-
-	return assumed_width
-
-
-def assign_minmax_travel_speeds_roads(asset_code,asset_level,asset_terrain):
     '''
-    ====================================================================================
-    Assign travel speeds to roads assets in Vietnam
-    The speeds are assigned based on our understanding of: 
-    1. The types of assets
-    2. The levels of classification of assets: 0-National,1-Provinical,2-Local,3-Other
-    3. The terrain where the assets are located: Flat or Mountain or No information
-    	
+    ==========================================================================================
+    Assign widths to roads assets in Vietnam
+    The widths are assigned based on our understanding of: 
+    1. The reported width in the data which is not reliable
+    2. A design specification based understanding of the assumed width based on ranges of values
+	
     Inputs are:
-    asset_code - Numeric code for type of asset
-    asset_level - Numeric code for level of asset
-    asset_terrain - String value of the terrain of asset
-    	
+    asset_width - Numeric value for width of asset
+    width_range_list - List of tuples containing (from_width,to_width,assumed_width)
+	
     Outputs are:
-    speed_min - Minimum assigned speed in km/hr
-    speed_max - Maximum assigned speed in km/hr
-    ==================================================================================== 
+    assumed_width - assigned width of the raod asset based on design specifications
+    ============================================================================================ 
     '''
+    
+    assumed_width = asset_width
+    for width_vals in width_range_list:
+        if width_vals[0] <= assumed_width <= width_vals[1]:
+            asset_width = width_vals[2]
+            break
 
-    if (not asset_terrain) or (asset_terrain == 'flat'):
-        if asset_code == 17: # This is an expressway
-            return 100,120
-        elif asset_code in (15,4): # This is a residential road or a mountain pass
-            return 40,60
-        elif asset_level == 0: # This is any other national network asset
-            return 80,100
-        elif asset_level == 1:# This is any other provincial network asset
-            return 60,80
-        elif asset_level == 2: # This is any other local network asset
-            return 40,60
-        else:			# Anything else not included above
-            return 20,40
-
-    else:
-        if asset_level < 3:
-            return 40, 60
-        else:
-            return 20,40
+    return assumed_width
 
 def assign_minmax_travel_speeds_roads_apply(x):
     '''
@@ -247,14 +207,13 @@ def create_igraph_topology(network_dictionary):
 
 	return G
 
-def shapefile_to_network(edges_in):
+def shapefile_to_network(edges_in,path_width_table):
     """
     input parameters:
         edges_in : string of path to edges file/network file. 
         
     output:
         SG: connected graph of the shapefile
-    
     """
     
     edges = gpd.read_file(edges_in)
@@ -267,6 +226,11 @@ def shapefile_to_network(edges_in):
     # get the right linelength
     edges['LENGTH'] = edges.geometry.apply(line_length)
 
+    # get the width of edges
+    width_range_list = [tuple(x) for x in pd.read_excel(path_width_table,sheet_name ='widths').values]
+    
+    edges['WIDTH'] = edges.WIDTH.apply(lambda x: assign_assumed_width_to_roads(x,width_range_list))
+    
     # make sure that From and To node are the first two columns of the dataframe
     # to make sure the conversion from dataframe to igraph network goes smooth
     edges = edges.reindex(list(edges.columns)[2:]+list(edges.columns)[:2],axis=1)
