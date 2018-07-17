@@ -14,12 +14,10 @@ import csv
 import igraph as ig 
 import numpy as np
 import geopandas as gpd
-
 from scripts.utils import line_length
 
-def assign_assumed_width_to_roads(x):
+def assign_assumed_width_to_province_roads(x):
 	'''
-	==========================================================================================
 	Assign widths to roads assets in Vietnam
 	The widths are assigned based on our understanding of: 
 	1. The reported width in the data which is not reliable
@@ -30,7 +28,6 @@ def assign_assumed_width_to_roads(x):
 	
 	Outputs are:
 	modified_width - assigned width of the road asset based on design specifications
-	============================================================================================ 
 	'''
 	if 0 <= x.WIDTH < 4.25:
 		return 3.5
@@ -49,9 +46,8 @@ def assign_assumed_width_to_roads(x):
 	else:
 		return x.WIDTH
 
-def assign_asset_type_to_roads(x):
+def assign_asset_type_to_province_roads(x):
 	'''
-	==========================================================================================
 	Assign asset types to roads assets in Vietnam
 	The types are assigned based on our understanding of: 
 	1. The reported asset code in the data
@@ -61,7 +57,6 @@ def assign_asset_type_to_roads(x):
 	
 	Outputs are:
 	asset type - Which is either of (Bridge,Dam,Culvert,Tunnel,Spillway,Road)
-	============================================================================================ 
 	'''
 	if x.CODE in (12,25):
 		return 'Bridge'
@@ -77,9 +72,8 @@ def assign_asset_type_to_roads(x):
 		return 'Road'
 
 
-def assign_minmax_travel_speeds_roads(asset_code,asset_level,asset_terrain):
+def assign_minmax_travel_speeds_province_roads_apply(x):
 	'''
-	====================================================================================
 	Assign travel speeds to roads assets in Vietnam
 	The speeds are assigned based on our understanding of: 
 	1. The types of assets
@@ -94,47 +88,6 @@ def assign_minmax_travel_speeds_roads(asset_code,asset_level,asset_terrain):
 	Outputs are:
 	speed_min - Minimum assigned speed in km/hr
 	speed_max - Maximum assigned speed in km/hr
-	==================================================================================== 
-	'''
-
-	if (not asset_terrain) or (asset_terrain == 'flat'):
-		if asset_code == 17: # This is an expressway
-			return 100,120
-		elif asset_code in (15,4): # This is a residential road or a mountain pass
-			return 40,60
-		elif asset_level == 0: # This is any other national network asset
-			return 80,100
-		elif asset_level == 1:# This is any other provincial network asset
-			return 60,80
-		elif asset_level == 2: # This is any other local network asset
-			return 40,60
-		else:			# Anything else not included above
-			return 20,40
-
-	else:
-		if asset_level < 3:
-			return 40, 60
-		else:
-			return 20,40
-
-def assign_minmax_travel_speeds_roads_apply(x):
-	'''
-	====================================================================================
-	Assign travel speeds to roads assets in Vietnam
-	The speeds are assigned based on our understanding of: 
-	1. The types of assets
-	2. The levels of classification of assets: 0-National,1-Provinical,2-Local,3-Other
-	3. The terrain where the assets are located: Flat or Mountain or No information
-		
-	Inputs are:
-	asset_code - Numeric code for type of asset
-	asset_level - Numeric code for level of asset
-	asset_terrain - String value of the terrain of asset
-		
-	Outputs are:
-	speed_min - Minimum assigned speed in km/hr
-	speed_max - Maximum assigned speed in km/hr
-	==================================================================================== 
 	'''
 	asset_code = x.CODE
 	asset_level = x.LEVEL
@@ -161,74 +114,150 @@ def assign_minmax_travel_speeds_roads_apply(x):
 			return 20,40
 
 
-def assign_assumed_width_to_roads(asset_width,width_range_list):
-    '''
-    ==========================================================================================
-    Assign widths to roads assets in Vietnam
-    The widths are assigned based on our understanding of: 
-    1. The reported width in the data which is not reliable
-    2. A design specification based understanding of the assumed width based on ranges of values
+def province_shapefile_to_network(edges_in):
+	"""
+	input parameters:
+		edges_in : string of path to edges file/network file. 
+		
+	output:
+		SG: connected graph of the shapefile
 	
-    Inputs are:
-    asset_width - Numeric value for width of asset
-    width_range_list - List of tuples containing (from_width,to_width,assumed_width)
+	"""
 	
-    Outputs are:
-    assumed_width - assigned width of the raod asset based on design specifications
-    ============================================================================================ 
-    '''
-    
-    assumed_width = asset_width
-    for width_vals in width_range_list:
-        if width_vals[0] <= assumed_width <= width_vals[1]:
-            asset_width = width_vals[2]
-            break
+	edges = gpd.read_file(edges_in)
+	
+	# assign minimum and maximum speed to network
+	edges['SPEED'] = edges.apply(assign_minmax_travel_speeds_province_roads_apply,axis=1)
+	edges[['MIN_SPEED', 'MAX_SPEED']] = edges['SPEED'].apply(pd.Series)
+	edges.drop('SPEED',axis=1,inplace=True)
 
-    return assumed_width
+	# correct the widths of the road assets
+	edges['MOD_WIDTH'] = edges.apply(assign_assumed_width_to_province_roads,axis=1)
+	# edges.drop('WIDTH',axis=1,inplace=True)
 
-def assign_minmax_travel_speeds_roads_apply(x):
-    '''
-    ====================================================================================
-    Assign travel speeds to roads assets in Vietnam
-    The speeds are assigned based on our understanding of: 
-    1. The types of assets
-    2. The levels of classification of assets: 0-National,1-Provinical,2-Local,3-Other
-    3. The terrain where the assets are located: Flat or Mountain or No information
-    	
-    Inputs are:
-    asset_code - Numeric code for type of asset
-    asset_level - Numeric code for level of asset
-    asset_terrain - String value of the terrain of asset
-    	
-    Outputs are:
-    speed_min - Minimum assigned speed in km/hr
-    speed_max - Maximum assigned speed in km/hr
-    ==================================================================================== 
-    '''
-    asset_code = x.CODE
-    asset_level = x.LEVEL
-    asset_terrain='flat'
+	# create an asset type column
+	edges['ASSET_TYPE'] = edges.apply(assign_asset_type_to_province_roads,axis=1)
 
-    if (not asset_terrain) or (asset_terrain == 'flat'):
-        if asset_code == 17: # This is an expressway
-            return 100,120
-        elif asset_code in (15,4): # This is a residential road or a mountain pass
-            return 40,60
-        elif asset_level == 0: # This is any other national network asset
-            return 80,100
-        elif asset_level == 1:# This is any other provincial network asset
-            return 60,80
-        elif asset_level == 2: # This is any other local network asset
-            return 40,60
-        else:			# Anything else not included above
-            return 20,40
+	# get the right linelength
+	edges['LENGTH'] = edges.geometry.apply(line_length)
 
-    else:
-        if asset_level < 3:
-            return 40, 60
-        else:
-            return 20,40
+	# assign costs to the edges
+	# edges['MAX_COST'] = cost_param*edges['LENGTH']/edges['MIN_SPEED']
+	# edges['MIN_COST'] = cost_param*edges['LENGTH']/edges['MAX_SPEED']
+	# make sure that From and To node are the first two columns of the dataframe
+	# to make sure the conversion from dataframe to igraph network goes smooth
+	edges = edges.reindex(list(edges.columns)[2:]+list(edges.columns)[:2],axis=1)
+	
+	# create network from edge file
+	G = ig.Graph.TupleList(edges.itertuples(index=False), edge_attrs=list(edges.columns)[2:])
 
+	# only keep connected network
+	return G.clusters().giant()
+
+def add_igraph_time_costs_province_roads(G,cost_param):
+	G.es['MAX_COST'] = list(cost_param*(np.array(G.es['LENGTH'])/np.array(G.es['MAX_SPEED'])))
+	G.es['MIN_COST'] = list(cost_param*(np.array(G.es['LENGTH'])/np.array(G.es['MIN_SPEED'])))
+
+	return G
+
+'''
+Functions we are not using at present for provincial analysis. Will clean them later
+'''
+
+def assign_assumed_width_to_province_roads_from_file(asset_width,width_range_list):
+	'''
+	Assign widths to roads assets in Vietnam
+	The widths are assigned based on our understanding of: 
+	1. The reported width in the data which is not reliable
+	2. A design specification based understanding of the assumed width based on ranges of values
+	
+	Inputs are:
+	asset_width - Numeric value for width of asset
+	width_range_list - List of tuples containing (from_width,to_width,assumed_width)
+	
+	Outputs are:
+	assumed_width - assigned width of the raod asset based on design specifications
+	'''
+	
+	assumed_width = asset_width
+	for width_vals in width_range_list:
+		if width_vals[0] <= assumed_width <= width_vals[1]:
+			asset_width = width_vals[2]
+			break
+
+	return assumed_width
+
+def assign_minmax_travel_speeds_province_roads(asset_code,asset_level,asset_terrain):
+	'''
+	Assign travel speeds to roads assets in Vietnam
+	The speeds are assigned based on our understanding of: 
+	1. The types of assets
+	2. The levels of classification of assets: 0-National,1-Provincial,2-Local,3-Other
+	3. The terrain where the assets are located: Flat or Mountain or No information
+		
+	Inputs are:
+	asset_code - Numeric code for type of asset
+	asset_level - Numeric code for level of asset
+	asset_terrain - String value of the terrain of asset
+		
+	Outputs are:
+	speed_min - Minimum assigned speed in km/hr
+	speed_max - Maximum assigned speed in km/hr
+	'''
+
+	if (not asset_terrain) or (asset_terrain == 'flat'):
+		if asset_code == 17: # This is an expressway
+			return 100,120
+		elif asset_code in (15,4): # This is a residential road or a mountain pass
+			return 40,60
+		elif asset_level == 0: # This is any other national network asset
+			return 80,100
+		elif asset_level == 1:# This is any other provincial network asset
+			return 60,80
+		elif asset_level == 2: # This is any other local network asset
+			return 40,60
+		else:			# Anything else not included above
+			return 20,40
+
+	else:
+		if asset_level < 3:
+			return 40, 60
+		else:
+			return 20,40
+
+def shapefile_to_network(edges_in,path_width_table):
+	"""
+	input parameters:
+		edges_in : string of path to edges file/network file. 
+		
+	output:
+		SG: connected graph of the shapefile
+	"""
+	
+	edges = gpd.read_file(edges_in)
+	
+	# assign minimum and maximum speed to network
+	edges['SPEED'] = edges.apply(assign_minmax_travel_speeds_roads_apply,axis=1)
+	edges[['MIN_SPEED', 'MAX_SPEED']] = edges['SPEED'].apply(pd.Series)
+	edges.drop('SPEED',axis=1,inplace=True)
+	
+	# get the right linelength
+	edges['LENGTH'] = edges.geometry.apply(line_length)
+
+	# get the width of edges
+	width_range_list = [tuple(x) for x in pd.read_excel(path_width_table,sheet_name ='widths').values]
+	
+	edges['WIDTH'] = edges.WIDTH.apply(lambda x: assign_assumed_width_to_roads(x,width_range_list))
+	
+	# make sure that From and To node are the first two columns of the dataframe
+	# to make sure the conversion from dataframe to igraph network goes smooth
+	edges = edges.reindex(list(edges.columns)[2:]+list(edges.columns)[:2],axis=1)
+	
+	# create network from edge file
+	G = ig.Graph.TupleList(edges.itertuples(index=False), edge_attrs=list(edges.columns)[2:])
+
+	# only keep connected network
+	return G.clusters().giant()
 
 def assign_travel_times_and_variability(speed_attributes,variability_attributes,mode_type,variability_location,mode_attribute,distance):
 	travel_time = 0
@@ -351,87 +380,6 @@ def create_igraph_topology(network_dictionary):
 	G.es['travel_cost'] = network_dictionary['travel_cost'] 
 
 	return G
-
-
-def shapefile_to_network(edges_in):
-	"""
-	input parameters:
-		edges_in : string of path to edges file/network file. 
-		
-	output:
-		SG: connected graph of the shapefile
-	
-	"""
-	
-	edges = gpd.read_file(edges_in)
-	
-	# assign minimum and maximum speed to network
-	edges['SPEED'] = edges.apply(assign_minmax_travel_speeds_roads_apply,axis=1)
-	edges[['MIN_SPEED', 'MAX_SPEED']] = edges['SPEED'].apply(pd.Series)
-	edges.drop('SPEED',axis=1,inplace=True)
-	
-	# correct the widths of the road assets
-	edges['MOD_WIDTH'] = edges.apply(assign_assumed_width_to_roads,axis=1)
-	# edges.drop('WIDTH',axis=1,inplace=True)
-
-	# create an asset type column
-	edges['ASSET_TYPE'] = edges.apply(assign_asset_type_to_roads,axis=1)
-
-	# get the right linelength
-	edges['LENGTH'] = edges.geometry.apply(line_length)
-
-	# make sure that From and To node are the first two columns of the dataframe
-	# to make sure the conversion from dataframe to igraph network goes smooth
-	edges = edges.reindex(list(edges.columns)[2:]+list(edges.columns)[:2],axis=1)
-	# print (edges)
-	
-	# create network from edge file
-	G = ig.Graph.TupleList(edges.itertuples(index=False), edge_attrs=list(edges.columns)[2:])
-
-	# only keep connected network
-	return G.clusters().giant()
-
-def add_igraph_costs_province_roads(G,cost_param):
-	G.es['MAX_COST'] = list(cost_param*(np.array(G.es['LENGTH'])/np.array(G.es['MAX_SPEED'])))
-	G.es['MIN_COST'] = list(cost_param*(np.array(G.es['LENGTH'])/np.array(G.es['MIN_SPEED'])))
-
-	return G
-
-
-def shapefile_to_network(edges_in,path_width_table):
-    """
-    input parameters:
-        edges_in : string of path to edges file/network file. 
-        
-    output:
-        SG: connected graph of the shapefile
-    """
-    
-    edges = gpd.read_file(edges_in)
-    
-    # assign minimum and maximum speed to network
-    edges['SPEED'] = edges.apply(assign_minmax_travel_speeds_roads_apply,axis=1)
-    edges[['MIN_SPEED', 'MAX_SPEED']] = edges['SPEED'].apply(pd.Series)
-    edges.drop('SPEED',axis=1,inplace=True)
-    
-    # get the right linelength
-    edges['LENGTH'] = edges.geometry.apply(line_length)
-
-    # get the width of edges
-    width_range_list = [tuple(x) for x in pd.read_excel(path_width_table,sheet_name ='widths').values]
-    
-    edges['WIDTH'] = edges.WIDTH.apply(lambda x: assign_assumed_width_to_roads(x,width_range_list))
-    
-    # make sure that From and To node are the first two columns of the dataframe
-    # to make sure the conversion from dataframe to igraph network goes smooth
-    edges = edges.reindex(list(edges.columns)[2:]+list(edges.columns)[:2],axis=1)
-    
-    # create network from edge file
-    G = ig.Graph.TupleList(edges.itertuples(index=False), edge_attrs=list(edges.columns)[2:])
-
-    # only keep connected network
-    return G.clusters().giant()
-
 
 def add_igraph_costs(G,tonnage,teus):
 	# all_net_dict = {'edge':[],'from_node':[],'to_node':[],'waiting_cost':[],'travel_cost':[],'transport_price_ton':[],
