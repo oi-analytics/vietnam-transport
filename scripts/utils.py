@@ -16,6 +16,14 @@ from geopy.distance import vincenty
 from boltons.iterutils import pairwise
 import geopandas as gpd
 
+import configparser
+import csv
+import glob
+
+import fiona
+import fiona.crs
+import rasterio
+
 def load_config():
     """Read config.json
     """
@@ -360,7 +368,7 @@ def line_length(line, ellipsoid='WGS-84'):
         ellipsoid: string name of an ellipsoid that `geopy` understands (see http://geopy.readthedocs.io/en/latest/#module-geopy.distance).
 
     Returns:
-        Length of line in meters.
+        Length of line in kilometers.
     """
     if line.geometryType() == 'MultiLineString':
         return sum(line_length(segment) for segment in line)
@@ -378,6 +386,7 @@ def gdf_clip(shape_in,clip_geom):
         province_geom -- shapely geometry of province for what we do the calculation
     """
     gdf = gpd.read_file(shape_in)
+    gdf = gdf.to_crs({'init': 'epsg:4326'})
     return gdf.loc[gdf['geometry'].apply(lambda x: x.within(clip_geom))].reset_index(drop=True)
  
 def get_nearest_node(x,sindex_nodes,nodes,id_column):
@@ -414,4 +423,3 @@ def extract_value_from_gdf(x,gdf_sindex,gdf,column_name):
         extracted value from other gdf
     """
     return gdf.loc[list(gdf_sindex.intersection(x.bounds[:2]))][column_name].values[0]
-
