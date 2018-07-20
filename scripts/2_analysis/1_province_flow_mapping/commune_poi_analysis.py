@@ -17,7 +17,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 from scripts.utils import load_config,extract_value_from_gdf,get_nearest_node,gdf_clip,count_points_in_polygon
 from scripts.transport_network_creation import province_shapefile_to_network, add_igraph_time_costs_province_roads
 
-def netrev_edges(region_name,start_points,end_points,graph,save_edges = True,output_path=''):
+def netrev_edges(region_name,start_points,end_points,graph,save_edges = True,output_path ='',excel_writer =''):
 	"""
 	Assign net revenue to roads assets in Vietnam
 		
@@ -39,18 +39,21 @@ def netrev_edges(region_name,start_points,end_points,graph,save_edges = True,out
 		   
 			pos0_i = graph.vs[node_dict[place['NEAREST_G_NODE']]]
 			pos1_i = graph.vs[node_dict[closest_center]]
-	
-			path = graph.get_shortest_paths(pos0_i,pos1_i,weights='MIN_COST',output="epath")
-			
-			get_od_pair = (place['NEAREST_G_NODE'],closest_center)
-			get_path = [graph.es[n]['EDGE_ID'] for n in path][0]
-			save_paths.append((get_od_pair,get_path,place['netrev']))
+		
+			if pos0_i != pos1_i:
+				path = graph.get_shortest_paths(pos0_i,pos1_i,weights='MIN_COST',output="epath")		
+				get_od_pair = (place['NEAREST_G_NODE'],closest_center)
+				get_path = [graph.es[n]['EDGE_ID'] for n in path][0]
+				save_paths.append((get_od_pair,get_path,place['netrev']))
 		except:
 			print(iter_)
 
 	
 	save_paths_df = pd.DataFrame(save_paths,columns = ['od_nodes','path','net_rev'])
-	save_paths_df.to_csv(os.path.join(output_path,'path_flows_{}.csv'.format(province_name)),index = False)			
+	save_paths_df.to_excel(excel_writer,province_name,index = False)
+	excel_writer.save()
+	del save_paths_df
+
 	all_edges = [x['EDGE_ID'] for x in graph.es]
 	all_edges_geom = [x['geometry'] for x in graph.es]
 	
@@ -62,7 +65,7 @@ def netrev_edges(region_name,start_points,end_points,graph,save_edges = True,out
 		gdf_edges.loc[gdf_edges['EDGE_ID'].isin(path[1]),'netrev'] += path[2]
 	
 	if save_edges == True:
-		gdf_edges.to_file(os.path.join(output_path,'weighted_edges_{}.shp'.format(region_name)))
+		gdf_edges.to_file(os.path.join(output_path,'weighted_edges_district_center_flows_{}.shp'.format(region_name)))
 	return gdf_edges
 
 	
@@ -72,16 +75,22 @@ if __name__ == '__main__':
 	data_path,calc_path,output_path = load_config()['paths']['data'],load_config()['paths']['calc'],load_config()['paths']['output']
 
 	# provinces to consider 
-	provinces = ['Thanh Hoa','Binh Dinh','Lao Cai']
+	province_list = ['Thanh Hoa','Binh Dinh','Lao Cai']
+	district_committe_names = ['district_people_committee_points_thanh_hoa.shp','district_province_peoples_committee_point_binh_dinh.shp','district_people_committee_points_lao_cai.shp']
 
-	for province in provinces:
+	shp_output_path = os.path.join(output_path,'flow_mapping_shapefiles')
+	flow_output_excel = os.path.join(output_path,'flow_mapping_paths','province_roads_district_center_flow_paths.xlsx')
+	excl_wrtr = pd.ExcelWriter(flow_output_excel)
+
+	for prn in range(len(province_list)):
+		province = province_list[prn]
 		# set all paths for all input files we are going to use
 		province_name = province.replace(' ','').lower()
 		
 		edges_in = os.path.join(data_path,'Roads','{}_roads'.format(province_name),'vietbando_{}_edges.shp'.format(province_name))
 		nodes_in = os.path.join(data_path,'Roads','{}_roads'.format(province_name),'vietbando_{}_nodes.shp'.format(province_name))
 		population_points_in = os.path.join(data_path,'Points_of_interest','population_points.shp')
-		commune_center_in = os.path.join(data_path,'Points_of_interest','commune_committees_points.shp')
+		commune_center_in = os.path.join(data_path,'Points_of_interest',district_committe_names[prn])
 	
 		province_path = os.path.join(data_path,'Vietnam_boundaries','who_boundaries','who_provinces.shp')
 		commune_path = os.path.join(data_path,'Vietnam_boundaries','boundaries_stats','commune_level_stats.shp')
@@ -91,15 +100,21 @@ if __name__ == '__main__':
 	
 		# load provinces and get geometry of the right province
 		provinces = gpd.read_file(province_path)
+		provinces = provinces.to_crs({'init': 'epsg:4326'})
 		province_geom = provinces.loc[provinces.NAME_ENG == province].geometry.values[0]
 			
 		#clip all to province
 		prov_pop = gdf_clip(population_points_in,province_geom)
 		prov_commune_center = gdf_clip(commune_center_in,province_geom)
+		if 'OBJECTID' not in prov_commune_center.columns.values.tolist():
+			prov_commune_center['OBJECTID'] = prov_commune_center.index
+
+		print (prov_commune_center)
 		prov_communes = gdf_clip(commune_path,province_geom)
 	
 		# load nodes and edges
 		nodes = gpd.read_file(nodes_in)
+		nodes = nodes.to_crs({'init': 'epsg:4326'})
 		sindex_nodes = nodes.sindex
 		
 		# get revenue values for each village
@@ -138,5 +153,5 @@ if __name__ == '__main__':
 		node_dict = dict(zip(nodes_name,nodes_index))
 	
 		# get updated edges
-		edges_updated = netrev_edges(province_name,prov_pop,prov_commune_center,G,save_edges = True,output_path=output_path)
+		edges_updated = netrev_edges(province_name,prov_pop,prov_commune_center,G,save_edges = True,output_path = shp_output_path,excel_writer = excl_wrtr)
 		
