@@ -29,22 +29,22 @@ def assign_assumed_width_to_province_roads(x):
 	Outputs are:
 	modified_width - assigned width of the road asset based on design specifications
 	'''
-	if 0 <= x.WIDTH < 4.25:
+	if 0 <= x.width < 4.25:
 		return 3.5
-	elif 4.25 <= x.WIDTH < 6.0:
+	elif 4.25 <= x.width < 6.0:
 		return 5.0
-	elif 6.0 <= x.WIDTH < 8.0:
+	elif 6.0 <= x.width < 8.0:
 		return 7.0
-	elif 8.0 <= x.WIDTH < 11.5:
+	elif 8.0 <= x.width < 11.5:
 		return 9.0
-	elif 11.5 <= x.WIDTH < 17.5:
+	elif 11.5 <= x.width < 17.5:
 		return 14.0
-	elif 17.5 <= x.WIDTH < 24.5:
+	elif 17.5 <= x.width < 24.5:
 		return 21.0
-	elif 24.5 <= x.WIDTH < 100:
+	elif 24.5 <= x.width < 100:
 		return 9.0
 	else:
-		return x.WIDTH
+		return x.width
 
 def assign_asset_type_to_province_roads(x):
 	'''
@@ -58,15 +58,15 @@ def assign_asset_type_to_province_roads(x):
 	Outputs are:
 	asset type - Which is either of (Bridge,Dam,Culvert,Tunnel,Spillway,Road)
 	'''
-	if x.CODE in (12,25):
+	if x.code in (12,25):
 		return 'Bridge'
-	elif x.CODE == (23):
+	elif x.code == (23):
 		return 'Dam'
-	elif x.CODE == (24):
+	elif x.code == (24):
 		return 'Culvert'
-	elif x.CODE == (26):
+	elif x.code == (26):
 		return 'Tunnel'
-	elif x.CODE == (27):
+	elif x.code == (27):
 		return 'Spillway'
 	else:
 		return 'Road'
@@ -89,8 +89,8 @@ def assign_minmax_travel_speeds_province_roads_apply(x):
 	speed_min - Minimum assigned speed in km/hr
 	speed_max - Maximum assigned speed in km/hr
 	'''
-	asset_code = x.CODE
-	asset_level = x.LEVEL
+	asset_code = x.code
+	asset_level = x.level
 	asset_terrain='flat'
 
 	if (not asset_terrain) or (asset_terrain == 'flat'):
@@ -121,25 +121,29 @@ def province_shapefile_to_network(edges_in):
 		
 	output:
 		SG: connected graph of the shapefile
-	
 	"""
 	
 	edges = gpd.read_file(edges_in)
+	edges.columns = map(str.lower, edges.columns)
 	
 	# assign minimum and maximum speed to network
-	edges['SPEED'] = edges.apply(assign_minmax_travel_speeds_province_roads_apply,axis=1)
-	edges[['MIN_SPEED', 'MAX_SPEED']] = edges['SPEED'].apply(pd.Series)
-	edges.drop('SPEED',axis=1,inplace=True)
+	edges['speed'] = edges.apply(assign_minmax_travel_speeds_province_roads_apply,axis=1)
+	edges[['min_speed', 'max_speed']] = edges['speed'].apply(pd.Series)
+	edges.drop('speed',axis=1,inplace=True)
 
 	# correct the widths of the road assets
-	edges['MOD_WIDTH'] = edges.apply(assign_assumed_width_to_province_roads,axis=1)
-	# edges.drop('WIDTH',axis=1,inplace=True)
+	edges['mod_width'] = edges.apply(assign_assumed_width_to_province_roads,axis=1)
+	# edges.drop('width',axis=1,inplace=True)
 
 	# create an asset type column
-	edges['ASSET_TYPE'] = edges.apply(assign_asset_type_to_province_roads,axis=1)
+	edges['asset_type'] = edges.apply(assign_asset_type_to_province_roads,axis=1)
 
 	# get the right linelength
-	edges['LENGTH'] = edges.geometry.apply(line_length)
+	edges['length'] = edges.geometry.apply(line_length)
+	edges['min_time'] = edges['length']/edges['max_speed']
+	edges['max_time'] = edges['length']/edges['min_speed']
+	# edges['f_node'] = edges['from_node']
+	# edges['t_node'] = edges['to_node']
 
 	# assign costs to the edges
 	# edges['MAX_COST'] = cost_param*edges['LENGTH']/edges['MIN_SPEED']
@@ -150,13 +154,22 @@ def province_shapefile_to_network(edges_in):
 	
 	# create network from edge file
 	G = ig.Graph.TupleList(edges.itertuples(index=False), edge_attrs=list(edges.columns)[2:])
+	# c = 0
+	# for v in G.vs:
+	# 	print (v)
+	# 	c += 1
+	# 	if c > 10:
+	# 		break
 
 	# only keep connected network
 	return G.clusters().giant()
 
 def add_igraph_time_costs_province_roads(G,cost_param):
-	G.es['MAX_COST'] = list(cost_param*(np.array(G.es['LENGTH'])/np.array(G.es['MAX_SPEED'])))
-	G.es['MIN_COST'] = list(cost_param*(np.array(G.es['LENGTH'])/np.array(G.es['MIN_SPEED'])))
+	# G.es['max_cost'] = list(cost_param*(np.array(G.es['length'])/np.array(G.es['max_speed'])))
+	# G.es['min_cost'] = list(cost_param*(np.array(G.es['length'])/np.array(G.es['min_speed'])))
+	# print (G.es['max_time'])
+	G.es['max_cost'] = list(cost_param*(np.array(G.es['max_time'])))
+	G.es['min_cost'] = list(cost_param*(np.array(G.es['min_time'])))
 
 	return G
 
@@ -247,7 +260,7 @@ def shapefile_to_network(edges_in,path_width_table):
 	# get the width of edges
 	width_range_list = [tuple(x) for x in pd.read_excel(path_width_table,sheet_name ='widths').values]
 	
-	edges['WIDTH'] = edges.WIDTH.apply(lambda x: assign_assumed_width_to_roads(x,width_range_list))
+	edges['width'] = edges.width.apply(lambda x: assign_assumed_width_to_roads(x,width_range_list))
 	
 	# make sure that From and To node are the first two columns of the dataframe
 	# to make sure the conversion from dataframe to igraph network goes smooth
