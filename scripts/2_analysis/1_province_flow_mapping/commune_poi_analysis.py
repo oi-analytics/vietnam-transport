@@ -39,17 +39,21 @@ def netrev_edges(region_name,start_points,end_points,graph,save_edges = True,out
 		   
 			pos0_i = graph.vs[node_dict[place['NEAREST_G_NODE']]]
 			pos1_i = graph.vs[node_dict[closest_center]]
-		
+			
+			path_index = 0
 			if pos0_i != pos1_i:
-				path = graph.get_shortest_paths(pos0_i,pos1_i,weights='MIN_COST',output="epath")		
+				path = graph.get_shortest_paths(pos0_i,pos1_i,weights='min_cost',output="epath")		
 				get_od_pair = (place['NEAREST_G_NODE'],closest_center)
-				get_path = [graph.es[n]['EDGE_ID'] for n in path][0]
-				save_paths.append((get_od_pair,get_path,place['netrev']))
+				get_path = [graph.es[n]['edge_id'] for n in path][0]
+				get_dist = sum([graph.es[n]['length'] for n in path][0])
+				get_time = sum([graph.es[n]['min_time'] for n in path][0])
+				path_index += 1
+				save_paths.append(('path_{}'.format(path_index),get_od_pair,get_path,place['netrev'],get_dist,get_time))
 		except:
 			print(iter_)
 
 	
-	save_paths_df = pd.DataFrame(save_paths,columns = ['od_nodes','path','net_rev'])
+	save_paths_df = pd.DataFrame(save_paths,columns = ['path_index','od_nodes','edge_path','cost','distance','time'])
 	save_paths_df.to_excel(excel_writer,province_name,index = False)
 	excel_writer.save()
 	del save_paths_df
@@ -62,7 +66,7 @@ def netrev_edges(region_name,start_points,end_points,graph,save_edges = True,out
 	
 	gdf_edges['netrev'] = 0
 	for path in save_paths:
-		gdf_edges.loc[gdf_edges['EDGE_ID'].isin(path[1]),'netrev'] += path[2]
+		gdf_edges.loc[gdf_edges['EDGE_ID'].isin(path[2]),'netrev'] += path[3]
 	
 	if save_edges == True:
 		gdf_edges.to_file(os.path.join(output_path,'weighted_edges_district_center_flows_{}.shp'.format(region_name)))
@@ -136,7 +140,7 @@ if __name__ == '__main__':
 		# get nearest node in network for all start and end points
 		prov_pop['NEAREST_G_NODE'] = prov_pop.geometry.apply(lambda x: get_nearest_node(x,sindex_nodes,nodes,'NODE_ID'))
 		prov_commune_center['NEAREST_G_NODE'] = prov_commune_center.geometry.apply(lambda x: get_nearest_node(x,sindex_nodes,nodes,'NODE_ID'))
-	
+		
 		# prepare for shortest path routing, we'll use the spatial index of the centers
 		# to find the nearest center for each population point
 		sindex_commune_center = prov_commune_center.sindex
