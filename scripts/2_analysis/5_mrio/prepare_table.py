@@ -11,6 +11,8 @@ import json
 import pandas as pd
 import geopandas as gpd
 
+from itertools import product
+
 def load_config():
     # Define current directory and data directory
     config_path = os.path.realpath(
@@ -80,10 +82,23 @@ def estimate_gva(regions,in_million=True):
     if in_million == True:
         return list(((regions.pro_nfirm*regions.laborcost)+(regions.pro_nfirm*regions.capital))/1000000)
     else:
-        return list(((regions.pro_nfirm*regions.laborcost)+(regions.pro_nfirm*regions.capital))/1000000)
+        return list(((regions.pro_nfirm*regions.laborcost)+(regions.pro_nfirm*regions.capital)))
+
+def create_proxies(data_path):
+    
+    provinces = load_provincial_stats(data_path)
+    provinces.name_eng = provinces.name_eng.apply(lambda x: x.replace(' ','_').replace('-','_'))
+    od_table = load_od(data_path)
+    
+    create_indices(data_path,provinces,write_to_csv=True)
+    create_regional_proxy(data_path,provinces,write_to_csv=True)
+    create_sector_proxies(data_path,provinces,write_to_csv=True)
+    create_zero_proxies(data_path,od_table,write_to_csv=True)
+    create_level14_proxies(data_path,od_table,write_to_csv=True)
 
 def create_regional_proxy(data_path,regions,write_to_csv=True):
     
+    regions['raw_gva'] = estimate_gva(regions) #regions['pro_nfirm']*regions['laborcost'] + regions['pro_nfirm']*regions['capital']
     subset = regions.loc[:,['name_eng','raw_gva']]
     subset['year'] = 2010
     subset['raw_gva'] = subset.raw_gva.apply(int)/(subset['raw_gva'].sum(axis='index'))
@@ -141,7 +156,124 @@ def create_sector_proxies(data_path,regions,write_to_csv=True):
         if write_to_csv == True:
             csv_path = os.path.join(data_path,'IO_analysis','MRIO_TABLE','proxy_{}.csv'.format(sector))
             subset.to_csv(csv_path,index=False)
+
+def get_trade_value(x,sum_use,sector):
+    if x.Destination == x.Origin:
+        try:
+            return list(sum_use.loc[(sum_use['region'] == x.Destination) & (sum_use['sector'] == sector)]['value'])[0]*0.9
+        except:
+            return 1
+    elif x.gdp == 0:
+        return 0
+    else:
+        try:
+            return list(sum_use.loc[(sum_use['region'] == x.Destination) & (sum_use['sector'] == sector)]['value'])[0]*0.1*x.ratio
+        except:
+            return 0
         
+def create_level14_proxies(data_path,od_table,write_to_csv=True):
+
+    # get sector list
+    sector_list_ini = get_final_sector_classification()+['other1','other2','other3']
+    sector_list = [x+str(1) for x in sector_list_ini]
+
+    #map sectors to be the same
+#    mapper = map_regions()
+#    od_table['Destination'] = od_table['Destination'].apply(lambda x: mapper[x])
+#    od_table['Origin'] = od_table['Origin'].apply(lambda x: mapper[x])
+     
+    od_table.loc[od_table['Destination'] == od_table['Origin'],'gdp'] = 10
+
+    od_sum = pd.DataFrame(od_table.groupby(['Destination','Origin']).sum().sum(axis=1))
+
+    od_sum['ratio'] = od_sum.groupby(level=0).apply(lambda x:
+                                                     x / float(x.sum()))
+    od_sum.reset_index(inplace=True)
+    od_sum.columns = ['Destination','Origin','gdp','ratio']
+    
+    df_pretable = pd.read_csv(os.path.join(data_path,'IO_analysis','MRIO_TABLE','notrade_trade.csv'),index_col=[0,1],header=[0,1])
+    df_pretable = df_pretable.iloc[:,:567]
+    sum_use = df_pretable.sum(axis=1)
+    sum_use = pd.DataFrame(sum_use*0.1)
+    sum_use.reset_index(inplace=True)
+    sum_use.columns = ['region','sector','value']
+    
+    combine = []
+
+    for sector in sector_list:
+        if sector[:-1] in ['other1','other2','other3']:
+            subset = od_sum.copy()
+            subset['year'] = 2010
+            subset['sector'] = sector
+            subset['gdp'] = 0
+            subset.drop('ratio',axis=1,inplace=True)
+            combine.append(subset)
+        else:
+            subset = od_sum.copy()
+            subset = subset.loc[od_sum.gdp != 0]
+            subset['year'] = 2010
+            subset['sector'] = sector
+            subset['gdp'] =  subset.apply(lambda x: get_trade_value(x,sum_use,sector[:-1]),axis=1) #subset['gdp'].apply(lambda x: round(x,2))
+            subset.drop('ratio',axis=1,inplace=True)
+            combine.append(subset)
+
+    
+        all_ = pd.concat(combine)
+        final_sub = all_[['year','sector','Origin','Destination','gdp']]
+        final_sub.columns = ['year','sector','region','region','gdp']
+        
+        if write_to_csv == True:
+            csv_path = os.path.join(data_path,'IO_analysis','MRIO_TABLE','proxy_trade14_{}.csv'.format(sector[:-1]))
+            final_sub.to_csv(csv_path,index=False)
+
+def create_zero_proxies(data_path,od_table,write_to_csv=True):
+ 
+    # get sector list
+    sector_list = get_final_sector_classification()+['other1','other2','other3']
+    sector_list = [x+str(1) for x in sector_list]
+
+    #map sectors to be the same
+    mapper = map_regions()
+    od_table['Destination'] = od_table['Destination'].apply(lambda x: mapper[x])
+    od_table['Origin'] = od_table['Origin'].apply(lambda x: mapper[x])
+     
+    od_table = od_table.loc[od_table['Destination'] != od_table['Origin']]
+
+    od_sum = pd.DataFrame(od_table.groupby(['Destination','Origin']).sum().sum(axis=1))
+    od_sum.reset_index(inplace=True)
+    od_sum.columns = ['Destination','Origin','gdp']
+    
+    for sector in sector_list:
+        if sector[:-1] in ['other1','other2','other3']:
+            subset = od_sum.copy()
+            subset['year'] = 2010
+            subset['sector'] = sector
+            subset['gdp'] = 0
+            combine = []
+            for sector2 in sector_list:
+                sub_subset = subset.copy()
+                sub_subset['subsector'] = sector2
+                combine.append(sub_subset)
+        else:
+            subset = od_sum.copy()
+            subset = subset.loc[od_sum.gdp == 0]
+            subset['year'] = 2010
+            subset['sector'] = sector
+            subset['gdp'] = 0 #subset['gdp'].apply(lambda x: round(x,2))
+            combine = []
+            for sector2 in sector_list:
+                sub_subset = subset.copy()
+                sub_subset['subsector'] = sector2
+                combine.append(sub_subset)
+    
+        all_ = pd.concat(combine)
+        final_sub = all_[['year','sector','Origin','subsector','Destination','gdp']]
+        final_sub.columns = ['year','sector','region','sector','region','gdp']
+        
+        if write_to_csv == True:
+            csv_path = os.path.join(data_path,'IO_analysis','MRIO_TABLE','proxy_trade_{}.csv'.format(sector[:-1]))
+            final_sub.to_csv(csv_path,index=False)
+       
 def map_sect_vnm_to_eng():
     
     map_dict = { 'nongnghiep' : 'secA',
@@ -245,64 +377,3 @@ def map_regions():
  'Vinh_Long': 'Vinh_Long',
  'Vinh_Phuc': 'Vinh_Phuc',
  'Yen_Bai': 'Yen_Bai'}
-
-def create_zero_proxies(data_path,od_table,write_to_csv=True):
- 
-    # get sector list
-    sector_list = get_final_sector_classification()+['other1','other2','other3']
-    sector_list = [x+str(1) for x in sector_list]
-
-    #map sectors to be the same
-    mapper = map_regions()
-    od_table['Destination'] = od_table['Destination'].apply(lambda x: mapper[x])
-    od_table['Origin'] = od_table['Origin'].apply(lambda x: mapper[x])
-    
-    od_table = od_table.loc[od_table['Destination'] != od_table['Origin']]
-
-    od_sum = pd.DataFrame(od_table.groupby(['Destination','Origin']).sum().sum(axis=1))
-    od_sum.reset_index(inplace=True)
-    od_sum.columns = ['Destination','Origin','gdp']
-    
-    for sector in sector_list:
-        if sector in ['other1','other2','other3']:
-            subset = od_sum.copy()
-            subset['year'] = 2010
-            subset['sector'] = sector
-            subset['gdp'] = 0
-            combine = []
-            for sector2 in sector_list:
-                sub_subset = subset.copy()
-                sub_subset['subsector'] = sector2
-                combine.append(sub_subset)
-        else:
-            subset = od_sum.copy()
-            subset = subset.loc[od_sum.gdp == 0]
-            subset['year'] = 2010
-            subset['sector'] = sector
-            subset['gdp'] = 0 #subset['gdp'].apply(lambda x: round(x,2))
-            combine = []
-            for sector2 in sector_list:
-                sub_subset = subset.copy()
-                sub_subset['subsector'] = sector2
-                combine.append(sub_subset)
-    
-        all_ = pd.concat(combine)
-        final_sub = all_[['year','sector','Origin','subsector','Destination','gdp']]
-        final_sub.columns = ['year','sector','region','sector','region','gdp']
-        
-        if write_to_csv == True:
-            csv_path = os.path.join(data_path,'IO_analysis','MRIO_TABLE','proxy_trade_{}.csv'.format(sector[:-1]))
-            final_sub.to_csv(csv_path,index=False)
-
-def create_proxies(data_path):
-    
-    provinces = load_provincial_stats(data_path)
-    od_table = load_od(data_path)
-    
-    create_indices(data_path,provinces,write_to_csv=True)
-    create_regional_proxy(data_path,provinces,write_to_csv=True)
-    create_sector_proxies(data_path,provinces,write_to_csv=True)
-    create_zero_proxies(data_path,od_table,write_to_csv=True)
-    
-    
-    

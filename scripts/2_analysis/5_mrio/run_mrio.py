@@ -38,7 +38,7 @@ if __name__ == "__main__":
 
     # run mrio_disaggregate
     mrio_tool_path = os.path.join(data_path,'IO_analysis','MRIO_TABLE','mrio_disaggregate')
-    settings_tool_path = os.path.join(data_path,'IO_analysis','MRIO_TABLE','settings_trade.yml')
+    settings_tool_path = os.path.join(data_path,'IO_analysis','MRIO_TABLE','settings_trade_level14.yml')
 
     p = subprocess.Popen(['mrio_disaggregate','settings_trade.yml'], cwd=os.path.join(data_path,'IO_analysis','MRIO_TABLE'))
     p.wait()
@@ -46,13 +46,13 @@ if __name__ == "__main__":
     # get reordered mrio with new region classification
     Xin = load_output(data_path,provinces)
 
-    X0 = Xin.as_matrix() #[:9]
+    X0 = Xin.as_matrix() 
    
     u = X0.sum(axis=1)
     v = X0.sum(axis=0)
     v[:(len(u)-3)] = u[:-3]
     
-    X1 = ras_method(X0,u,v,eps=1e-6)
+    X1 = ras_method(X0,u,v,eps=5e-5)
 #    
     u_new = X1.sum(axis=1)
     v_new = X1.sum(axis=0)
@@ -64,7 +64,14 @@ if __name__ == "__main__":
     
     Xout = Xin.iloc[:-3,:]
     Xout.index = pd.MultiIndex.from_tuples(Xout.index, names=['region', 'sector'])
-    Region_sum = Xout.groupby(Xout.columns.get_level_values(0),axis='columns').sum().groupby(Xout.index.get_level_values(0),axis='index').sum()
+
+    index = list(Xin.index)
+    index[567],index[568],index[569] = ('total','tax_sub'),('total','import_'),('total','valueA')
+    
+    Xin.index = pd.MultiIndex.from_tuples(index, names=['region', 'sector'])
+    Xin.to_csv(os.path.join(data_path,'IO_analysis','MRIO_TABLE','IO_VIETNAM.csv'))
+
+    Region_sum = Xin.groupby(Xin.columns.get_level_values(0),axis='columns').sum().groupby(Xin.index.get_level_values(0),axis='index').sum()
     
     Region_sum.to_csv(os.path.join(data_path,'IO_analysis','MRIO_TABLE','region_trade.csv'))
-    
+#    

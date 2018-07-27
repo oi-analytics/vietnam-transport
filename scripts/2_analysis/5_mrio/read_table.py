@@ -32,18 +32,18 @@ def load_output(data_path,provinces):
     output_df.index = index_mi
     output_df.columns = column_mi
     
-    row_sum = output_df.loc[[x.find('sec')==0 for x in list(output_df.index.get_level_values(1))]].sum(axis=1)
-    col_sum = output_df[[x for x in list(output_df.columns) if x[1].find('sec')==0]].sum(axis=0)
-    
-    diff =  (row_sum - col_sum).unstack(1)
-    balanced = (row_sum - col_sum).sum() < 1
-    
+#    row_sum = output_df.loc[[x.find('sec')==0 for x in list(output_df.index.get_level_values(1))]].sum(axis=1)
+#    col_sum = output_df[[x for x in list(output_df.columns) if x[1].find('sec')==0]].sum(axis=0)
+#    
+#    diff =  (row_sum - col_sum).unstack(1)
+#    balanced = (row_sum - col_sum).sum() < 1
+#    
     # create predefined index and col, which is easier to read
     sector_only = [x for x in rowcol_names if x.startswith('sec')]*len(region_names)
-    row_only =  [x for x in rowcol_names if x.startswith('row')]*len(region_names) 
+#    row_only =  [x for x in rowcol_names if x.startswith('row')]*len(region_names) 
     col_only  =  [x for x in rowcol_names if x.startswith('col')]*len(region_names) 
 
-    region_row = [item for sublist in [[x]*9 for x in region_names] for item in sublist] + [item for sublist in [[x]*3 for x in region_names] for item in sublist] 
+#    region_row = [item for sublist in [[x]*9 for x in region_names] for item in sublist] + [item for sublist in [[x]*3 for x in region_names] for item in sublist] 
     region_col = [item for sublist in [[x]*9 for x in region_names] for item in sublist] + [item for sublist in [[x]*3 for x in region_names] for item in sublist] 
 
 #    index_mi_reorder = pd.MultiIndex.from_arrays([region_row,sector_only+row_only], names=('region', 'row'))
