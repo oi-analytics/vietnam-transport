@@ -84,7 +84,7 @@ def estimate_gva(regions,in_million=True):
     else:
         return list(((regions.pro_nfirm*regions.laborcost)+(regions.pro_nfirm*regions.capital)))
 
-def create_proxies(data_path):
+def create_proxies(data_path,notrade=False,own_production_ratio=0.9):
     
     provinces = load_provincial_stats(data_path)
     provinces.name_eng = provinces.name_eng.apply(lambda x: x.replace(' ','_').replace('-','_'))
@@ -93,8 +93,9 @@ def create_proxies(data_path):
     create_indices(data_path,provinces,write_to_csv=True)
     create_regional_proxy(data_path,provinces,write_to_csv=True)
     create_sector_proxies(data_path,provinces,write_to_csv=True)
-    create_zero_proxies(data_path,od_table,write_to_csv=True)
-    create_level14_proxies(data_path,od_table,write_to_csv=True)
+    create_zero_proxies(data_path,od_table,notrade=notrade,write_to_csv=True)
+    if notrade == False:
+        create_level14_proxies(data_path,od_table,own_production_ratio,write_to_csv=True)
 
 def create_regional_proxy(data_path,regions,write_to_csv=True):
     
@@ -157,21 +158,21 @@ def create_sector_proxies(data_path,regions,write_to_csv=True):
             csv_path = os.path.join(data_path,'IO_analysis','MRIO_TABLE','proxy_{}.csv'.format(sector))
             subset.to_csv(csv_path,index=False)
 
-def get_trade_value(x,sum_use,sector):
+def get_trade_value(x,sum_use,sector,own_production_ratio=0.9):
     if x.Destination == x.Origin:
         try:
-            return list(sum_use.loc[(sum_use['region'] == x.Destination) & (sum_use['sector'] == sector)]['value'])[0]*0.9
+            return list(sum_use.loc[(sum_use['region'] == x.Destination) & (sum_use['sector'] == sector)]['value'])[0]*own_production_ratio
         except:
             return 1
     elif x.gdp == 0:
         return 0
     else:
         try:
-            return list(sum_use.loc[(sum_use['region'] == x.Destination) & (sum_use['sector'] == sector)]['value'])[0]*0.1*x.ratio
+            return list(sum_use.loc[(sum_use['region'] == x.Destination) & (sum_use['sector'] == sector)]['value'])[0]*(1-own_production_ratio)*x.ratio
         except:
             return 0
         
-def create_level14_proxies(data_path,od_table,write_to_csv=True):
+def create_level14_proxies(data_path,od_table,own_production_ratio=0.9,write_to_csv=True):
 
     # get sector list
     sector_list_ini = get_final_sector_classification()+['other1','other2','other3']
@@ -213,7 +214,7 @@ def create_level14_proxies(data_path,od_table,write_to_csv=True):
             subset = subset.loc[od_sum.gdp != 0]
             subset['year'] = 2010
             subset['sector'] = sector
-            subset['gdp'] =  subset.apply(lambda x: get_trade_value(x,sum_use,sector[:-1]),axis=1) #subset['gdp'].apply(lambda x: round(x,2))
+            subset['gdp'] =  subset.apply(lambda x: get_trade_value(x,sum_use,sector[:-1],own_production_ratio),axis=1) #subset['gdp'].apply(lambda x: round(x,2))
             subset.drop('ratio',axis=1,inplace=True)
             combine.append(subset)
 
@@ -226,7 +227,7 @@ def create_level14_proxies(data_path,od_table,write_to_csv=True):
             csv_path = os.path.join(data_path,'IO_analysis','MRIO_TABLE','proxy_trade14_{}.csv'.format(sector[:-1]))
             final_sub.to_csv(csv_path,index=False)
 
-def create_zero_proxies(data_path,od_table,write_to_csv=True):
+def create_zero_proxies(data_path,od_table,notrade=False,write_to_csv=True):
  
     # get sector list
     sector_list = get_final_sector_classification()+['other1','other2','other3']
@@ -243,6 +244,9 @@ def create_zero_proxies(data_path,od_table,write_to_csv=True):
     od_sum.reset_index(inplace=True)
     od_sum.columns = ['Destination','Origin','gdp']
     
+    if notrade == True:
+        od_sum['gdp'] = 0
+    
     for sector in sector_list:
         if sector[:-1] in ['other1','other2','other3']:
             subset = od_sum.copy()
@@ -256,10 +260,11 @@ def create_zero_proxies(data_path,od_table,write_to_csv=True):
                 combine.append(sub_subset)
         else:
             subset = od_sum.copy()
-            subset = subset.loc[od_sum.gdp == 0]
+            if notrade == False:
+                subset = subset.loc[od_sum.gdp == 0]
             subset['year'] = 2010
             subset['sector'] = sector
-            subset['gdp'] = 0 #subset['gdp'].apply(lambda x: round(x,2))
+            subset['gdp'] = 0 
             combine = []
             for sector2 in sector_list:
                 sub_subset = subset.copy()
@@ -273,6 +278,58 @@ def create_zero_proxies(data_path,od_table,write_to_csv=True):
         if write_to_csv == True:
             csv_path = os.path.join(data_path,'IO_analysis','MRIO_TABLE','proxy_trade_{}.csv'.format(sector[:-1]))
             final_sub.to_csv(csv_path,index=False)
+
+def load_output(data_path,provinces,notrade=True):
+    
+    # prepare index and cols
+    region_names = list(provinces.name_eng)
+    rowcol_names = list(load_sectors(data_path)['mapped'].unique())
+
+    rows = [x for x in rowcol_names if (x.startswith('sec') | x.startswith('row'))]*len(region_names)
+    cols = [x for x in rowcol_names if (x.startswith('sec') | x.startswith('col'))]*len(region_names)
+    
+    region_names_list = [item for sublist in [[x]*12 for x in region_names] for item in sublist]
+    
+    index_mi = pd.MultiIndex.from_arrays([region_names_list,rows], names=('region', 'row'))
+    column_mi = pd.MultiIndex.from_arrays([region_names_list,cols], names=('region', 'col'))
+    
+    # read output
+    if notrade == True:
+        output_path = os.path.join(data_path,'IO_analysis','MRIO_TABLE','output_notrade.csv')
+    else:
+         output_path = os.path.join(data_path,'IO_analysis','MRIO_TABLE','output.csv')
+       
+    output_df = pd.read_csv(output_path,header=None)
+    output_df.index = index_mi
+    output_df.columns = column_mi
+    
+    # create predefined index and col, which is easier to read
+    sector_only = [x for x in rowcol_names if x.startswith('sec')]*len(region_names)
+#    row_only =  [x for x in rowcol_names if x.startswith('row')]*len(region_names) 
+    col_only  =  [x for x in rowcol_names if x.startswith('col')]*len(region_names) 
+
+#    region_row = [item for sublist in [[x]*9 for x in region_names] for item in sublist] + [item for sublist in [[x]*3 for x in region_names] for item in sublist] 
+    region_col = [item for sublist in [[x]*9 for x in region_names] for item in sublist] + [item for sublist in [[x]*3 for x in region_names] for item in sublist] 
+
+#    index_mi_reorder = pd.MultiIndex.from_arrays([region_row,sector_only+row_only], names=('region', 'row'))
+    column_mi_reorder = pd.MultiIndex.from_arrays([region_col,sector_only+col_only], names=('region', 'col'))
+ 
+    #sum va and imports
+    tax_sub = output_df.loc[output_df.index.get_level_values(1)=='row1'].sum(axis='index')
+    import_ = output_df.loc[output_df.index.get_level_values(1)=='row2'].sum(axis='index')
+    valueA = output_df.loc[output_df.index.get_level_values(1)=='row3'].sum(axis='index')
+    
+    output_new = pd.concat([output_df.loc[~output_df.index.get_level_values(1).isin(['row1','row2','row3'])],pd.DataFrame(tax_sub).T,
+                             pd.DataFrame(import_).T,pd.DataFrame(valueA).T])
+    
+#    output_new = output_new.reindex(index_mi_reorder,axis='index')
+    output_new = output_new.reindex(column_mi_reorder,axis='columns')
+
+    # write to new csv    
+    output_path_new = os.path.join(data_path,'IO_analysis','MRIO_TABLE','output_reordered.csv')
+    output_new.to_csv(output_path_new)
+
+    return output_new
        
 def map_sect_vnm_to_eng():
     
