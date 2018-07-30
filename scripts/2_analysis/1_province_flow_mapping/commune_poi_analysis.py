@@ -32,6 +32,7 @@ def netrev_edges(region_name,start_points,end_points,graph,save_edges = True,out
 	GeoDataFrame of total net revenue transferred along each edge
 	"""
 	save_paths = []
+	path_index = 0
 	for iter_,place in start_points.iterrows():
 		try:
 			closest_center = end_points.loc[end_points['OBJECTID'] 
@@ -40,33 +41,33 @@ def netrev_edges(region_name,start_points,end_points,graph,save_edges = True,out
 			pos0_i = graph.vs[node_dict[place['NEAREST_G_NODE']]]
 			pos1_i = graph.vs[node_dict[closest_center]]
 			
-			path_index = 0
 			if pos0_i != pos1_i:
 				path = graph.get_shortest_paths(pos0_i,pos1_i,weights='min_cost',output="epath")		
 				get_od_pair = (place['NEAREST_G_NODE'],closest_center)
 				get_path = [graph.es[n]['edge_id'] for n in path][0]
 				get_dist = sum([graph.es[n]['length'] for n in path][0])
 				get_time = sum([graph.es[n]['min_time'] for n in path][0])
+				get_travel_cost = sum([graph.es[n]['min_cost'] for n in path][0])
 				path_index += 1
-				save_paths.append(('path_{}'.format(path_index),get_od_pair,get_path,place['netrev'],get_dist,get_time))
+				save_paths.append(('path_{}'.format(path_index),get_od_pair,get_path,place['netrev'],get_travel_cost,get_dist,get_time))
 		except:
 			print(iter_)
 
 	
-	save_paths_df = pd.DataFrame(save_paths,columns = ['path_index','od_nodes','edge_path','cost','distance','time'])
+	save_paths_df = pd.DataFrame(save_paths,columns = ['path_index','od_nodes','edge_path','netrev','travel_cost','distance','time'])
 	save_paths_df.to_excel(excel_writer,province_name,index = False)
 	excel_writer.save()
 	del save_paths_df
 
-	all_edges = [x['EDGE_ID'] for x in graph.es]
+	all_edges = [x['edge_id'] for x in graph.es]
 	all_edges_geom = [x['geometry'] for x in graph.es]
 	
 	gdf_edges = gpd.GeoDataFrame(pd.DataFrame([all_edges,all_edges_geom]).T,crs='epsg:4326')
-	gdf_edges.columns = ['EDGE_ID','geometry']
+	gdf_edges.columns = ['edge_id','geometry']
 	
 	gdf_edges['netrev'] = 0
 	for path in save_paths:
-		gdf_edges.loc[gdf_edges['EDGE_ID'].isin(path[2]),'netrev'] += path[3]
+		gdf_edges.loc[gdf_edges['edge_id'].isin(path[2]),'netrev'] += path[3]
 	
 	if save_edges == True:
 		gdf_edges.to_file(os.path.join(output_path,'weighted_edges_district_center_flows_{}.shp'.format(region_name)))
@@ -80,6 +81,7 @@ if __name__ == '__main__':
 
 	# provinces to consider 
 	province_list = ['Thanh Hoa','Binh Dinh','Lao Cai']
+	# province_list = ['Thanh Hoa']
 	district_committe_names = ['district_people_committee_points_thanh_hoa.shp','district_province_peoples_committee_point_binh_dinh.shp','district_people_committee_points_lao_cai.shp']
 
 	shp_output_path = os.path.join(output_path,'flow_mapping_shapefiles')
