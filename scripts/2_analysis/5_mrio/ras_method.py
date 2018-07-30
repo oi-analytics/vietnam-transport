@@ -35,10 +35,6 @@ Written by:   Umed Temurshoev, 07/10/2010 with later adjustments
 """
 
 import numpy as np
-import pandas as pd
-
-from prepare_table import load_config,load_sectors,load_table,aggregate_table,load_provincial_stats,estimate_gva
-from read_table import load_output
 
 def invd(x):
     invd = 1./x
