@@ -16,6 +16,38 @@ import numpy as np
 import geopandas as gpd
 from scripts.utils import line_length
 
+def assign_province_road_conditions(x):
+	asset_code = x.code
+	asset_level = x.level
+
+	if asset_code in (17,303) or asset_level in (0,1): # This is an expressway, national and provincial road
+		return 'paved'
+	else:			# Anything else not included above
+		return 'unpaved'
+
+def assign_assumed_width_to_province_roads_from_file(asset_width,width_range_list):
+	'''
+	Assign widths to roads assets in Vietnam
+	The widths are assigned based on our understanding of: 
+	1. The reported width in the data which is not reliable
+	2. A design specification based understanding of the assumed width based on ranges of values
+	
+	Inputs are:
+	asset_width - Numeric value for width of asset
+	width_range_list - List of tuples containing (from_width,to_width,assumed_width)
+	
+	Outputs are:
+	assumed_width - assigned width of the raod asset based on design specifications
+	'''
+	
+	assumed_width = asset_width
+	for width_vals in width_range_list:
+		if width_vals[0] <= assumed_width <= width_vals[1]:
+			assumed_width = width_vals[2]
+			break
+
+	return assumed_width
+
 def assign_assumed_width_to_province_roads(x):
 	'''
 	Assign widths to roads assets in Vietnam
@@ -45,6 +77,27 @@ def assign_assumed_width_to_province_roads(x):
 		return 9.0
 	else:
 		return x.width
+
+def assign_asset_type_to_province_roads_from_file(asset_code,asset_type_list):
+	'''
+	Assign asset types to roads assets in Vietnam
+	The types are assigned based on our understanding of: 
+	1. The reported asset code in the data
+	
+	Inputs are:
+	asset code - Numeric value for code of asset
+	
+	Outputs are:
+	asset type - Which is either of (Bridge,Dam,Culvert,Tunnel,Spillway,Road)
+	'''
+	asset_type = 'road'
+	for asset in asset_type_list: 
+		if asset_code == asset[0]:
+			asset_type = asset[1]
+			break
+
+	return asset_type
+
 
 def assign_asset_type_to_province_roads(x):
 	'''
@@ -91,9 +144,9 @@ def assign_minmax_travel_speeds_province_roads_apply(x):
 	'''
 	asset_code = x.code
 	asset_level = x.level
-	asset_terrain='flat'
+	asset_terrain= x.terrain
 
-	if (not asset_terrain) or (asset_terrain == 'flat'):
+	if (not asset_terrain) or ('flat' in  asset_terrain.lower()):
 		if asset_code == 17: # This is an expressway
 			return 100,120
 		elif asset_code in (15,4): # This is a residential road or a mountain pass
@@ -113,8 +166,68 @@ def assign_minmax_travel_speeds_province_roads_apply(x):
 		else:
 			return 20,40
 
+def assign_minmax_time_costs_province_roads_apply(x,cost_dataframe):
+	'''
+	'''
+	asset_code = x.code
+	asset_level = x.level
+	asset_terrain= x.terrain
 
-def province_shapefile_to_network(edges_in):
+	min_time_cost = 0
+	max_time_cost = 0
+	cost_list = list(cost_dataframe.itertuples(index=False))
+	for cost_param in cost_list:
+		if cost_param.code == asset_code:
+			min_time_cost = 1.0*cost_param.time_cost_usd*(x.length/x.max_speed)
+			max_time_cost = 1.0*cost_param.time_cost_usd*(x.length/x.min_speed) 
+			break
+		elif cost_param.level == asset_level and cost_param.terrain == asset_terrain:
+			min_time_cost = 1.0*cost_param.time_cost_usd*(x.length/x.max_speed)
+			max_time_cost = 1.0*cost_param.time_cost_usd*(x.length/x.min_speed)
+			break
+	
+	return min_time_cost, max_time_cost
+
+
+def assign_minmax_tariff_costs_province_roads_apply(x,cost_dataframe):
+	'''
+	Assign travel speeds to roads assets in Vietnam
+	The speeds are assigned based on our understanding of: 
+	1. The types of assets
+	2. The levels of classification of assets: 0-National,1-Provinical,2-Local,3-Other
+	3. The terrain where the assets are located: Flat or Mountain or No information
+		
+	Inputs are:
+	asset_code - Numeric code for type of asset
+	asset_level - Numeric code for level of asset
+	asset_terrain - String value of the terrain of asset
+		
+	Outputs are:
+	speed_min - Minimum assigned speed in km/hr
+	speed_max - Maximum assigned speed in km/hr
+	tariff_min_usd	tariff_max_usd
+	'''
+	asset_code = x.code
+	asset_level = x.level
+	asset_terrain= x.terrain
+
+	min_tariff_cost = 0
+	max_tariff_cost = 0
+	cost_list = list(cost_dataframe.itertuples(index=False))
+	for cost_param in cost_list:
+		if cost_param.code == asset_code:
+			min_tariff_cost = 1.0*cost_param.tariff_min_usd*x.length 
+			max_tariff_cost = 1.0*cost_param.tariff_max_usd*x.length
+			break
+		elif cost_param.level == asset_level and cost_param.terrain == asset_terrain:
+			min_tariff_cost = 1.0*cost_param.tariff_min_usd*x.length 
+			max_tariff_cost = 1.0*cost_param.tariff_max_usd*x.length
+			break
+	
+	return min_tariff_cost, max_tariff_cost
+
+
+def province_shapefile_to_network(edges_in,road_terrain,road_properties_file):
 	"""
 	input parameters:
 		edges_in : string of path to edges file/network file. 
@@ -126,79 +239,70 @@ def province_shapefile_to_network(edges_in):
 	edges = gpd.read_file(edges_in)
 	edges.columns = map(str.lower, edges.columns)
 	
+	# assgin asset terrain
+	edges['terrain'] = road_terrain
+
+	# assign road conditon
+	edges['road_cond'] = edges.apply(assign_province_road_conditions,axis=1)
+
+	# assign asset type
+	asset_type_list = [tuple(x) for x in pd.read_excel(road_properties_file,sheet_name ='provincial').values]
+	edges['asset_type'] = edges.code.apply(lambda x: assign_asset_type_to_province_roads_from_file(x,asset_type_list))
+
+	# get the right linelength
+	edges['length'] = edges.geometry.apply(line_length)
+
+	# correct the widths of the road assets
+	# get the width of edges
+	width_range_list = [tuple(x) for x in pd.read_excel(road_properties_file,sheet_name ='widths').values]
+	edges['width'] = edges.width.apply(lambda x: assign_assumed_width_to_province_roads_from_file(x,width_range_list))
+
 	# assign minimum and maximum speed to network
 	edges['speed'] = edges.apply(assign_minmax_travel_speeds_province_roads_apply,axis=1)
 	edges[['min_speed', 'max_speed']] = edges['speed'].apply(pd.Series)
 	edges.drop('speed',axis=1,inplace=True)
 
-	# correct the widths of the road assets
-	edges['mod_width'] = edges.apply(assign_assumed_width_to_province_roads,axis=1)
-	# edges.drop('width',axis=1,inplace=True)
-
-	# create an asset type column
-	edges['asset_type'] = edges.apply(assign_asset_type_to_province_roads,axis=1)
-
-	# get the right linelength
-	edges['length'] = edges.geometry.apply(line_length)
+	# assign minimum and maximum travel time to network
 	edges['min_time'] = edges['length']/edges['max_speed']
 	edges['max_time'] = edges['length']/edges['min_speed']
-	# edges['f_node'] = edges['from_node']
-	# edges['t_node'] = edges['to_node']
 
-	# assign costs to the edges
-	# edges['MAX_COST'] = cost_param*edges['LENGTH']/edges['MIN_SPEED']
-	# edges['MIN_COST'] = cost_param*edges['LENGTH']/edges['MAX_SPEED']
+
+	cost_values_df = pd.read_excel(road_properties_file,sheet_name ='costs')
+
+	# assign minimum and maximum cost of time in USD to the network
+	# the costs of time  = (unit cost of time in USD/hr)*(travel time in hr)
+	edges['time_cost'] = edges.apply(lambda x: assign_minmax_time_costs_province_roads_apply(x,cost_values_df),axis = 1)
+	edges[['min_time_cost', 'max_time_cost']] = edges['time_cost'].apply(pd.Series)
+	edges.drop('time_cost',axis=1,inplace=True)
+
+	# assign minimum and maximum cost of tonnage in USD/ton to the network
+	# the costs of time  = (unit cost of tariff in USD/ton-km)*(length in km)
+	edges['tariff_cost'] = edges.apply(lambda x: assign_minmax_tariff_costs_province_roads_apply(x,cost_values_df),axis = 1)
+	edges[['min_tariff_cost', 'max_tariff_cost']] = edges['tariff_cost'].apply(pd.Series)
+	edges.drop('tariff_cost',axis=1,inplace=True)	
+
 	# make sure that From and To node are the first two columns of the dataframe
 	# to make sure the conversion from dataframe to igraph network goes smooth
 	edges = edges.reindex(list(edges.columns)[2:]+list(edges.columns)[:2],axis=1)
 	
 	# create network from edge file
 	G = ig.Graph.TupleList(edges.itertuples(index=False), edge_attrs=list(edges.columns)[2:])
-	# c = 0
-	# for v in G.vs:
-	# 	print (v)
-	# 	c += 1
-	# 	if c > 10:
-	# 		break
 
 	# only keep connected network
 	return G.clusters().giant()
 
-def add_igraph_time_costs_province_roads(G,cost_param):
+def add_igraph_generalised_costs_province_roads(G,vehicle_numbers,tonnage):
 	# G.es['max_cost'] = list(cost_param*(np.array(G.es['length'])/np.array(G.es['max_speed'])))
 	# G.es['min_cost'] = list(cost_param*(np.array(G.es['length'])/np.array(G.es['min_speed'])))
 	# print (G.es['max_time'])
-	G.es['max_cost'] = list(cost_param*(np.array(G.es['max_time'])))
-	G.es['min_cost'] = list(cost_param*(np.array(G.es['min_time'])))
+	G.es['max_gcost'] = list(vehicle_numbers*(np.array(G.es['max_time_cost'])) + tonnage*(np.array(G.es['max_tariff_cost'])))
+	G.es['min_gcost'] = list(vehicle_numbers*(np.array(G.es['min_time_cost'])) + tonnage*(np.array(G.es['min_tariff_cost'])))
 
 	return G
 
 '''
 Functions we are not using at present for provincial analysis. Will clean them later
 '''
-
-def assign_assumed_width_to_province_roads_from_file(asset_width,width_range_list):
-	'''
-	Assign widths to roads assets in Vietnam
-	The widths are assigned based on our understanding of: 
-	1. The reported width in the data which is not reliable
-	2. A design specification based understanding of the assumed width based on ranges of values
-	
-	Inputs are:
-	asset_width - Numeric value for width of asset
-	width_range_list - List of tuples containing (from_width,to_width,assumed_width)
-	
-	Outputs are:
-	assumed_width - assigned width of the raod asset based on design specifications
-	'''
-	
-	assumed_width = asset_width
-	for width_vals in width_range_list:
-		if width_vals[0] <= assumed_width <= width_vals[1]:
-			asset_width = width_vals[2]
-			break
-
-	return assumed_width
 
 def assign_minmax_travel_speeds_province_roads(asset_code,asset_level,asset_terrain):
 	'''

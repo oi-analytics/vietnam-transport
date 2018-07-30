@@ -378,6 +378,15 @@ def line_length(line, ellipsoid='WGS-84'):
         for a, b in pairwise(line.coords)
     )
 
+def gdf_geom_clip(gdf_in,clip_geom):
+    """
+    Inputs are:
+        gdf_in -- geopandas dataframe to be clipped in
+    Outputs are:
+        province_geom -- shapely geometry of province for what we do the calculation
+    """
+    return gdf_in.loc[gdf_in['geometry'].apply(lambda x: x.within(clip_geom))].reset_index(drop=True)
+
 def gdf_clip(shape_in,clip_geom):
     """
     Inputs are:
