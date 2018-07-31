@@ -110,3 +110,6 @@ ENV/
 
 # Config
 config.json
+
+#Data
+data
