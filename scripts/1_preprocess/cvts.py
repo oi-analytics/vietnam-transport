@@ -24,6 +24,7 @@ dir_raw_roads = os.path.join(data_root, 'raw', 'cvts', 'Roads', 'national_roads'
 dir_inter_reduse = os.path.join(data_root, 'intermediate', 'reduse')
 dir_inter_clip = os.path.join(data_root, 'intermediate', 'clip')
 dir_results_routes = os.path.join(data_root, 'results', 'routes')
+dir_results_routes_collected = os.path.join(data_root, 'results', 'routes_collected')
 dir_results_traffic_count = os.path.join(data_root, 'results', 'traffic_count')
 
 def reduse_dataset(source_dir, dest_dir):
@@ -236,6 +237,37 @@ def add_traffic_count_to_road_network(road_network, routes_folder, results_folde
 
     return [road[1] for road in road_network_lut.items()]
 
+def create_single_route_file(routes_folder, routes_collected_folder):
+    # The routes folder shows results in the same folder structure as the
+    # raw data. This function collects all the routes and uses this to build
+    # a single csv file.
+    routes_collected = []
+    for root, dirs, files in os.walk(routes_folder):
+        for file in files:
+            if file.endswith(".csv"):
+                rel_path = os.path.relpath(root, routes_folder)
+                with open(os.path.join(root, file), 'rt') as source:
+
+                    reader = csv.reader(source, quoting=csv.QUOTE_NONNUMERIC)
+
+                    data = [row for row in reader]
+
+                    routes_collected.append({
+                        'vehicle_id': file.replace('.csv', ''),
+                        'edge_path': [int(elem[0]) for elem in data],
+                        'time_stamp': [int(elem[1]) for elem in data]
+                    })
+
+    Path(routes_collected_folder).mkdir(parents=True, exist_ok=True)
+    with open(os.path.join(routes_collected_folder, 'routes.csv'), 'wt') as sink:
+
+        fieldnames = ['vehicle_id', 'edge_path', 'time_stamp']
+        writer = csv.DictWriter(sink, fieldnames=fieldnames)
+
+        writer.writeheader()
+        [writer.writerow(route) for route in routes_collected]
+
+
 def read_shapefile(path, file):
     with fiona.open(os.path.join(path, file), 'r') as source:
         return [entry for entry in source]
@@ -297,6 +329,9 @@ if __name__ == "__main__":
     geojson_road_network = add_traffic_count_to_road_network(geojson_road_network, dir_results_routes, dir_results_traffic_count)
    
     write_shapefile(geojson_road_network, dir_results_traffic_count, 'road_network.shp')
+
+    # add routes to single file
+    create_single_route_file(dir_results_routes, dir_results_routes_collected)
 
     end = time.time()
     print('Script completed in: ' + str(round((end - start), 2)) + ' seconds.')
