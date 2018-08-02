@@ -90,7 +90,7 @@ def load_db_SUT(table_in,RoW=None):
         val.add_record(k).value = v 
         
     # And save to GDX file
-    db.export(os.path.join(data_path,"gams_runs","%s.gdx".format(table_in.name)))   
+    db.export(os.path.join(data_path,"gams_runs","{}.gdx".format(table_in.name)))   
    
     
 def load_db_IO(table_in,EORA=False,RoW=None):
@@ -177,7 +177,7 @@ def load_db_IO(table_in,EORA=False,RoW=None):
         val.add_record(k).value = v 
         
     # And save to GDX file
-    db.export(os.path.join(data_path,"gams_runs","%s.gdx".format(table_in.name)))
+    db.export(os.path.join(data_path,"gams_runs","{}.gdx".format(table_in.name)))
 
 def ratmarg_SUT(table_in,EORA=False):
 
@@ -195,7 +195,7 @@ def ratmarg_SUT(table_in,EORA=False):
     ws.get_working_directory()
     
     gamsfile_in =  os.path.join(setdir,"obtain_marg_value_SUT.gms")
-    gamsfile = os.path.join(setdir,"obtain_marg_value_%s.gms".format(table_in.name))
+    gamsfile = os.path.join(setdir,"obtain_marg_value_SUT_{}.gms".format(table_in.name))
     copyfile(gamsfile_in, gamsfile)
     str_ctry = ','.join(table_in.countries) 
     str_fd = 'FinalD' #','.join(list(table_in.FD_labels['FD'].unique()))
@@ -233,7 +233,7 @@ def ratmarg_SUT(table_in,EORA=False):
     Ratmarginal = pd.DataFrame(Ratmarg, index=index_).unstack()
     Ratmarginal.columns = Ratmarginal.columns.droplevel()
 
-    Ratmarginal.to_csv(os.path.join(data_path,'input_data','Ratmarg_%s.csv'.format(table_in.name)))
+    Ratmarginal.to_csv(os.path.join(data_path,'input_data','Ratmarg_{}.csv'.format(table_in.name)))
 
     return Ratmarginal    
 
@@ -257,14 +257,14 @@ def ratmarg_IO(table_in,EORA=False):
     
     if EORA is False:
         gamsfile_in =  os.path.join(data_path,"gams_runs","obtain_marg_value.gms")
-        gamsfile = os.path.join(data_path,"gams_runs","obtain_marg_value_%s.gms".format(table_in.name))
+        gamsfile = os.path.join(data_path,"gams_runs","obtain_marg_value_{}.gms".format(table_in.name))
         copyfile(gamsfile_in, gamsfile)
         str_ctry = ','.join(table_in.countries)    
         str_fd = ','.join(list(table_in.FD_labels['tfd'].unique()))
 
     else:
         gamsfile_in =  os.path.join(data_path,"gams_runs","obtain_marg_value_EORA.gms")
-        gamsfile = os.path.join(data_path,"gams_runs","obtain_marg_value_%s.gms".format(table_in.name))
+        gamsfile = os.path.join(data_path,"gams_runs","obtain_marg_value_{}.gms".format(table_in.name))
         copyfile(gamsfile_in, gamsfile)
         str_ctry = ','.join(table_in.countries+['ROW']) 
         str_fd = ','.join(list(table_in.FD_labels['FD'].unique()))
@@ -274,7 +274,7 @@ def ratmarg_IO(table_in,EORA=False):
         # read a list of lines into data
         data = file.readlines()
 
-    gdx_file = "%s.gdx" % table_in.name
+    gdx_file = "{}.gdx".format(table_in.name)
     data[26] = '$GDXIN '+gdx_file+'\n'
 
     str_ind = ','.join(table_in.sectors) 
@@ -289,7 +289,6 @@ def ratmarg_IO(table_in,EORA=False):
         file.writelines( data )
     
     gamsfile_run = gamsfile.replace("..\\..\\gams_runs\\", "")
-    print(gamsfile_run)
     t1 = ws.add_job_from_file(gamsfile_run)
     
     t1.run()
@@ -305,7 +304,7 @@ def ratmarg_IO(table_in,EORA=False):
     Ratmarginal.columns = Ratmarginal.columns.droplevel()
 
 
-    Ratmarginal.to_csv(os.path.join(data_path,'input_data','Ratmarg_%s.csv'.format(table_in.name)))
+    Ratmarginal.to_csv(os.path.join(data_path,'input_data','Ratmarg_{}.csv'.format(table_in.name)))
 
 
     return Ratmarginal    
