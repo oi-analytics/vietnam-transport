@@ -251,7 +251,8 @@ class MRIA_IO(object):
         def Trade_init(model,R,Rb,S):
             while R != Rb:
                 return sum(self.Z_matrix[Rb,S,R,i] for i in model.Sb)  + sum(FinalD[Rb,S,R,i] for i in model.fdemand) 
-            
+            else:
+                return 0
         model.trade = Param(model.R,model.Rb, model.S, initialize=Trade_init, doc='Trade')        
         self.trade = model.trade
 
@@ -277,11 +278,11 @@ class MRIA_IO(object):
     def create_ImpShares(self):
         model = self.m
         def impsh_init(model, R, Rb, S):
-            while (self.trade[Rb,R,S] != None) & ((sum(self.A_matrix[R,S,Rb,Sb]*self.X[Rb,Sb] for Sb in model.Sb) + self.fd[Rb,S]) != None):
-#                try:
-                return self.trade[Rb,R,S]/(sum(self.A_matrix[R,S,Rb,Sb]*self.X[Rb,Sb] for Sb in model.Sb) + self.fd[Rb,S])
-#                except ZeroDivisionError:
-#                    None 
+            while (self.trade[Rb,R,S] != None): # & ((sum(self.A_matrix[R,S,Rb,Sb]*self.X[Rb,Sb] for Sb in model.Sb) + self.fd[Rb,S]) != None):
+                try:
+                    return self.trade[Rb,R,S]/(sum(self.A_matrix[R,S,Rb,Sb]*self.X[Rb,Sb] for Sb in model.Sb) + self.fd[Rb,S])
+                except ZeroDivisionError:
+                    return 0
                 
         model.ImportShare = Param(model.R, model.Rb, model.S,initialize=impsh_init,doc='Importshare of each region')
         model.ImportShareDisImp = Param(model.R, model.Rb,model.S,initialize=impsh_init,doc='Importshare DisImp of each region')

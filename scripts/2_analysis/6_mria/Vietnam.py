@@ -37,11 +37,10 @@ if __name__ == '__main__':
     MRIA_model = MRIA(DATA.name, DATA.countries,DATA.sectors,DATA.FD_cat)
     MRIA_model.create_sets(FD_SET=['FinDem'])
     MRIA_model.create_alias()
-#
-#
+
     '''Run model and create some output'''
     output = pd.DataFrame()
-# 
+ 
     '''Specify disruption'''
     disr_dict_sup = {} #{(k,r): v for r, kv in disr.iterrows() for k,v in kv.to_dict().items()}
     disr_dict_fd = {} #{(disrupted_org[0],k,r): v for r, kv in disr.iterrows() for k,v in kv.to_dict().items()}
@@ -59,14 +58,14 @@ if __name__ == '__main__':
     ''' Define tables and parameters'''
     Regmaxcap = 0.98
     
-    ratmarg_IO(DATA,EORA=False)
-#    
-#    MRIA_RUN.baseline_data(DATA,disr_dict_sup,disr_dict_fd)
-#    MRIA_RUN.impact_data(DATA,disr_dict_sup,disr_dict_fd)
-#
-#    output['x_in'] = pd.Series(MRIA_RUN.X.get_values())
-#   
-#    MRIA_RUN.run_impactmodel()
-#  
-#    output['x_out'] = pd.Series(MRIA_RUN.X.get_values())
-#    output['loss'] = output['x_out'] - output['x_in']
+    MRIA_RUN.baseline_data(DATA,disr_dict_sup,disr_dict_fd)
+    MRIA_RUN.impact_data(DATA,disr_dict_sup,disr_dict_fd)
+
+    output['x_in'] = pd.Series(MRIA_RUN.X.get_values())
+   
+    MRIA_RUN.run_impactmodel()
+  
+    output['x_out'] = pd.Series(MRIA_RUN.X.get_values())
+    output['loss'] = output['x_out'] - output['x_in']
+
+    output['ratmarg'] = pd.Series(MRIA_RUN.Rat.get_values())
