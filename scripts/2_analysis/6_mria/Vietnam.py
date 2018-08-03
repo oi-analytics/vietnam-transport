@@ -46,7 +46,7 @@ if __name__ == '__main__':
     disr_dict_fd = {} #{(disrupted_org[0],k,r): v for r, kv in disr.iterrows() for k,v in kv.to_dict().items()}
 
     '''Create model'''
-    MRIA_RUN = MRIA(DATA.name,DATA.countries,DATA.sectors,EORA=False)
+    MRIA_RUN = MRIA(DATA.name,DATA.countries,DATA.sectors,EORA=False,list_fd_cats=['FinDem'])
     
     '''Define sets and alias'''
     # CREATE SETS
@@ -61,11 +61,14 @@ if __name__ == '__main__':
     MRIA_RUN.baseline_data(DATA,disr_dict_sup,disr_dict_fd)
     MRIA_RUN.impact_data(DATA,disr_dict_sup,disr_dict_fd)
 
+    fdtest = pd.Series(MRIA_RUN.ttfd.extract_values()).unstack(level=1)
+    imptest = pd.Series(MRIA_RUN.ImportShareDisImp.extract_values()).unstack(level=1)
+    impshare = pd.Series(MRIA_RUN.ImportShare.extract_values()).unstack(level=1)   
     output['x_in'] = pd.Series(MRIA_RUN.X.get_values())
-   
+#   
     MRIA_RUN.run_impactmodel()
-  
+#  
     output['x_out'] = pd.Series(MRIA_RUN.X.get_values())
     output['loss'] = output['x_out'] - output['x_in']
-
-    output['ratmarg'] = pd.Series(MRIA_RUN.Rat.get_values())
+#
+#    output['ratmarg'] = pd.Series(MRIA_RUN.Rat.get_values())
