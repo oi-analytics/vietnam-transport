@@ -101,10 +101,11 @@ def mrio_to_excel(Xin):
     df_labels_FD.to_excel(writer,'labels_FD',index=False,header=False)
     
     #write ExpROW
-    df_ExpROW = Exports
-    df_labels_ExpROW = pd.DataFrame(list(df_ExpROW.columns.get_level_values(0)))
+    df_ExpROW = Exports[:567]
+    df_labels_ExpROW = pd.DataFrame(list(df_ExpROW.columns.get_level_values(1)))
     df_ExpROW.reset_index(inplace=True,drop=True)
-    df_ExpROW.to_excel(writer,'ExpROW',index=False)
+    df_ExpROW.columns =  df_ExpROW.columns.droplevel()
+    df_ExpROW.to_excel(writer,'ExpROW',index=False,header=False)
     df_labels_ExpROW.reset_index(inplace=True,drop=True)
     df_labels_ExpROW.columns = ['Export']
     df_labels_ExpROW.to_excel(writer,'labels_ExpROW',index=False,header=False)    
@@ -132,4 +133,3 @@ def main():
 if __name__ == "__main__":
     
     Xin = main()
-
