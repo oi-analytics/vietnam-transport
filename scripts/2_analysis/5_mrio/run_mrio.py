@@ -63,11 +63,70 @@ def run_mrio_disaggregate(notrade=False,own_production_ratio=0.9):
         
     return Xin
 
+
+def mrio_to_excel(Xin):
+    
+    data_path = load_config()['paths']['data']
+    
+    Xnew = Xin.copy()
+
+    # prepare exoort and finalD data   
+    Exports = pd.DataFrame(Xnew.iloc[:, Xnew.columns.get_level_values(1)=='col3'].sum(axis=1),columns=['Exports'])
+    Exports.columns = pd.MultiIndex.from_tuples(list(zip(['Total'],['Exports'])))
+    FinalD_ToT = Xnew.iloc[:, ((Xnew.columns.get_level_values(1)=='col1') | (Xnew.columns.get_level_values(1)=='col2'))]
+    FinalD_ToT = FinalD_ToT.groupby(level=0,axis=1).sum()
+    FinalD_ToT.columns = pd.MultiIndex.from_tuples(list(zip(FinalD_ToT.columns,len(FinalD_ToT.columns)*['FinalD'])))
+    
+    Xnew.drop(['col1','col2','col3'], axis=1, level=1,inplace=True)
+
+    Xnew = pd.concat([Xnew,FinalD_ToT,Exports],axis=1)
+       
+    # write to excel 
+    writer = pd.ExcelWriter(os.path.join(data_path,'input_data','IO_VIETNAM.xlsx'))
+
+    #write T
+    df_T = Xnew.iloc[:567,:567]
+    df_T.columns =  df_T.columns.droplevel()
+    df_labels_T = pd.DataFrame(df_T.reset_index()[['region','sector']])
+    df_T.reset_index(inplace=True,drop=True)
+    df_T.to_excel(writer,'T',index=False,header=False)
+    df_labels_T.to_excel(writer,'labels_T',index=False,header=False)
+    
+    #write FD
+    df_FD = Xnew.iloc[:567,567:630]
+    df_labels_FD = pd.DataFrame(list(df_FD.columns))
+    df_FD.columns =  df_FD.columns.droplevel()
+    df_FD.reset_index(inplace=True,drop=True)
+    df_FD.to_excel(writer,'FD',index=False,header=False)
+    df_labels_FD.to_excel(writer,'labels_FD',index=False,header=False)
+    
+    #write ExpROW
+    df_ExpROW = Exports
+    df_labels_ExpROW = pd.DataFrame(list(df_ExpROW.columns.get_level_values(0)))
+    df_ExpROW.reset_index(inplace=True,drop=True)
+    df_ExpROW.to_excel(writer,'ExpROW',index=False)
+    df_labels_ExpROW.reset_index(inplace=True,drop=True)
+    df_labels_ExpROW.columns = ['Export']
+    df_labels_ExpROW.to_excel(writer,'labels_ExpROW',index=False,header=False)    
+    
+    #write VA
+    df_VA = pd.DataFrame(Xnew.iloc[567:,:].T[('total','tax_sub')] + Xnew.iloc[567:,:].T[('total','valueA')],columns=['VA'])
+    df_VA['imports'] = Xnew.iloc[567:,:].T[('total','import_')]
+    df_VA.reset_index(inplace=True,drop=True)
+    df_VA.to_excel(writer,'VA',index=False,header=False)
+    df_labels_VA = pd.DataFrame(['Import','VA']).T
+    df_labels_VA.to_excel(writer,'labels_VA',index=False,header=False)
+    
+    # save excel
+    writer.save()
+
 def main():
    
     run_mrio_disaggregate(notrade=True)
     Xin = run_mrio_disaggregate(notrade=False,own_production_ratio=0.8)
-
+    
+    mrio_to_excel(Xin)
+    
     return Xin
 
 if __name__ == "__main__":
