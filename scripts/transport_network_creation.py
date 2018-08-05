@@ -93,7 +93,7 @@ def assign_asset_type_to_province_roads_from_file(asset_code,asset_type_list):
 	asset_type = 'road'
 	for asset in asset_type_list: 
 		if asset_code == asset[0]:
-			asset_type = asset[1]
+			asset_type = asset[2]
 			break
 
 	return asset_type
@@ -227,7 +227,7 @@ def assign_minmax_tariff_costs_province_roads_apply(x,cost_dataframe):
 	return min_tariff_cost, max_tariff_cost
 
 
-def province_shapefile_to_network(edges_in,road_terrain,road_properties_file):
+def province_shapefile_to_dataframe(edges_in,road_terrain,road_properties_file):
 	"""
 	input parameters:
 		edges_in : string of path to edges file/network file. 
@@ -284,8 +284,13 @@ def province_shapefile_to_network(edges_in,road_terrain,road_properties_file):
 	# make sure that From and To node are the first two columns of the dataframe
 	# to make sure the conversion from dataframe to igraph network goes smooth
 	edges = edges.reindex(list(edges.columns)[2:]+list(edges.columns)[:2],axis=1)
+
+	return edges
 	
+
+def province_shapefile_to_network(edges_in,road_terrain,road_properties_file):
 	# create network from edge file
+	edges = province_shapefile_to_dataframe(edges_in,road_terrain,road_properties_file)
 	G = ig.Graph.TupleList(edges.itertuples(index=False), edge_attrs=list(edges.columns)[2:])
 
 	# only keep connected network
