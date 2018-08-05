@@ -72,7 +72,7 @@ def main():
 		province_name = province.replace(' ','').lower()
 		
 		road_shp = os.path.join(data_path,'Roads','{}_roads'.format(province_name),'vietbando_{}_edges.shp'.format(province_name))
-		hazard_dir = os.path.join(data_path,'Hazard_data')
+		hazard_dir = os.path.join(data_path,'Hazard_data','Glofris')
 		for root, dirs, files in os.walk(hazard_dir):
 			for file in files:
 				if file.endswith(".shp"):

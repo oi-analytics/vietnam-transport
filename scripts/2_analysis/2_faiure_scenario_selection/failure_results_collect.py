@@ -87,6 +87,7 @@ def main():
 					hazard_shp = os.path.join(root,file)
 					hz_file = [h for h in hazard_files if h in file][0]
 					hazard_dict['hazard_type'] = hazard_df.loc[hazard_df.file_name == hz_file].hazard_type.values[0]
+					hazard_dict['model'] = hazard_df.loc[hazard_df.file_name == hz_file].model.values[0]
 					hazard_dict['year'] = hazard_df.loc[hazard_df.file_name == hz_file].year.values[0]
 					hazard_dict['climate_scenario'] = hazard_df.loc[hazard_df.file_name == hz_file].climate_scenario.values[0]
 					hazard_dict['probability'] = hazard_df.loc[hazard_df.file_name == hz_file].probability.values[0]
