@@ -52,7 +52,6 @@ def main():
 	'''
 	# for prn in range(len(province_list)):
 	for prn in range(0,1):
-		province_ods_df = []
 		province = province_list[prn]
 		# set all paths for all input files we are going to use
 		province_name = province.replace(' ','').lower()
