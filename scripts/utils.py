@@ -71,12 +71,14 @@ def plot_basemap(ax, data_path, focus='VNM', neighbours=['VNM', 'CHN', 'LAO', 'K
     states_filename = os.path.join(
         data_path,
         'Global_boundaries',
+        'Natural_Earth',
         'ne_10m_admin_0_countries_lakes.shp'
     )
 
     states_over_lakes_filename = os.path.join(
         data_path,
         'Global_boundaries',
+        'Natural_Earth',
         'ne_10m_admin_0_countries.shp'
     )
 
@@ -90,6 +92,7 @@ def plot_basemap(ax, data_path, focus='VNM', neighbours=['VNM', 'CHN', 'LAO', 'K
     lakes_filename = os.path.join(
         data_path,
         'Global_boundaries',
+        'Natural_Earth',
         'ne_10m_lakes.shp'
     )
 
