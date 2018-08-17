@@ -26,63 +26,63 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 from scripts.utils import load_config
 from scripts.transport_network_creation import province_shapefile_to_network, add_igraph_generalised_costs_province_roads, province_shapefile_to_dataframe
 
-# def igraph_scenario_edge_failures(network_df_in,edge_failure_set,flow_dataframe,vehicle_wt,path_criteria,rev_criteria,tons_criteria,cost_criteria,distance_criteria,time_criteria):
-# 	network_graph_df = copy.deepcopy(network_df_in)
-# 	edge_fail_dictionary = []
-# 	edge_path_index = []
-# 	for edge in edge_failure_set:
-# 		network_graph_df = network_graph_df[network_graph_df.edge_id != edge]
-# 		edge_path_index += flow_dataframe.loc[flow_dataframe[path_criteria].str.contains(edge)].index.tolist() 
+def igraph_scenario_edge_failures_changing_tonnages(network_df_in,edge_failure_set,flow_dataframe,vehicle_wt,path_criteria,rev_criteria,tons_criteria,cost_criteria,distance_criteria,time_criteria):
+	network_graph_df = copy.deepcopy(network_df_in)
+	edge_fail_dictionary = []
+	edge_path_index = []
+	for edge in edge_failure_set:
+		network_graph_df = network_graph_df[network_graph_df.edge_id != edge]
+		edge_path_index += flow_dataframe.loc[flow_dataframe[path_criteria].str.contains(edge)].index.tolist() 
 
 
-# 	edge_path_index = list(set(edge_path_index))
-# 	# print (edge_path_index)
-# 	if edge_path_index:
-# 		network_graph = ig.Graph.TupleList(network_graph_df.itertuples(index=False), edge_attrs=list(network_graph_df.columns)[2:])
-# 		# only keep connected network
-# 		network_graph = network_graph.clusters().giant()
+	edge_path_index = list(set(edge_path_index))
+	# print (edge_path_index)
+	if edge_path_index:
+		network_graph = ig.Graph.TupleList(network_graph_df.itertuples(index=False), edge_attrs=list(network_graph_df.columns)[2:])
+		# only keep connected network
+		network_graph = network_graph.clusters().giant()
 
-# 		for e in edge_path_index:
-# 			od_pair = ast.literal_eval(flow_dataframe.iloc[e]['od_nodes'])
+		for e in edge_path_index:
+			od_pair = ast.literal_eval(flow_dataframe.iloc[e]['od_nodes'])
 
-# 			origin_node = [x for x in network_graph.vs if x['name'] == od_pair[0]]
-# 			destination_node = [x for x in network_graph.vs if x['name'] == od_pair[-1]]
+			origin_node = [x for x in network_graph.vs if x['name'] == od_pair[0]]
+			destination_node = [x for x in network_graph.vs if x['name'] == od_pair[-1]]
 
-# 			if not origin_node or not destination_node:
-# 				'''
-# 				no alternative path exists
-# 				'''
-# 				edge_fail_dictionary.append({'edge_id':edge,'econ_value':flow_dataframe.iloc[e][rev_criteria],'tons':flow_dataframe.iloc[e][tons_criteria],
-# 									'old_distance':flow_dataframe.iloc[e][distance_criteria],'old_time':flow_dataframe.iloc[e][time_criteria],
-# 									'econ_loss':flow_dataframe.iloc[e][rev_criteria],'new_distance':0,'new_time':0,'no_access': True})
-# 			else:
-# 				tons = flow_dataframe.iloc[e][tons_criteria]
-# 				vh_nums = math.ceil(1.0*tons/vehicle_wt)
-# 				network_graph = add_igraph_generalised_costs_province_roads(network_graph,vh_nums,tons)
-# 				new_route = network_graph.get_shortest_paths(origin_node[0],destination_node[0], weights = cost_criteria, output='epath')[0]
-# 				if not new_route:
-# 					'''
-# 					no alternative path exists
-# 					'''
-# 					# path_index = path_index_list[e]
-# 					edge_fail_dictionary.append({'edge_id':edge,'econ_value':flow_dataframe.iloc[e][rev_criteria],'tons':flow_dataframe.iloc[e][tons_criteria],
-# 									'old_distance':flow_dataframe.iloc[e][distance_criteria],'old_time':flow_dataframe.iloc[e][time_criteria],
-# 									'econ_loss':flow_dataframe.iloc[e][rev_criteria],'new_distance':0,'new_time':0,'no_access': True})
-# 				else:
-# 					new_dist = 0
-# 					new_time = 0
-# 					new_travel_cost = 0
-# 					for n in new_route:
-# 						new_dist += network_graph.es[n]['length']
-# 						new_time += network_graph.es[n][time_criteria]
-# 						new_travel_cost += network_graph.es[n][cost_criteria]
+			if not origin_node or not destination_node:
+				'''
+				no alternative path exists
+				'''
+				edge_fail_dictionary.append({'edge_id':edge,'econ_value':flow_dataframe.iloc[e][rev_criteria],'tons':flow_dataframe.iloc[e][tons_criteria],
+									'old_distance':flow_dataframe.iloc[e][distance_criteria],'old_time':flow_dataframe.iloc[e][time_criteria],
+									'econ_loss':flow_dataframe.iloc[e][rev_criteria],'new_distance':0,'new_time':0,'no_access': True})
+			else:
+				tons = flow_dataframe.iloc[e][tons_criteria]
+				vh_nums = math.ceil(1.0*tons/vehicle_wt)
+				network_graph = add_igraph_generalised_costs_province_roads(network_graph,vh_nums,tons)
+				new_route = network_graph.get_shortest_paths(origin_node[0],destination_node[0], weights = cost_criteria, output='epath')[0]
+				if not new_route:
+					'''
+					no alternative path exists
+					'''
+					# path_index = path_index_list[e]
+					edge_fail_dictionary.append({'edge_id':edge,'econ_value':flow_dataframe.iloc[e][rev_criteria],'tons':flow_dataframe.iloc[e][tons_criteria],
+									'old_distance':flow_dataframe.iloc[e][distance_criteria],'old_time':flow_dataframe.iloc[e][time_criteria],
+									'econ_loss':flow_dataframe.iloc[e][rev_criteria],'new_distance':0,'new_time':0,'no_access': True})
+				else:
+					new_dist = 0
+					new_time = 0
+					new_travel_cost = 0
+					for n in new_route:
+						new_dist += network_graph.es[n]['length']
+						new_time += network_graph.es[n][time_criteria]
+						new_travel_cost += network_graph.es[n][cost_criteria]
 					
-# 					edge_fail_dictionary.append({'edge_id':edge,'econ_value':flow_dataframe.iloc[e][rev_criteria],'tons':flow_dataframe.iloc[e][tons_criteria],
-# 										'old_distance':flow_dataframe.iloc[e][distance_criteria],'old_time':flow_dataframe.iloc[e][time_criteria],
-# 										'econ_loss':new_travel_cost - flow_dataframe.iloc[e][cost_criteria],'new_distance':new_dist,'new_time':new_time,'no_access': False})
+					edge_fail_dictionary.append({'edge_id':edge,'econ_value':flow_dataframe.iloc[e][rev_criteria],'tons':flow_dataframe.iloc[e][tons_criteria],
+										'old_distance':flow_dataframe.iloc[e][distance_criteria],'old_time':flow_dataframe.iloc[e][time_criteria],
+										'econ_loss':new_travel_cost - flow_dataframe.iloc[e][cost_criteria],'new_distance':new_dist,'new_time':new_time,'no_access': False})
 
 
-# 	return edge_fail_dictionary
+	return edge_fail_dictionary
 
 def network_od_path_estimations(graph,source,target,cost_criteria,time_criteria):
 	# compute min cost paths and values
@@ -151,7 +151,7 @@ def igraph_scenario_edge_failures(network_df_in,edge_failure_set,flow_dataframe,
 				# destinations = po_access.loc[origin,'destination']
 				# print (destinations,type(destinations))
 				# if isinstance(destinations,str):
-				if len(po_access.loc[sc].index) == 1:
+				if len(po_access.loc[origin].index) == 1:
 					destinations = po_access.loc[origin,'destination']
 					croptons = po_access.loc[origin,tons_criteria]
 					rev = po_access.loc[origin,rev_criteria]
@@ -298,7 +298,7 @@ def main():
 				edge_fail_ranges.append(egde_impact)
 
 			egde_impact = edge_fail_ranges[0]
-			egde_impact = pd.merge(egde_impact,edge_fail_ranges[1],how='left', on=['edge_id'])
+			egde_impact = pd.merge(egde_impact,edge_fail_ranges[1],how='left', on=['edge_id']).fillna(0)
 			df_path = os.path.join(output_path,'failure_results','single_edge_failures_totals_{0}_{1}_tons.csv'.format(province_name,int(tr_wt)))
 			egde_impact.to_csv(df_path,index = False)
 		

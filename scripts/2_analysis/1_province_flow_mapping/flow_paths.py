@@ -23,6 +23,14 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 from scripts.utils import load_config,extract_value_from_gdf,get_nearest_node,gdf_clip,gdf_geom_clip,count_points_in_polygon
 from scripts.transport_network_creation import province_shapefile_to_network, add_igraph_generalised_costs_province_roads
 
+def swap_min_max(x,min_col,max_col):
+	'''
+	'''
+	if x[min_col] > x[max_col]:
+		return x[max_col],x[min_col]
+	else:
+		return x[min_col],x[max_col]
+
 def netrev_edges(region_name,start_points,end_points,graph,save_edges = True,output_path ='',excel_writer =''):
 	"""
 	Assign net revenue to roads assets in Vietnam
@@ -269,15 +277,23 @@ def network_od_paths_assembly(points_dataframe,node_dict,graph,vehicle_wt,region
 	
 	gdf_edges['min_netrev'] = 0
 	gdf_edges['max_netrev'] = 0
-	gdf_edges['min_croptons'] = 0
-	gdf_edges['max_croptons'] = 0
+	gdf_edges['min_tons'] = 0
+	gdf_edges['max_tons'] = 0
 
 	for path in save_paths:
 		gdf_edges.loc[gdf_edges['edge_id'].isin(path[2]),'min_netrev'] += path[4]
 		gdf_edges.loc[gdf_edges['edge_id'].isin(path[3]),'max_netrev'] += path[5]
-		gdf_edges.loc[gdf_edges['edge_id'].isin(path[2]),'min_croptons'] += path[6]
-		gdf_edges.loc[gdf_edges['edge_id'].isin(path[3]),'max_croptons'] += path[7]
+		gdf_edges.loc[gdf_edges['edge_id'].isin(path[2]),'min_tons'] += path[6]
+		gdf_edges.loc[gdf_edges['edge_id'].isin(path[3]),'max_tons'] += path[7]
 	
+	gdf_edges['swap'] = gdf_edges.apply(lambda x: swap_min_max(x,'min_netrev','max_netrev'),axis = 1)
+	gdf_edges[['min_netrev','max_netrev']] = gdf_edges['swap'].apply(pd.Series)
+	gdf_edges.drop('swap',axis=1,inplace=True)
+
+	gdf_edges['swap'] = gdf_edges.apply(lambda x: swap_min_max(x,'min_tons','max_tons'),axis = 1)
+	gdf_edges[['min_tons','max_tons']] = gdf_edges['swap'].apply(pd.Series)
+	gdf_edges.drop('swap',axis=1,inplace=True)
+
 	if save_edges == True:
 		gdf_edges.to_file(os.path.join(output_path,'weighted_edges_district_center_flows_{0}_{1}_tons.shp'.format(region_name,int(vehicle_wt))))
 

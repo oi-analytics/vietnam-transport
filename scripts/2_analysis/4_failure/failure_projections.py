@@ -26,6 +26,13 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 from scripts.utils import load_config
 from scripts.transport_network_creation import province_shapefile_to_network, add_igraph_generalised_costs_province_roads, province_shapefile_to_dataframe
 
+def swap_min_max(x,min_col,max_col):
+	'''
+	'''
+	if x[min_col] > x[max_col]:
+		return x[max_col],x[min_col]
+	else:
+		return x[min_col],x[max_col]
 
 def main():
 	data_path,calc_path,output_path = load_config()['paths']['data'],load_config()['paths']['calc'],load_config()['paths']['output']
@@ -86,7 +93,21 @@ def main():
 					print ('Done with province {0} {1} tons {2} with growth rate {3}'.format(province_name,tr_wt,types[t],grth))
 
 				edge_impact = edge_fail_ranges[0]
-				edge_impact = pd.merge(edge_impact,edge_fail_ranges[1],how='left', on=['edge_id'])
+				edge_impact = pd.merge(edge_impact,edge_fail_ranges[1],how='left', on=['edge_id']).fillna(0)
+				for year in range(2016,2050):
+					edge_impact['swap'] = edge_impact.apply(lambda x: swap_min_max(x,'min_econ_value_{0}'.format(year),'max_econ_value_{0}'.format(year)),axis = 1)
+					edge_impact[['min_econ_value_{0}'.format(year),'max_econ_value_{0}'.format(year)]] = edge_impact['swap'].apply(pd.Series)
+					edge_impact.drop('swap',axis=1,inplace=True)
+
+
+					edge_impact['swap'] = edge_impact.apply(lambda x: swap_min_max(x,'min_tons_{0}'.format(year),'max_tons_{0}'.format(year)),axis = 1)
+					edge_impact[['min_tons_{0}'.format(year),'max_tons_{0}'.format(year)]] = edge_impact['swap'].apply(pd.Series)
+					edge_impact.drop('swap',axis=1,inplace=True)
+
+					edge_impact['swap'] =  edge_impact.apply(lambda x: swap_min_max(x,'min_econ_loss_{0}'.format(year),'max_econ_loss_{0}'.format(year)),axis = 1)
+					edge_impact[['min_econ_loss_{0}'.format(year),'max_econ_loss_{0}'.format(year)]] = edge_impact['swap'].apply(pd.Series)
+					edge_impact.drop('swap',axis=1,inplace=True)
+
 				edge_impact.to_excel(excl_wrtr_1,grth[1],index = False)
 				excl_wrtr_1.save()
 		
