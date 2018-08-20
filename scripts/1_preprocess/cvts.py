@@ -19,13 +19,13 @@ from utils import load_config
 
 data_root = load_config()['paths']['data']
 
-dir_raw_cvts = os.path.join(data_root, 'raw', 'cvts', '20170801')
-dir_raw_roads = os.path.join(data_root, 'raw', 'cvts', 'Roads', 'national_roads')
-dir_inter_reduse = os.path.join(data_root, 'intermediate', 'reduse')
-dir_inter_clip = os.path.join(data_root, 'intermediate', 'clip')
-dir_results_routes = os.path.join(data_root, 'results', 'routes')
-dir_results_routes_collected = os.path.join(data_root, 'results', 'routes_collected')
-dir_results_traffic_count = os.path.join(data_root, 'results', 'traffic_count')
+dir_raw_cvts = os.path.join(data_root, 'Cvts', 'raw', '20170801')
+dir_raw_roads = os.path.join(data_root, 'Roads', 'national_roads')
+dir_inter_reduse = os.path.join(data_root, 'Cvts', 'intermediate', 'reduse')
+dir_inter_clip = os.path.join(data_root, 'Cvts', 'intermediate', 'clip')
+dir_results_routes = os.path.join(data_root, 'Cvts', 'results', 'routes')
+dir_results_routes_collected = os.path.join(data_root, 'Cvts', 'results', 'routes_collected')
+dir_results_traffic_count = os.path.join(data_root, 'Cvts', 'results', 'traffic_count')
 
 def reduse_dataset(source_dir, dest_dir):
     # Reduce the size of the dataset to speed up further processing
