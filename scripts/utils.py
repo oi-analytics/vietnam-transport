@@ -419,6 +419,17 @@ def get_nearest_node(x,sindex_input_nodes,input_nodes,id_column):
     """
     return input_nodes.loc[list(sindex_input_nodes.nearest(x.bounds[:2]))][id_column].values[0]
 
+def get_nearest_node_within_region(x,input_nodes,id_column,region_id):
+    select_nodes = input_nodes.loc[input_nodes[region_id] == x[region_id]]
+    # print (input_nodes)
+    if len(select_nodes.index) > 0:
+        select_nodes = select_nodes.reset_index()
+        sindex_input_nodes = select_nodes.sindex
+        return select_nodes.loc[list(sindex_input_nodes.nearest(x.geometry.bounds[:2]))][id_column].values[0]
+    else:
+        return ''
+
+
 def count_points_in_polygon(x,points_sindex):
     """
    Inputs are:
@@ -449,6 +460,20 @@ def assign_value_in_area_proportions(poly_1_gpd,poly_2_gpd,poly_attribute):
         intersected_polys = poly_1_gpd.iloc[list(poly_1_sindex.intersection(polys_2.geometry.bounds))]
         for p_1_index, polys_1 in intersected_polys.iterrows():
             if (polys_2['geometry'].intersects(polys_1['geometry']) is True) and (polys_1.geometry.is_valid is True) and (polys_2.geometry.is_valid is True):
+                poly2_attr += polys_1[poly_attribute]*polys_2['geometry'].intersection(polys_1['geometry']).area/polys_1['geometry'].area
+        
+        poly_2_gpd.loc[p_2_index,poly_attribute] = poly2_attr
+
+    return poly_2_gpd
+
+def assign_value_in_area_proportions_within_common_region(poly_1_gpd,poly_2_gpd,poly_attribute,common_region_id):
+    poly_1_sindex = poly_1_gpd.sindex
+    for p_2_index, polys_2 in poly_2_gpd.iterrows():
+        poly2_attr= 0
+        poly2_id = polys_2[common_region_id]
+        intersected_polys = poly_1_gpd.iloc[list(poly_1_sindex.intersection(polys_2.geometry.bounds))]
+        for p_1_index, polys_1 in intersected_polys.iterrows():
+            if  (polys_1[common_region_id] == poly2_id) and (polys_2['geometry'].intersects(polys_1['geometry']) is True) and (polys_1.geometry.is_valid is True) and (polys_2.geometry.is_valid is True):
                 poly2_attr += polys_1[poly_attribute]*polys_2['geometry'].intersection(polys_1['geometry']).area/polys_1['geometry'].area
         
         poly_2_gpd.loc[p_2_index,poly_attribute] = poly2_attr
@@ -539,3 +564,10 @@ def voronoi_finite_polygons_2d(vor, radius=None):
 
 def extract_nodes_within_gdf(x,input_nodes,column_name):
     return input_nodes.loc[list(input_nodes.geometry.within(x.geometry))][column_name].values[0]
+
+def extract_gdf_values_containing_nodes(x,sindex_input_gdf,input_gdf,column_name):
+    a = input_gdf.loc[list(input_gdf.geometry.contains(x.geometry))]
+    if len(a.index) > 0:
+        return input_gdf.loc[list(input_gdf.geometry.contains(x.geometry))][column_name].values[0]
+    else:   
+        return get_nearest_node(x.geometry,sindex_input_gdf,input_gdf,column_name)
