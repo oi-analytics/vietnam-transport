@@ -11,6 +11,7 @@ import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 from osgeo import gdal
 import numpy as np
+from colour import Color
 
 from geopy.distance import vincenty
 from boltons.iterutils import pairwise
@@ -38,7 +39,7 @@ def load_config():
     return config
 
 
-def get_axes(extent=[102.2, 109.5, 8.5, 23.3], epsg=None):
+def get_axes(extent=[102.2, 109.5, 8.5, 23.3], figsize=(6, 10), epsg=None):
     """Get transverse mercator axes (default to Vietnam extent)
     EPSG:4756
     """
@@ -50,7 +51,7 @@ def get_axes(extent=[102.2, 109.5, 8.5, 23.3], epsg=None):
         cy = y0 + ((y1 - y0) / 2)
         ax_proj = ccrs.LambertConformal(central_longitude=cx, central_latitude=cy)
 
-    plt.figure(figsize=(6, 10), dpi=300)
+    plt.figure(figsize=figsize, dpi=300)
     ax = plt.axes([0.025, 0.025, 0.95, 0.95], projection=ax_proj)
     proj = ccrs.PlateCarree()
     ax.set_extent(extent, crs=proj)
@@ -68,7 +69,7 @@ def set_ax_bg(ax, color='#c6e0ff'):
     ax.background_patch.set_facecolor(color)
 
 
-def plot_basemap(ax, data_path, focus='VNM', neighbours=['VNM', 'CHN', 'LAO', 'KHM', 'THA'],country_border='white',plot_regions=True):
+def plot_basemap(ax, data_path, focus='VNM', neighbours=['VNM', 'CHN', 'LAO', 'KHM', 'THA'],country_border='white',plot_regions=True,plot_states=True):
     """Plot countries and regions background
     """
     proj = ccrs.PlateCarree()
@@ -102,16 +103,17 @@ def plot_basemap(ax, data_path, focus='VNM', neighbours=['VNM', 'CHN', 'LAO', 'K
     )
 
     # Neighbours
-    for record in shpreader.Reader(states_filename).records():
-        country_code = record.attributes['ISO_A3']
-        if country_code in neighbours:
-            geom = record.geometry
-            ax.add_geometries(
-                [geom],
-                crs=proj,
-                edgecolor=country_border,
-                facecolor='#e0e0e0',
-                zorder=1)
+    if plot_states == True:
+        for record in shpreader.Reader(states_filename).records():
+            country_code = record.attributes['ISO_A3']
+            if country_code in neighbours:
+                geom = record.geometry
+                ax.add_geometries(
+                    [geom],
+                    crs=proj,
+                    edgecolor=country_border,
+                    facecolor='#e0e0e0',
+                    zorder=1)
 
     # Regions
     if plot_regions == True:
@@ -243,7 +245,59 @@ def plot_basemap_labels(ax, data_path, labels=None, province_zoom=False, plot_re
                 horizontalalignment='center',
                 transform=proj)
 
+def get_region_plot_settings(region):
+    """Common definition of region plot settings
+    """
+    region_plot_settings_lut = [
+        {
+            'name': 'Binh Dinh',
+            'bbox': (108.5, 109.4, 14.75, 13.5),
+            'weight_legend': {
+                'x_l': 108.53,
+                'x_r': 108.58,
+                'base_y': 13.84,
+                'y_step': 0.035,
+                'y_text_nudge': 0.01,
+                'x_text_nudge': 0.04
+            },
+            'scale_legend': 10,
+            'figure_size': (7, 10)
+        },
+        {
+            'name': 'Lao Cai',
+            'bbox': (103.5, 104.7, 22.9, 21.8),
+            'weight_legend': {
+                'x_l': 103.53,
+                'x_r': 103.58,
+                'base_y': 22.18,
+                'y_step': 0.04,
+                'y_text_nudge': 0.01,
+                'x_text_nudge': 0.04
+            },
+            'scale_legend': 10,
+            'figure_size': (10, 10)
+        },
+        {
+            'name': 'Thanh Hoa',
+            'bbox': (104.35, 106.1, 20.7, 19.1),
+            'weight_legend': {
+                'x_l': 104.4,
+                'x_r': 104.47,
+                'base_y': 19.68,
+                'y_step': 0.06,
+                'y_text_nudge': 0.01,
+                'x_text_nudge': 0.04
+            },
+            'scale_legend': 10,
+            'figure_size': (10, 10)
+        }                 
+    ]
 
+    for region_plot_settings in region_plot_settings_lut:
+        if region == region_plot_settings['name']:
+            return region_plot_settings
+    
+    raise Exception('Region plot settings not defined for this region')
 
 def within_extent(x, y, extent):
     xmin, xmax, ymin, ymax = extent
@@ -308,6 +362,30 @@ def generate_weight_bins(weights, n_steps=9, width_step=0.01):
 
     return width_by_range
 
+def generate_weight_bins_with_colour_gradient(weights, n_steps=9, width_step=0.01, colours=['orange', 'red']):
+    """Given a list of weight values, generate <n_steps> bins with a width
+    value to use for plotting e.g. weighted network flow maps.
+    """
+    min_weight = min(weights)
+    max_weight = max(weights)
+
+    width_by_range = OrderedDict()
+
+    mins = np.linspace(min_weight, max_weight, n_steps)
+    maxs = list(mins)
+    maxs.append(max_weight*10)
+    maxs = maxs[1:]
+
+    assert len(maxs) == len(mins)
+
+    low_color = Color(colours[0])
+    high_color = Color(colours[1])
+    colors = list(low_color.range_to(high_color, n_steps))
+    
+    for i, (min_, max_) in enumerate(zip(mins, maxs)):
+        width_by_range[(min_, max_)] = (i, (i+1) * width_step, colors[i])
+
+    return width_by_range
 
 Style = namedtuple('Style', ['color', 'zindex', 'label'])
 Style.__doc__ += """: class to hold an element's styles
