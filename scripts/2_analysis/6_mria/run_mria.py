@@ -22,6 +22,8 @@ from pathos.multiprocessing import Pool,cpu_count
 
 def estimate_losses(input_file):
     
+    print('{} started!'.format(input_file))
+    
     data_path = load_config()['paths']['data']
 
     ''' Set booleans'''
@@ -55,11 +57,12 @@ def estimate_losses(input_file):
     if os.path.exists(output_dir) == False:
         os.mkdir(output_dir)
 
-    event_dict = create_disruption(input_file,output_dir,single_point=single_point)
+    event_dict = create_disruption(input_file,output_dir,min_rice=min_rice,single_point=single_point)
     
     collect_outputs = {}
-    for iter_,event in enumerate(list(event_dict.keys())[:2]):
+    for iter_,event in enumerate(list(event_dict.keys())):
 
+        
         if np.average(1 - np.array(list(event_dict[event].values()))) < 0.005:
             print('Event {} will cause no impacts'.format(event))
             continue
@@ -69,6 +72,12 @@ def estimate_losses(input_file):
         try:
             disr_dict_fd = {} 
             disr_dict_sup = event_dict[event]
+    
+            '''Get direct losses '''
+            disrupt = pd.DataFrame.from_dict(disr_dict_sup,orient='index')
+            disrupt.reset_index(inplace=True)
+            disrupt[['region', 'sector']] = disrupt['index'].apply(pd.Series)
+    
        
             '''Create model'''
             MRIA_RUN = MRIA(DATA.name,DATA.countries,DATA.sectors,EORA=False,list_fd_cats=['FinDem'])
@@ -115,7 +124,7 @@ def estimate_losses(input_file):
             
             prov_impact = output.groupby(level=0,axis=0).sum()
             collect_outputs[event] = prov_impact
-
+ 
         except Exception as e:
                 print('Failed to finish {} because of {}!'.format(event,e))
             
@@ -137,9 +146,7 @@ if __name__ == '__main__':
 
     input_file = os.path.join(data_path,'Results','Failure_results','multiple_edge_failures_totals_national_road_max.csv')
     
-    get_all_input_files = os.listdir(os.path.join(data_path,'Results','Failure_results'))
+    get_all_input_files = [os.path.join(data_path,'Results','Failure_results',x) for x in os.listdir(os.path.join(data_path,'Results','Failure_results'))]
     
-    #estimate_losses(input_file)
-
-    with Pool(cpu_count-2) as pool: 
+    with Pool(int(cpu_count())-2) as pool: 
         pool.map(estimate_losses,get_all_input_files,chunksize=1) 

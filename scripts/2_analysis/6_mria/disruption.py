@@ -16,13 +16,13 @@ pd.options.mode.chained_assignment = None
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 from scripts.utils import load_config
 
-def create_disruption(input_file,output_dir,single_point=True):
+def create_disruption(input_file,output_dir,min_rice=True,single_point=True):
     
      # Define current directory and data directory
     data_path = load_config()['paths']['data']
    
      # read national IO
-    comm_des =  df_com_to_ind(pd.read_excel(os.path.join(data_path,'OD_data','national_scale_od_matrix.xlsx'),sheet_name='total'))
+    comm_des = df_com_to_ind(pd.read_excel(os.path.join(data_path,'OD_data','national_scale_od_matrix.xlsx'),sheet_name='total'),min_rice=min_rice)
 
    # read vietnam failure results
     vnm_failure_all_failure = pd.read_csv(input_file,index_col=[0])
@@ -34,7 +34,9 @@ def create_disruption(input_file,output_dir,single_point=True):
 
     event_dict = {}
     for id_,scenario in vnm_failure_all_failure.groupby(level=0):
-        disruption = df_com_to_ind(scenario).div(comm_des).dropna(axis=0, how='all').fillna(0)
+        if id_ == 'multi_102':
+            break
+        disruption = df_com_to_ind(scenario,min_rice=min_rice).div(comm_des).dropna(axis=0, how='all').fillna(0)
         disruption = pd.DataFrame(disruption.stack(0))
         disruption.columns = ['value']
         disruption = disruption.loc[disruption.value > 0]
@@ -117,21 +119,6 @@ def df_com_to_ind(comm_des,min_rice=True):
     df_od_ind = df_od_ind.unstack(1)
     df_od_ind.columns = df_od_ind.columns.get_level_values(1)
     
-    
-#    df_od.columns = ['o_region','d_region','good','value']
-#    
-#    if min_rice == True:
-#        df_od = df_od.loc[~(df_od.good.isin(['max_rice','min_tons','max_tons']))]
-#    else:
-#         df_od = df_od.loc[~(df_od.good.isin(['min_rice','min_tons','max_tons']))]
-#    
-#    df_od['good'] = df_od.good.apply(lambda x: map_comm_ind(x))
-#    df_od['good'] = df_od.good.apply(lambda x: map_ind(x))
-#    
-#    df_od_ind = df_od.groupby(['d_region','good','o_region']).sum()
-#    df_od_ind = df_od_ind.unstack(2)
-#    df_od_ind.columns = df_od_ind.columns.get_level_values(1)
-
     return df_od_ind
     
 if __name__ == "__main__":
