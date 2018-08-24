@@ -72,10 +72,10 @@ def mrio_to_excel(Xin):
 
     # prepare exoort and finalD data   
     Exports = pd.DataFrame(Xnew.iloc[:, Xnew.columns.get_level_values(1)=='col3'].sum(axis=1),columns=['Exports'])
-    Exports.columns = pd.MultiIndex.from_tuples(list(zip(['Total'],['Exports'])))
+    Exports.columns = pd.MultiIndex.from_tuples(list(zip(['Total'],['Export'])))
     FinalD_ToT = Xnew.iloc[:, ((Xnew.columns.get_level_values(1)=='col1') | (Xnew.columns.get_level_values(1)=='col2'))]
     FinalD_ToT = FinalD_ToT.groupby(level=0,axis=1).sum()
-    FinalD_ToT.columns = pd.MultiIndex.from_tuples(list(zip(FinalD_ToT.columns,len(FinalD_ToT.columns)*['FinalD'])))
+    FinalD_ToT.columns = pd.MultiIndex.from_tuples(list(zip(FinalD_ToT.columns,len(FinalD_ToT.columns)*['FinDem'])))
     
     Xnew.drop(['col1','col2','col3'], axis=1, level=1,inplace=True)
 
