@@ -114,6 +114,9 @@ config.json
 #Data
 data
 
+#pyomo stuff
+.pyomo.nl
+
 #gams stuff
 gams_runs/
 .gdx
