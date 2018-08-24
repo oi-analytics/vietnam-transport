@@ -13,7 +13,11 @@ import pandas as pd
 import numpy as np
 from pyomo.opt import SolverFactory
 from ratmarg import ratmarg_IO,ratmarg_SUT
+import os
+import sys
 
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+from scripts.utils import load_config
 
 class MRIA_IO(object):
 
@@ -164,14 +168,14 @@ class MRIA_IO(object):
     def create_X_up(self,disr_dict,Regmaxcap=0.98):
         model = self.m
 
-        disrupted_ctry = list(np.unique([x[0] for x in disr_dict]))
-        disrupted_sctr = [x[1] for x in disr_dict]
+#        disrupted_ctry = list(np.unique([x[0] for x in disr_dict]))
+#        disrupted_sctr = [x[1] for x in disr_dict]
 
         def shock_init(model, R,S):
-            if R in disrupted_ctry and S in disrupted_sctr:
-                return 1/Regmaxcap*disr_dict[R,S]
+            if (R,S) in list(disr_dict.keys()):
+                return disr_dict[R,S]
             else:
-                return 1/Regmaxcap*1.1       
+                return 1.05    
                
         model.X_up = Param(model.R,model.S,initialize=shock_init, doc='Maximum production capacity')
         self.X_up = model.X_up
@@ -197,8 +201,8 @@ class MRIA_IO(object):
     def create_X(self,disr_dict,Regmaxcap=0.98,
                  A_matrix_ini=None,Z_matrix=None,FinalD=None,Xbase=None,fd=None,ExpROW=None):
 
-        disrupted_ctry = list(np.unique([x[0] for x in disr_dict]))
-        disrupted_sctr = [x[1] for x in disr_dict]
+#        disrupted_ctry = list(np.unique([x[0] for x in disr_dict]))
+#        disrupted_sctr = [x[1] for x in disr_dict]
 
         model = self.m
 
@@ -209,7 +213,7 @@ class MRIA_IO(object):
             self.create_A_mat(A_matrix_ini)
 
         def X_bounds(model, R,S):
-            if R in disrupted_ctry and S in disrupted_sctr:
+            if (R,S) in list(disr_dict.keys()):
                 return (0.0, (1/Regmaxcap*self.Xbase[R,S])*disr_dict[R,S])
             else:
                 return (0.0, (1/Regmaxcap*self.Xbase[R,S])*1.1)
@@ -321,7 +325,8 @@ class MRIA_IO(object):
         model = self.m
 
         try:
-            RatMarg = pd.read_csv('..\..\input_data\Ratmarg_%s.csv' % self.name, index_col =[0],header=0)
+            data_path = load_config()['paths']['data']
+            RatMarg = pd.read_csv(os.path.join(data_path,'input_data','Ratmarg_{}.csv'.format(self.name)), index_col =[0],header=0)
             if self.EORA is True and (set(list(RatMarg.index.values)) != set(list(self.countries+['ROW']))):
                 RatMarg = ratmarg_IO(Table,self.EORA)
             elif (set(list(RatMarg.index.values)) != set(list(self.countries))):
@@ -347,7 +352,7 @@ class MRIA_IO(object):
         def Dis_bounds(model,R,S):
             if R in dimp_ctry and S in dimp_ind:
                 return (0,0)
-            elif (model.X_up[R,S] < (1/Regmaxcap*1.1) or R in disrupted_ctry):
+            elif (model.X_up[R,S] < (1.05) or R in disrupted_ctry):
                 return (0,None)
             else:
                 return (0,None)
