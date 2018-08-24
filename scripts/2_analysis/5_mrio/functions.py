@@ -1,4 +1,4 @@
-mai# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 Created on Tue Jun 12 08:47:38 2018
 
@@ -347,16 +347,15 @@ def map_sect_vnm_to_eng():
 
 def load_od(data_path):
     
-    od_path = os.path.join(data_path,'OD_data','OD_Transport_Data_Set.xlsx')
-
-    od_table = pd.read_excel(od_path,sheet_name='64 x 64_2008_13 goods')
+    od_path = os.path.join(data_path,'OD_data','national_scale_od_matrix.xlsx')
+    od_table = pd.read_excel(od_path,sheet_name='total')
+    od_table.drop(['max_rice','min_tons','max_tons'],inplace=True,axis=1)
     
-    od_table = od_table.drop(['O','D'],axis='columns')
-    od_table = od_table.dropna(subset=['Name O','name D'],axis='index')
-    od_table['Name O'] = od_table['Name O'].apply(lambda x: x.replace(' ','_').replace('-','_'))
-    od_table['name D'] = od_table['name D'].apply(lambda x: x.replace(' ','_').replace('-','_'))
+    od_table = od_table.dropna(subset=['o_region','d_region'],axis='index')
+    od_table['o_region'] = od_table['d_region'].apply(lambda x: x.replace(' ','_').replace('-','_'))
+    od_table['d_region'] = od_table['d_region'].apply(lambda x: x.replace(' ','_').replace('-','_'))
     
-    od_table = od_table.rename(columns = {'Name O' : 'Origin','name D':'Destination'})
+    od_table = od_table.rename(columns = {'o_region' : 'Origin','d_region':'Destination'})
     
     return od_table
 
@@ -387,7 +386,7 @@ def map_regions():
  'Da_Nang': 'Da_Nang',
  'Dak_Lak': 'Dak_Lak',
  'Dak_Nong': 'Dak_Nong',
- 'Dien_Bien_Phu': 'Dien_Bien',
+ 'Dien_Bien': 'Dien_Bien',
  'Dong_Nai': 'Dong_Nai',
  'Dong_Thap': 'Dong_Thap',
  'Gia_Lai': 'Gia_Lai',
@@ -399,7 +398,7 @@ def map_regions():
  'Hai_Duong': 'Hai_Duong',
  'Hai_Phong': 'Hai_Phong',
  'Hau_Giang': 'Hau_Giang',
- 'HCM': 'Ho_Chi_Minh',
+ 'Ho_Chi_Minh': 'Ho_Chi_Minh',
  'Hoa_Binh': 'Hoa_Binh',
  'Hung_Yen': 'Hung_Yen',
  'Khanh_Hoa': 'Khanh_Hoa',

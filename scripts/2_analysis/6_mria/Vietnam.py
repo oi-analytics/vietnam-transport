@@ -18,7 +18,7 @@ from matplotlib import cm
 import matplotlib.patches as mpatches
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-from scripts.utils import load_config,plot_basemap,plot_basemap_labels,scale_bar,set_ax_bg
+from scripts.utils import load_config,plot_basemap,plot_basemap_labels,set_ax_bg
 from table import io_basic
 from model import MRIA_IO as MRIA
 
@@ -30,13 +30,10 @@ if __name__ == '__main__':
     ''' Specify file path '''
     filepath =  os.path.join(data_path,'input_data','IO_VIETNAM.xlsx')
 
-    '''Specify which countries should be included in the subset'''
-  
     '''Create data input'''
     DATA = io_basic('Vietnam',filepath,2010)
     DATA.prep_data()
-    
-        
+            
     '''Create model '''    
     MRIA_model = MRIA(DATA.name, DATA.countries,DATA.sectors,DATA.FD_cat)
     MRIA_model.create_sets(FD_SET=['FinDem'])
@@ -46,7 +43,7 @@ if __name__ == '__main__':
     output = pd.DataFrame()
  
     '''Specify disruption'''
-    disruption = 0.90
+    disruption = 0.95
     disrupted_ctry =  ['Ha_Noi','Ho_Chi_Minh']
     disrupted_sctr = ['secA', 'secB', 'secC', 'secD', 'secE', 'secF', 'secI', 'secG', 'secH']
 
@@ -54,16 +51,13 @@ if __name__ == '__main__':
     disr.loc[disrupted_sctr] = disruption
     disr_dict_sup = {(k,r): v for r, kv in disr.iterrows() for k,v in kv.to_dict().items()}
 
-    disrupted_org = ['Ha_Noi']
-    disrupted_des =  ['Ho_Chi_Minh','Bac_Ninh','Ha_Nam']
-    disrupted_sctr = ['secA','secB','secC', 'secD', 'secE', 'secF', 'secI', 'secG', 'secH']
+#    disrupted_org = ['Ha_Noi']
+#    disrupted_des =  ['Ho_Chi_Minh','Bac_Ninh','Ha_Nam']
+#    disrupted_sctr = ['secA','secB','secC', 'secD', 'secE', 'secF', 'secI', 'secG', 'secH']
 
-    disr = pd.DataFrame(columns = disrupted_des,index =disrupted_sctr)
-    disr.loc[disrupted_sctr] = np.random.randint(80,100,size=disr.shape)/100
-    disr_dict_fd = {(disrupted_org[0],k,r): v for r, kv in disr.iterrows() for k,v in kv.to_dict().items()}
-
-#    disr_dict_sup = {} #{(k,r): v for r, kv in disr.iterrows() for k,v in kv.to_dict().items()}
-#    disr_dict_fd = {} #{(disrupted_org[0],k,r): v for r, kv in disr.iterrows() for k,v in kv.to_dict().items()}
+#    disr = pd.DataFrame(columns = disrupted_des,index =disrupted_sctr)
+#    disr.loc[disrupted_sctr] = np.random.randint(90,100,size=disr.shape)/100
+    disr_dict_fd = {} #{(disrupted_org[0],k,r): v for r, kv in disr.iterrows() for k,v in kv.to_dict().items()}
 
     '''Create model'''
     MRIA_RUN = MRIA(DATA.name,DATA.countries,DATA.sectors,EORA=False,list_fd_cats=['FinDem'])
@@ -81,26 +75,26 @@ if __name__ == '__main__':
     MRIA_RUN.baseline_data(DATA,disr_dict_sup,disr_dict_fd)
     MRIA_RUN.impact_data(DATA,disr_dict_sup,disr_dict_fd)
 
-    output['x_in'] = pd.Series(MRIA_RUN.X.get_values())
+    output['x_in'] = pd.Series(MRIA_RUN.X.get_values())*43
 #   
     MRIA_RUN.run_impactmodel()
 #  
-    output['x_out'] = pd.Series(MRIA_RUN.X.get_values())
+    output['x_out'] = pd.Series(MRIA_RUN.X.get_values())*43
     output['loss'] = (output['x_out'] - output['x_in'])
 
     prov_path = os.path.join(data_path,'Vietnam_boundaries','boundaries_stats','province_level_stats.shp')
     provinces = gpd.read_file(prov_path)[['name_eng','geometry']]
     provinces.name_eng = provinces.name_eng.apply(lambda x: x.replace(' ','_').replace('-','_'))
     
-    prov_impact = output.groupby(level=0,axis=0).sum()
+    prov_impact = output.groupby(level=0,axis=0).sum()/365
     
     prov_impact = provinces.merge(prov_impact,left_on='name_eng',right_index=True)
     # create bin set
     bins = [-1, 1, 5, 10, 25, 50,75,np.float('inf')]
 
     # bin the data for easier plotting with colorscales
-    prov_impact['binned_loss'] = pd.cut((prov_impact['loss']*-1), bins=bins, labels=[0,1,2,3,4,5,6])
-    prov_impact.loc[prov_impact.geometry.area.idxmin(),'binned_no_flood'] = 6
+    #prov_impact['binned_loss'] = pd.cut((prov_impact['loss']), bins=bins, labels=[0,1,2,3,4,5,6])
+    #prov_impact.loc[prov_impact.geometry.area.idxmin(),'binned_no_flood'] = 6
 
     # create figure        
     fig, ax = plt.subplots(nrows=1, ncols=1,figsize=(9,7))
@@ -124,7 +118,7 @@ if __name__ == '__main__':
     cmap = cmap.from_list('Custom cmap', cmaplist, len(cmaplist))
 
     # plot figure
-    prov_impact.plot(ax=ax,column='binned_loss',cmap=cmap,zorder=2)
+    prov_impact.plot(ax=ax,column='loss',cmap=cmap,zorder=2)
 
     # create legend
     handles = []
