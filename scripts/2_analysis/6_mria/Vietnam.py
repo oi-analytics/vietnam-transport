@@ -43,21 +43,21 @@ if __name__ == '__main__':
     output = pd.DataFrame()
  
     '''Specify disruption'''
-    disruption = 0.90
+    disruption = 0.95
     disrupted_ctry =  ['Ha_Noi','Ho_Chi_Minh']
     disrupted_sctr = ['secA', 'secB', 'secC', 'secD', 'secE', 'secF', 'secI', 'secG', 'secH']
 
     disr = pd.DataFrame(columns = disrupted_ctry,index =disrupted_sctr)
     disr.loc[disrupted_sctr] = disruption
-    disr_dict_sup = {} #{(k,r): v for r, kv in disr.iterrows() for k,v in kv.to_dict().items()}
+    disr_dict_sup = {(k,r): v for r, kv in disr.iterrows() for k,v in kv.to_dict().items()}
 
-    disrupted_org = ['Ha_Noi']
-    disrupted_des =  ['Ho_Chi_Minh','Bac_Ninh','Ha_Nam']
-    disrupted_sctr = ['secA','secB','secC', 'secD', 'secE', 'secF', 'secI', 'secG', 'secH']
+#    disrupted_org = ['Ha_Noi']
+#    disrupted_des =  ['Ho_Chi_Minh','Bac_Ninh','Ha_Nam']
+#    disrupted_sctr = ['secA','secB','secC', 'secD', 'secE', 'secF', 'secI', 'secG', 'secH']
 
-    disr = pd.DataFrame(columns = disrupted_des,index =disrupted_sctr)
-    disr.loc[disrupted_sctr] = np.random.randint(0,10,size=disr.shape)/100
-    disr_dict_fd = {(disrupted_org[0],k,r): v for r, kv in disr.iterrows() for k,v in kv.to_dict().items()}
+#    disr = pd.DataFrame(columns = disrupted_des,index =disrupted_sctr)
+#    disr.loc[disrupted_sctr] = np.random.randint(90,100,size=disr.shape)/100
+    disr_dict_fd = {} #{(disrupted_org[0],k,r): v for r, kv in disr.iterrows() for k,v in kv.to_dict().items()}
 
     '''Create model'''
     MRIA_RUN = MRIA(DATA.name,DATA.countries,DATA.sectors,EORA=False,list_fd_cats=['FinDem'])
@@ -86,15 +86,15 @@ if __name__ == '__main__':
     provinces = gpd.read_file(prov_path)[['name_eng','geometry']]
     provinces.name_eng = provinces.name_eng.apply(lambda x: x.replace(' ','_').replace('-','_'))
     
-    prov_impact = output.groupby(level=0,axis=0).sum()
+    prov_impact = output.groupby(level=0,axis=0).sum()/365
     
     prov_impact = provinces.merge(prov_impact,left_on='name_eng',right_index=True)
     # create bin set
     bins = [-1, 1, 5, 10, 25, 50,75,np.float('inf')]
 
     # bin the data for easier plotting with colorscales
-    prov_impact['binned_loss'] = pd.cut((prov_impact['loss']*-1), bins=bins, labels=[0,1,2,3,4,5,6])
-    prov_impact.loc[prov_impact.geometry.area.idxmin(),'binned_no_flood'] = 6
+    #prov_impact['binned_loss'] = pd.cut((prov_impact['loss']), bins=bins, labels=[0,1,2,3,4,5,6])
+    #prov_impact.loc[prov_impact.geometry.area.idxmin(),'binned_no_flood'] = 6
 
     # create figure        
     fig, ax = plt.subplots(nrows=1, ncols=1,figsize=(9,7))
@@ -118,7 +118,7 @@ if __name__ == '__main__':
     cmap = cmap.from_list('Custom cmap', cmaplist, len(cmaplist))
 
     # plot figure
-    prov_impact.plot(ax=ax,column='binned_loss',cmap=cmap,zorder=2)
+    prov_impact.plot(ax=ax,column='loss',cmap=cmap,zorder=2)
 
     # create legend
     handles = []

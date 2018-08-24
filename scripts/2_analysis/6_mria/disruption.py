@@ -66,28 +66,28 @@ def create_events(scenario_list,flow_data,ind_des):
 
 def map_comm_ind(x):
 
-    comm_ind_map = { 'sugar' : 'Agriculture',
-    'wood' : 'Agriculture',
-    'steel' : 'Processing',
-    'constructi' : 'Construction',
-    'cement' : 'Mining',
-    'fertilizer' : 'Processing',
-    'coal' : 'Mining',
-    'petroluem' : 'Processing',
-    'manufactur' : 'Manufacturing',
-    'fishery' : 'Agriculture',
-    'meat' : 'Processing',
-    'rice' : 'Agriculture',
-    'cash' : 'Agriculture',
-    'cass' : 'Agriculture',
-    'teas' : 'Processing',
-    'maiz' : 'Agriculture',
-    'rubb' : 'Manufacturing',
-    'swpo' : 'Agriculture',
-    'acof' : 'Processing',
-    'rcof' : 'Processing',
-    'pepp' : 'Agriculture' }
-
+    comm_ind_map = { 
+'acof'	 : 'Agriculture',
+'cash': 'Agriculture',
+'cass'	: 'Agriculture',
+'cement'	: 'Processing',
+'coal'	: 'Processing',
+'constructi'	:'Construction',
+'fertilizer'	: 'Processing',
+'fishery'	: 'Agriculture',
+'maiz'	: 'Agriculture',
+'manufactur'	:'Manufacturing',
+'meat'	: 'Agriculture',
+'min_rice'	: 'Agriculture',
+'pepp'	: 'Agriculture',
+'petroluem'	: 'Processing',
+'rcof'	: 'Agriculture',
+'rubb': 'Processing',
+'steel	': 'Processing',
+'sugar	': 'Agriculture',
+'swpo'	:'Processing',
+'teas'	: 'Agriculture',
+'wood':'Wood and Paper' }
     return comm_ind_map[x]
 
 def map_ind(x):
