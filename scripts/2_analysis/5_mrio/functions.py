@@ -84,11 +84,11 @@ def estimate_gva(regions,in_million=True):
     else:
         return list(((regions.pro_nfirm*regions.laborcost)+(regions.pro_nfirm*regions.capital)))
 
-def create_proxies(data_path,notrade=False,own_production_ratio=0.9):
+def create_proxies(data_path,notrade=False,own_production_ratio=0.9,min_rice=True):
     
     provinces = load_provincial_stats(data_path)
     provinces.name_eng = provinces.name_eng.apply(lambda x: x.replace(' ','_').replace('-','_'))
-    od_table = load_od(data_path)
+    od_table = load_od(data_path,min_rice=min_rice)
     
     create_indices(data_path,provinces,write_to_csv=True)
     create_regional_proxy(data_path,provinces,write_to_csv=True)
@@ -177,12 +177,7 @@ def create_level14_proxies(data_path,od_table,own_production_ratio=0.9,write_to_
     # get sector list
     sector_list_ini = get_final_sector_classification()+['other1','other2','other3']
     sector_list = [x+str(1) for x in sector_list_ini]
-
-    #map sectors to be the same
-#    mapper = map_regions()
-#    od_table['Destination'] = od_table['Destination'].apply(lambda x: mapper[x])
-#    od_table['Origin'] = od_table['Origin'].apply(lambda x: mapper[x])
-     
+    
     od_table.loc[od_table['Destination'] == od_table['Origin'],'gdp'] = 10
 
     od_sum = pd.DataFrame(od_table.groupby(['Destination','Origin']).sum().sum(axis=1))
@@ -305,13 +300,10 @@ def load_output(data_path,provinces,notrade=True):
     
     # create predefined index and col, which is easier to read
     sector_only = [x for x in rowcol_names if x.startswith('sec')]*len(region_names)
-#    row_only =  [x for x in rowcol_names if x.startswith('row')]*len(region_names) 
     col_only  =  [x for x in rowcol_names if x.startswith('col')]*len(region_names) 
 
-#    region_row = [item for sublist in [[x]*9 for x in region_names] for item in sublist] + [item for sublist in [[x]*3 for x in region_names] for item in sublist] 
     region_col = [item for sublist in [[x]*9 for x in region_names] for item in sublist] + [item for sublist in [[x]*3 for x in region_names] for item in sublist] 
 
-#    index_mi_reorder = pd.MultiIndex.from_arrays([region_row,sector_only+row_only], names=('region', 'row'))
     column_mi_reorder = pd.MultiIndex.from_arrays([region_col,sector_only+col_only], names=('region', 'col'))
  
     #sum va and imports
@@ -345,11 +337,14 @@ def map_sect_vnm_to_eng():
 
     return map_dict
 
-def load_od(data_path):
+def load_od(data_path,min_rice=True):
     
     od_path = os.path.join(data_path,'OD_data','national_scale_od_matrix.xlsx')
     od_table = pd.read_excel(od_path,sheet_name='total')
-    od_table.drop(['max_rice','min_tons','max_tons'],inplace=True,axis=1)
+    if min_rice == True:
+        od_table.drop(['max_rice','min_tons','max_tons'],inplace=True,axis=1)
+    else:
+        od_table.drop(['min_rice','min_tons','max_tons'],inplace=True,axis=1)
     
     od_table = od_table.dropna(subset=['o_region','d_region'],axis='index')
     od_table['o_region'] = od_table['d_region'].apply(lambda x: x.replace(' ','_').replace('-','_'))

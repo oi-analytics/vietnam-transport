@@ -13,7 +13,7 @@ import subprocess
 from functions import load_config,load_provincial_stats,estimate_gva,create_proxies,load_output
 from ras_method import ras_method
 
-def run_mrio_disaggregate(notrade=False,own_production_ratio=0.9):
+def run_mrio_disaggregate(notrade=False,min_rice = True,own_production_ratio=0.9):
 
     data_path = load_config()['paths']['data']
    
@@ -25,7 +25,7 @@ def run_mrio_disaggregate(notrade=False,own_production_ratio=0.9):
     provinces['raw_gva'] = estimate_gva(provinces,in_million=True)
     
     # prepare proxies for settings_trade
-    create_proxies(data_path,notrade=notrade,own_production_ratio=own_production_ratio)
+    create_proxies(data_path,notrade=notrade,own_production_ratio=own_production_ratio,min_rice=min_rice)
 
     # run mrio_disaggregate
     if notrade == False:
@@ -64,7 +64,7 @@ def run_mrio_disaggregate(notrade=False,own_production_ratio=0.9):
     return Xin
 
 
-def mrio_to_excel(Xin):
+def mrio_to_excel(Xin,min_rice = True):
     
     data_path = load_config()['paths']['data']
     
@@ -82,8 +82,11 @@ def mrio_to_excel(Xin):
     Xnew = pd.concat([Xnew,FinalD_ToT,Exports],axis=1)
        
     # write to excel 
-    writer = pd.ExcelWriter(os.path.join(data_path,'input_data','IO_VIETNAM.xlsx'))
-
+    if min_rice == True:
+        writer = pd.ExcelWriter(os.path.join(data_path,'input_data','IO_VIETNAM_MIN.xlsx'))
+    else:
+        writer = pd.ExcelWriter(os.path.join(data_path,'input_data','IO_VIETNAM_MAX.xlsx'))
+       
     #write T
     df_T = Xnew.iloc[:567,:567]
     df_T.columns =  df_T.columns.droplevel()
@@ -123,10 +126,10 @@ def mrio_to_excel(Xin):
 
 def main():
    
-    run_mrio_disaggregate(notrade=True)
-    Xin = run_mrio_disaggregate(notrade=False,own_production_ratio=0.8)
+    run_mrio_disaggregate(notrade=True,min_rice=False)
+    Xin = run_mrio_disaggregate(notrade=False,own_production_ratio=0.8,min_rice=False)
     
-    mrio_to_excel(Xin)
+    mrio_to_excel(Xin,min_rice=False)
     
     return Xin
 
