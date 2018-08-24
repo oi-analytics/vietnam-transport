@@ -413,6 +413,7 @@ def main():
 			national_ods_df.append(national_ods_modes_df)
 
 	national_ods_df = list(map(list,zip(*national_ods_df)))
+	region_total = []
 	for m in range(len(modes_file_paths)):
 		all_ods = pd.concat(national_ods_df[m], axis=0, sort = 'False', ignore_index=True).fillna(0)
 
@@ -432,6 +433,8 @@ def main():
 		all_ods_regions = all_ods_regions.groupby(['o_region','d_region'])[all_ods_val_cols].sum().reset_index()
 		all_ods_regions.to_excel(excl_wrtr_reg,modes[m],index = False)
 		excl_wrtr_reg.save()
+
+		region_total.append(all_ods_regions)
 		del all_ods_regions
 			
 		all_ods = all_ods[all_ods['max_tons'] > 0.5]
@@ -439,7 +442,14 @@ def main():
 		# all_ods.to_csv(flow_output_csv,index = False)
 		all_ods.to_excel(excl_wrtr,modes[m],index = False)
 		excl_wrtr.save()
-			
+		del all_ods
+	
+	all_ods = pd.concat(region_total, axis=0, sort = 'False', ignore_index=True).fillna(0)
+	all_ods_val_cols = [c for c in all_ods.columns.values.tolist() if c not in ('o_region','d_region')]
+	all_ods_regions = all_ods.groupby(['o_region','d_region'])[all_ods_val_cols].sum().reset_index()
+	all_ods_regions.to_excel(excl_wrtr_reg,'total',index = False)
+	excl_wrtr_reg.save()
+
 
 if __name__ == '__main__':
 	main()

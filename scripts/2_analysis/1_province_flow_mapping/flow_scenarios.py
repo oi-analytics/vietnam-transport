@@ -21,7 +21,7 @@ import math
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
 from scripts.utils import load_config,extract_value_from_gdf,get_nearest_node,gdf_clip,gdf_geom_clip,count_points_in_polygon
-from scripts.transport_network_creation import province_shapefile_to_network, add_igraph_generalised_costs_province_roads
+from scripts.transport_network_creation import province_shapefile_to_network, add_igraph_generalised_costs_roads
 
 def netrev_od_pairs(start_points,end_points):
 	"""
@@ -101,8 +101,8 @@ def assign_monthly_tons_crops(x,rice_prod_dist,x_cols):
 	max_croptons = 0
 	for x_name in x_cols:
 		if x_name == 'rice':
-			min_croptons += (1.0*min(rice_prod_dist)*x[x_name])/12.0
-			max_croptons += (1.0*max(rice_prod_dist)*x[x_name])/12.0
+			min_croptons += (1.0*min(rice_prod_dist)*x[x_name])/30.0
+			max_croptons += (1.0*max(rice_prod_dist)*x[x_name])/30.0
 		else:
 			min_croptons += (1.0*x[x_name])/365.0
 			max_croptons += (1.0*x[x_name])/365.0
@@ -119,8 +119,8 @@ def assign_io_rev_costs_crops(x,cost_dataframe,rice_prod_dist,x_cols,ex_rate):
 	for cost_param in cost_list:
 		if cost_param.crop_code in x_cols:
 			if cost_param.crop_code == 'rice':
-				min_croprev += (1.0*min(rice_prod_dist)*ex_rate*cost_param.est_net_rev*(x[cost_param.crop_code]/cost_param.tot_tons))/12.0
-				max_croprev += (1.0*max(rice_prod_dist)*ex_rate*cost_param.est_net_rev*(x[cost_param.crop_code]/cost_param.tot_tons))/12.0
+				min_croprev += (1.0*min(rice_prod_dist)*ex_rate*cost_param.est_net_rev*(x[cost_param.crop_code]/cost_param.tot_tons))/30.0
+				max_croprev += (1.0*max(rice_prod_dist)*ex_rate*cost_param.est_net_rev*(x[cost_param.crop_code]/cost_param.tot_tons))/30.0
 			else:
 				min_croprev += 1.0/365.0*(ex_rate*cost_param.est_net_rev*(x[cost_param.crop_code]/cost_param.tot_tons))
 				max_croprev += 1.0/365.0*(ex_rate*cost_param.est_net_rev*(x[cost_param.crop_code]/cost_param.tot_tons))
@@ -138,13 +138,14 @@ if __name__ == '__main__':
 	district_committe_names = ['district_people_committee_points_lao_cai.shp',
 							'district_province_peoples_committee_point_binh_dinh.shp',
 							'district_people_committee_points_thanh_hoa.shp']
-
+	commune_committe_names = 'commune_committees_points.shp'
 	exchange_rate = 1.05*(1000000/21000)
 	growth_scenarios = [(5,'low'),(6.5,'forecast'),(10,'high')]
 	base_year = 2016
 
 	shp_output_path = os.path.join(output_path,'flow_mapping_shapefiles')
-	flow_output_excel = os.path.join(output_path,'flow_mapping_paths','province_roads_district_center_flow_ods.xlsx')
+	# flow_output_excel = os.path.join(output_path,'flow_mapping_paths','province_roads_district_center_flow_ods.xlsx')
+	flow_output_excel = os.path.join(output_path,'flow_mapping_paths','province_roads_commune_center_flow_ods.xlsx')
 	excl_wrtr = pd.ExcelWriter(flow_output_excel)
 
 	rd_prop_file = os.path.join(data_path,'Roads','road_properties','road_properties.xlsx')
@@ -168,7 +169,8 @@ if __name__ == '__main__':
 		edges_in = os.path.join(data_path,'Roads','{}_roads'.format(province_name),'vietbando_{}_edges.shp'.format(province_name))
 		nodes_in = os.path.join(data_path,'Roads','{}_roads'.format(province_name),'vietbando_{}_nodes.shp'.format(province_name))
 		
-		commune_center_in = os.path.join(data_path,'Points_of_interest',district_committe_names[prn])
+		# commune_center_in = os.path.join(data_path,'Points_of_interest',district_committe_names[prn])
+		commune_center_in = os.path.join(data_path,'Points_of_interest',commune_committe_names)
 	
 		# path_width_table = os.path.join(data_path,'Roads','road_properties','road_properties.xlsx')
 	
@@ -301,7 +303,8 @@ if __name__ == '__main__':
 		# all_ods.to_csv(os.path.join(output_path,'{}_ods.csv'.format(province_name)),index = False)
 		# all_ods = all_ods[['od_pair','min_croptons','max_croptons','min_netrev','max_netrev']]
 
-		flow_output_excel = os.path.join(output_path,'flow_mapping_paths','{}_roads_od_flow_growth.xlsx'.format(province_name))
+		# flow_output_excel = os.path.join(output_path,'flow_mapping_paths','{}_roads_od_flow_growth.xlsx'.format(province_name))
+		flow_output_excel = os.path.join(output_path,'flow_mapping_paths','{}_roads_od_flow_growth_communes.xlsx'.format(province_name))
 		excl_wrtr_1 = pd.ExcelWriter(flow_output_excel)
 		for grth in growth_scenarios:
 			# all_ods = all_ods[['od_nodes','min_croptons','max_croptons','min_netrev','max_netrev']]

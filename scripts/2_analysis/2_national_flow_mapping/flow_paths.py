@@ -22,7 +22,7 @@ import math
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
 from scripts.utils import *
-from scripts.transport_network_creation import national_shapefile_to_network, add_igraph_generalised_costs_roads
+from scripts.transport_network_creation import *
 
 def swap_min_max(x,min_col,max_col):
 	'''
@@ -90,10 +90,6 @@ def network_od_paths_assembly(points_dataframe,node_dict,graph,vehicle_wt,transp
 		# 	min_tons = [origin_df['min_tons']]
 		# 	max_tons = [origin_df['max_tons']]
 
-		# 	min_veh_nums = [origin_df['min_vehicle_nums']]
-		# 	max_veh_nums = [origin_df['max_vehicle_nums']]
-		# 	get_min_path, get_min_dist, get_min_time, get_min_gcost = network_od_path_estimations(graph,origin,destinations,'min_gcost','min_time')
-		# 	print (get_min_path)
 		# else:
 		# 	# print (origin_df)
 		# 	destinations = origin_df.loc[origin,'destination'].values.tolist()
@@ -101,8 +97,6 @@ def network_od_paths_assembly(points_dataframe,node_dict,graph,vehicle_wt,transp
 		# 	min_tons = origin_df.loc[origin,'min_tons'].values.tolist()
 		# 	max_tons = origin_df.loc[origin,'max_tons'].values.tolist()
 
-		# 	min_veh_nums = origin_df.loc[origin,'min_vehicle_nums'].values.tolist()
-		# 	max_veh_nums = origin_df.loc[origin,'max_vehicle_nums'].values.tolist()
 
 		# get_min_path, get_min_dist, get_min_time, get_min_gcost = network_od_path_estimations(graph,origin,destinations,'min_gcost','min_time')
 		# get_max_path, get_max_dist, get_max_time, get_max_gcost = network_od_path_estimations(graph,origin,destinations,'max_gcost','max_time')
@@ -111,7 +105,7 @@ def network_od_paths_assembly(points_dataframe,node_dict,graph,vehicle_wt,transp
 		# # get_max_gcost = np.multiply(np.array(max_veh_nums),np.array(get_max_gcost))
 
 		# save_paths += list(zip([origin]*len(destinations),destinations,get_min_path,get_max_path,min_tons,max_tons,
-		# 						get_min_dist,get_max_dist,get_min_time,get_max_time,get_min_gcost,get_max_gcost,min_veh_nums,max_veh_nums))
+		# 						get_min_dist,get_max_dist,get_min_time,get_max_time,get_min_gcost,get_max_gcost))
 		# print ("done with {0} in network {1}".format(origin,transport_mode))
 		try:
 			origin_df =  points_dataframe.loc[origin]
@@ -120,22 +114,22 @@ def network_od_paths_assembly(points_dataframe,node_dict,graph,vehicle_wt,transp
 				# print (origin_df['destination'])
 				destinations = [origin_df['destination']]
 
-				min_tons = [origin_df['min_tons']]
-				max_tons = [origin_df['max_tons']]
+				# min_tons = [origin_df['min_tons']]
+				# max_tons = [origin_df['max_tons']]
 
-				min_veh_nums = [origin_df['min_vehicle_nums']]
-				max_veh_nums = [origin_df['max_vehicle_nums']]
+				# min_veh_nums = [origin_df['min_vehicle_nums']]
+				# max_veh_nums = [origin_df['max_vehicle_nums']]
 				# get_min_path, get_min_dist, get_min_time, get_min_gcost = network_od_path_estimations(graph,origin,destinations,'min_gcost','min_time')
 				# print (get_min_path)
 			else:
 				# print (origin_df)
 				destinations = origin_df['destination'].values.tolist()
 
-				min_tons = origin_df['min_tons'].values.tolist()
-				max_tons = origin_df['max_tons'].values.tolist()
+				# min_tons = origin_df['min_tons'].values.tolist()
+				# max_tons = origin_df['max_tons'].values.tolist()
 
-				min_veh_nums = origin_df['min_vehicle_nums'].values.tolist()
-				max_veh_nums = origin_df['max_vehicle_nums'].values.tolist()
+				# min_veh_nums = origin_df['min_vehicle_nums'].values.tolist()
+				# max_veh_nums = origin_df['max_vehicle_nums'].values.tolist()
 
 			get_min_path, get_min_dist, get_min_time, get_min_gcost = network_od_path_estimations(graph,origin,destinations,'min_gcost','min_time')
 			get_max_path, get_max_dist, get_max_time, get_max_gcost = network_od_path_estimations(graph,origin,destinations,'max_gcost','max_time')
@@ -143,52 +137,49 @@ def network_od_paths_assembly(points_dataframe,node_dict,graph,vehicle_wt,transp
 			# get_min_gcost = np.multiply(np.array(min_veh_nums),np.array(get_min_gcost))
 			# get_max_gcost = np.multiply(np.array(max_veh_nums),np.array(get_max_gcost))
 
-			save_paths += list(zip([origin]*len(destinations),destinations,get_min_path,get_max_path,min_tons,max_tons,
-								get_min_dist,get_max_dist,get_min_time,get_max_time,get_min_gcost,get_max_gcost,min_veh_nums,max_veh_nums))
-			# print ("done with {0} in network {1}".format(origin,transport_mode))
+			save_paths += list(zip([origin]*len(destinations),destinations,get_min_path,get_max_path,
+								get_min_dist,get_max_dist,get_min_time,get_max_time,get_min_gcost,get_max_gcost))
+			print ("done with {0} in network {1}".format(origin,transport_mode))
 		except:
 			print(origin)
 
 
-	cols = ['origin','destination','min_edge_path','max_edge_path','min_tons','max_tons',
-			'min_distance','max_distance','min_time','max_time','min_gcost','max_gcost','min_vehicle_nums','max_vehicle_nums']
+	cols = ['origin','destination','min_edge_path','max_edge_path',
+			'min_distance','max_distance','min_time','max_time','min_gcost','max_gcost']
 	save_paths_df = pd.DataFrame(save_paths,columns = cols)
-	save_paths_df.to_excel(excel_writer,transport_mode + '_{}_tons'.format(int(vehicle_wt)),index = False)
+
+	save_paths_df = pd.merge(save_paths_df,points_dataframe,how='left', on=['origin','destination']).fillna(0)
+	save_paths_df = save_paths_df[save_paths_df['max_tons'] > 0]
+	if transport_mode != 'air':
+		save_paths_df['min_vehicle_nums'] = np.maximum(1,np.ceil(save_paths_df['min_tons']/vehicle_wt))
+		save_paths_df['max_vehicle_nums'] = np.maximum(1,np.ceil(save_paths_df['max_tons']/vehicle_wt))
+
+	save_paths_df.to_excel(excel_writer,transport_mode,index = False)
 	excel_writer.save()
 	del save_paths_df
 
-	all_edges = [x['edge_id'] for x in graph.es]
-	all_veh = [x['vehicle_co'] for x in graph.es]
-	all_edges_geom = [x['geometry'] for x in graph.es]
+	# all_edges = [x['edge_id'] for x in graph.es]
+	# all_edges_geom = [x['geometry'] for x in graph.es]
 	
-	gdf_edges = gpd.GeoDataFrame(pd.DataFrame([all_edges,all_veh,all_edges_geom]).T,crs='epsg:4326')
-	gdf_edges.columns = ['edge_id','vehicle_co','geometry']
-	gdf_edges['vehicle_co'] = pd.to_numeric(gdf_edges['vehicle_co'])
+	# gdf_edges = gpd.GeoDataFrame(pd.DataFrame([all_edges,all_edges_geom]).T,crs='epsg:4326')
+	# gdf_edges.columns = ['edge_id','geometry']
 	
-	gdf_edges['min_tons'] = 0
-	gdf_edges['max_tons'] = 0
-	gdf_edges['min_veh'] = 0
-	gdf_edges['max_veh'] = 0
+	# gdf_edges['min_tons'] = 0
+	# gdf_edges['max_tons'] = 0
 
-	for path in save_paths:
-		gdf_edges.loc[gdf_edges['edge_id'].isin(path[2]),'min_tons'] += path[4]
-		gdf_edges.loc[gdf_edges['edge_id'].isin(path[3]),'max_tons'] += path[5]
-		gdf_edges.loc[gdf_edges['edge_id'].isin(path[2]),'min_veh'] += path[-2]
-		gdf_edges.loc[gdf_edges['edge_id'].isin(path[3]),'max_veh'] += path[-1]
+	# for path in save_paths:
+	# 	gdf_edges.loc[gdf_edges['edge_id'].isin(path[2]),'min_tons'] += path[4]
+	# 	gdf_edges.loc[gdf_edges['edge_id'].isin(path[3]),'max_tons'] += path[5]
 	
 
-	gdf_edges['swap'] = gdf_edges.apply(lambda x: swap_min_max(x,'min_tons','max_tons'),axis = 1)
-	gdf_edges[['min_tons','max_tons']] = gdf_edges['swap'].apply(pd.Series)
-	gdf_edges.drop('swap',axis=1,inplace=True)
+	# gdf_edges['swap'] = gdf_edges.apply(lambda x: swap_min_max(x,'min_tons','max_tons'),axis = 1)
+	# gdf_edges[['min_tons','max_tons']] = gdf_edges['swap'].apply(pd.Series)
+	# gdf_edges.drop('swap',axis=1,inplace=True)
 
-	gdf_edges['swap'] = gdf_edges.apply(lambda x: swap_min_max(x,'min_veh','max_veh'),axis = 1)
-	gdf_edges[['min_veh','max_veh']] = gdf_edges['swap'].apply(pd.Series)
-	gdf_edges.drop('swap',axis=1,inplace=True)
+	# if save_edges == True:
+	# 	gdf_edges.to_file(os.path.join(output_path,'weighted_edges_flows_national_{0}.shp'.format(transport_mode)))
 
-	if save_edges == True:
-		gdf_edges.to_file(os.path.join(output_path,'weighted_edges_flows_national_{0}_{1}_tons.shp'.format(transport_mode,int(vehicle_wt))))
-
-	del gdf_edges
+	# del gdf_edges
 
 '''
 Create the database connection
@@ -196,8 +187,8 @@ Create the database connection
 def main():
 	data_path,calc_path,output_path = load_config()['paths']['data'],load_config()['paths']['calc'],load_config()['paths']['output']
 
-	exchange_rate = 1.05*(1000000/21000)
-	vehicle_wt = 20.0
+	# exchange_rate = 1.05*(1000000/21000)
+	# vehicle_wt = 20.0
 
 	# population_points_in = os.path.join(data_path,'Points_of_interest','population_points.shp')
 	# commune_path = os.path.join(data_path,'Vietnam_boundaries','boundaries_stats','commune_level_stats.shp')
@@ -210,18 +201,23 @@ def main():
 	'''
 	Get the modal shares
 	'''
-	# modes_file_paths = [('Roads','national_roads'),('Railways','national_rail'),('Airports','airnetwork'),('Waterways','waterways')]
-	modes_file_paths = [('Roads','national_roads')]
-	modes = ['road','rail','air','water']
+	modes_file_paths = [('Roads','national_roads'),('Railways','national_rail'),('Airports','airnetwork'),('Waterways','waterways')]
+	modes_file_paths = [('Roads','national_roads'),('Railways','national_rail'),('Airports','airnetwork'),('Waterways','waterways'),('Waterways','waterways')]
+	modes = ['road','rail','air','inland','coastal']
+	veh_wt = [20,800,0,800,1200]
+	usage_factors = [(0,0),(0,0),(0,0),(0.2,0.25),(0.2,0.25)]
+	speeds = [(0,0),(40,60),(700,800),(9,20),(9,20)]
 	mode_cols = ['road','rail','air','inland','coastal']
-	new_mode_cols = ['o','d','road','rail','air','water']
+	new_mode_cols = ['o','d','road','rail','air','inland','coastal']
+
 	shp_output_path = os.path.join(output_path,'flow_mapping_shapefiles')
 	od_output_excel = os.path.join(output_path,'flow_mapping_paths','national_scale_flow_ods.xlsx')
 
 	flow_output_excel = os.path.join(output_path,'flow_mapping_paths','national_scale_flow_paths.xlsx')
 	excl_wrtr = pd.ExcelWriter(flow_output_excel)
 
-	rd_prop_file = os.path.join(data_path,'Roads','road_properties','road_properties.xlsx')
+	md_prop_file = os.path.join(data_path,'mode_properties','mode_costs.xlsx')
+	rd_prop_file = os.path.join(data_path,'mode_properties','road_properties.xlsx')
 
 	for m in range(len(modes_file_paths)):
 		mode_data_path = os.path.join(data_path,modes_file_paths[m][0],modes_file_paths[m][1])
@@ -229,17 +225,18 @@ def main():
 			try:
 				if file.endswith(".shp") and 'edges' in file.lower().strip():
 					edges_in = os.path.join(mode_data_path, file)
-				if file.endswith(".shp") and 'nodes' in file.lower().strip():
-					nodes_in = os.path.join(mode_data_path, file)
 			except:
-				print ('Network nodes and edge files necessary')
+				return ('Network nodes and edge files necessary')
 			
 		if modes[m] == 'road': 
-			G =  national_shapefile_to_network(edges_in,rd_prop_file)
-			G = add_igraph_generalised_costs_roads(G,1,vehicle_wt)
-			nodes_name = np.asarray([x['name'] for x in G.vs])
-			nodes_index = np.asarray([x.index for x in G.vs])
-			node_dict = dict(zip(nodes_name,nodes_index))
+			G =  national_road_shapefile_to_network(edges_in,rd_prop_file)
+		else:
+			G =  network_shapefile_to_network(edges_in,md_prop_file,modes[m],speeds[m][0],speeds[m][1])
+
+		G = add_igraph_generalised_costs_network(G,1,veh_wt[m],usage_factors[m][0],usage_factors[m][1])
+		nodes_name = np.asarray([x['name'] for x in G.vs])
+		nodes_index = np.asarray([x.index for x in G.vs])
+		node_dict = dict(zip(nodes_name,nodes_index))
 
 		# print ([x for x in G.vs])
 		# print (len(nodes_name))
@@ -248,10 +245,11 @@ def main():
 		all_ods = pd.read_excel(od_output_excel,sheet_name = modes[m])
 		all_ods = all_ods[all_ods['max_tons'] > 0.5]
 		print (len(all_ods.index))
-		all_ods['min_vehicle_nums'] = np.maximum(1,np.ceil(all_ods['min_tons']/vehicle_wt))
-		all_ods['max_vehicle_nums'] = np.maximum(1,np.ceil(all_ods['max_tons']/vehicle_wt))
-		# all_ods = all_ods[['origin','destination','min_croptons','max_croptons','min_netrev','max_netrev']]
-		network_od_paths_assembly(all_ods,node_dict,G,vehicle_wt,modes[m],save_edges = True,output_path =shp_output_path,excel_writer =excl_wrtr)
+		# if mode[m] != 'air' 
+		# 	all_ods['min_vehicle_nums'] = np.maximum(1,np.ceil(all_ods['min_tons']/vehicle_wt))
+		# 	all_ods['max_vehicle_nums'] = np.maximum(1,np.ceil(all_ods['max_tons']/vehicle_wt))
+			# all_ods = all_ods[['origin','destination','min_croptons','max_croptons','min_netrev','max_netrev']]
+		network_od_paths_assembly(all_ods,node_dict,G,veh_wt[m],modes[m],save_edges = True,output_path =shp_output_path,excel_writer =excl_wrtr)
 			
 
 if __name__ == '__main__':
