@@ -142,6 +142,6 @@ if __name__ == '__main__':
     input_file = os.path.join(data_path,'Results','Failure_results','single_edge_failures_totals_national_rail_max.csv')
     
     get_all_input_files = [os.path.join(data_path,'Results','Failure_results',x) for x in os.listdir(os.path.join(data_path,'Results','Failure_results'))]
-    estimate_losses(input_file)
-#    with Pool(int(cpu_count())-2) as pool: 
-#        pool.map(estimate_losses,get_all_input_files,chunksize=1) 
+
+    with Pool(int(cpu_count())-2) as pool: 
+        pool.map(estimate_losses,get_all_input_files,chunksize=1) 
