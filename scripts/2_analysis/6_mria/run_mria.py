@@ -61,8 +61,6 @@ def estimate_losses(input_file):
     
     collect_outputs = {}
     for iter_,event in enumerate(list(event_dict.keys())):
-        if event == 'raile_228':
-            break
         
         if np.average(1 - np.array(list(event_dict[event].values()))) < 0.005:
             print('Event {} will cause no impacts'.format(event))
