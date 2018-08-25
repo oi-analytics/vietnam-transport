@@ -95,17 +95,14 @@ class MRIA_IO(object):
     ''' Specify Final Demand and Local Final Demand'''
     def create_FD(self,FinalD,disr_dict_fd):
         
-        disrupted_org = list(np.unique([x[0] for x in disr_dict_fd]))
         disrupted_des = list(np.unique([x[1] for x in disr_dict_fd]))
-        disrupted_sctr = [x[2] for x in disr_dict_fd]
         
         model = self.m
         
         model.Rdes = Set(initialize=disrupted_des, doc='Final Demand')
         
         def tfd_init(model,R,S,Rb):
-            if (R in disrupted_org) & (Rb in disrupted_des) & (S in disrupted_sctr):
-#                print(disr_dict_fd[R,Rb,S])
+            if (R,Rb,S) in list(disr_dict_fd.keys()):
                 return sum(FinalD[R,S,Rb,fdemand] for fdemand in model.fdemand)*disr_dict_fd[R,Rb,S]
             else:
                 return sum(FinalD[R,S,Rb,fdemand] for fdemand in model.fdemand)
@@ -168,9 +165,6 @@ class MRIA_IO(object):
     def create_X_up(self,disr_dict,Regmaxcap=0.98):
         model = self.m
 
-#        disrupted_ctry = list(np.unique([x[0] for x in disr_dict]))
-#        disrupted_sctr = [x[1] for x in disr_dict]
-
         def shock_init(model, R,S):
             if (R,S) in list(disr_dict.keys()):
                 return disr_dict[R,S]
@@ -200,9 +194,6 @@ class MRIA_IO(object):
     '''create X'''
     def create_X(self,disr_dict,Regmaxcap=0.98,
                  A_matrix_ini=None,Z_matrix=None,FinalD=None,Xbase=None,fd=None,ExpROW=None):
-
-#        disrupted_ctry = list(np.unique([x[0] for x in disr_dict]))
-#        disrupted_sctr = [x[1] for x in disr_dict]
 
         model = self.m
 
@@ -239,7 +230,6 @@ class MRIA_IO(object):
         
         self.ValueA = model.ValueA
     
-
     ''' Specify Trade between regions '''
     def create_Z_mat(self):
         model = self.m
@@ -422,7 +412,6 @@ class MRIA_IO(object):
             return  (self.X[R,S] >= 
                      sum(self.A_matrix[R,S,R,Sb]*self.X[R,Sb] for Sb in model.Sb) + self.lfd[R,S]
             +  sum(self.ImportShare[R,Rb,S]*(sum(self.A_matrix[R,S,Rb,Sb]*self.X[Rb,Sb] for Sb in model.Sb) + self.fd[Rb,S]) for Rb in model.Rb if (R != Rb))
-#            + self.TotExp[R,S]
             + self.ExpROW[R,S])
 
         model.demSup = Constraint(model.R,model.S, rule=demSup, doc='Satisfy demand')

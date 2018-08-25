@@ -40,7 +40,7 @@ def create_disruption(input_file,output_dir,min_rice=True,single_point=True):
         disruption = pd.DataFrame(disruption.stack(0))
         disruption.columns = ['value']
         disruption = disruption.loc[disruption.value > 0]
-        disruption['value'] = 1- disruption['value']
+        disruption['value'] = 1- (disruption['value']*0.2)
         event_dict[id_] = disruption['value'].to_dict()
     
     return event_dict
@@ -127,4 +127,3 @@ if __name__ == "__main__":
 
     input_file = os.path.join(data_path,'Results','Failure_results','single_edge_failures_totals_national_road_min.csv')
 
-    event_dict = create_disruption(input_file)

@@ -38,20 +38,29 @@ def run_mrio_disaggregate(notrade=False,min_rice = True,own_production_ratio=0.9
     # get reordered mrio with new region classification
     Xin = load_output(data_path,provinces,notrade=notrade)
 
+    # convert to numpy matrix
     X0 = Xin.as_matrix() 
    
+    # get sum of rows and columns
     u = X0.sum(axis=1)
     v = X0.sum(axis=0)
+    
+    # and only keep T
     v[:(len(u)-3)] = u[:-3]
     
+    # apply RAS method to rebalance the table
     X1 = ras_method(X0,u,v,eps=5e-5)   
     
+    # copy new balanced table into dataframe
     Xin.iloc[:,:] = X1
+    
+    # add indices to it
     index = list(Xin.index)
     index[567],index[568],index[569] = ('total','tax_sub'),('total','import_'),('total','valueA')
     
     Xin.index = pd.MultiIndex.from_tuples(index, names=['region', 'sector'])
     
+    # save outpout
     if notrade == True:
         Xin.to_csv(os.path.join(data_path,'IO_analysis','MRIO_TABLE','notrade_trade.csv'))
     else:

@@ -61,7 +61,8 @@ def estimate_losses(input_file):
     
     collect_outputs = {}
     for iter_,event in enumerate(list(event_dict.keys())):
-
+        if event == 'raile_228':
+            break
         
         if np.average(1 - np.array(list(event_dict[event].values()))) < 0.005:
             print('Event {} will cause no impacts'.format(event))
@@ -117,11 +118,7 @@ def estimate_losses(input_file):
             output = output.drop(['x_in','x_out'],axis=1)
        
             output.to_csv(os.path.join(output_dir,'{}.csv'.format(event)))
-        
-            prov_path = os.path.join(data_path,'Vietnam_boundaries','boundaries_stats','province_level_stats.shp')
-            provinces = gpd.read_file(prov_path)[['name_eng','geometry']]
-            provinces.name_eng = provinces.name_eng.apply(lambda x: x.replace(' ','_').replace('-','_'))
-            
+                  
             prov_impact = output.groupby(level=0,axis=0).sum()
             collect_outputs[event] = prov_impact
  
@@ -144,9 +141,9 @@ if __name__ == '__main__':
 
     data_path = load_config()['paths']['data']
 
-    input_file = os.path.join(data_path,'Results','Failure_results','multiple_edge_failures_totals_national_road_max.csv')
+    input_file = os.path.join(data_path,'Results','Failure_results','single_edge_failures_totals_national_rail_max.csv')
     
     get_all_input_files = [os.path.join(data_path,'Results','Failure_results',x) for x in os.listdir(os.path.join(data_path,'Results','Failure_results'))]
-    
-    with Pool(int(cpu_count())-2) as pool: 
-        pool.map(estimate_losses,get_all_input_files,chunksize=1) 
+    estimate_losses(input_file)
+#    with Pool(int(cpu_count())-2) as pool: 
+#        pool.map(estimate_losses,get_all_input_files,chunksize=1) 
