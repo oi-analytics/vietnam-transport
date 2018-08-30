@@ -69,7 +69,8 @@ def set_ax_bg(ax, color='#c6e0ff'):
     ax.background_patch.set_facecolor(color)
 
 
-def plot_basemap(ax, data_path, focus='VNM', neighbours=['VNM', 'CHN', 'LAO', 'KHM', 'THA'],country_border='white',plot_regions=True,plot_states=True):
+def plot_basemap(ax, data_path, focus='VNM', neighbours=['VNM', 'CHN', 'LAO', 'KHM', 'THA'],
+                 country_border='white', plot_regions=True, plot_states=True, highlight_region=[]):
     """Plot countries and regions background
     """
     proj = ccrs.PlateCarree()
@@ -118,8 +119,10 @@ def plot_basemap(ax, data_path, focus='VNM', neighbours=['VNM', 'CHN', 'LAO', 'K
     # Regions
     if plot_regions == True:
         for record in shpreader.Reader(provinces_filename).records():
-            geom = record.geometry
-            ax.add_geometries([geom], crs=proj, edgecolor='#ffffff', facecolor='#d2d2d2')
+            if record.attributes['NAME_ENG'] in highlight_region:
+                ax.add_geometries([record.geometry], crs=proj, edgecolor='#ffffff', facecolor='#7c7c7c')
+            else:
+                ax.add_geometries([record.geometry], crs=proj, edgecolor='#ffffff', facecolor='#d2d2d2')
 
     # Lakes
     for record in shpreader.Reader(lakes_filename).records():
