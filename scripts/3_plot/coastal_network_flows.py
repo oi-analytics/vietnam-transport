@@ -1,4 +1,4 @@
-"""Rail network flows map
+"""Coastal network flows map
 """
 import os
 import sys
@@ -16,10 +16,10 @@ from scripts.utils import *
 
 def main():
     config = load_config()
-    rail_edge_file = os.path.join(config['paths']['data'], 'Results', 'Flow_shapefiles', 'weighted_edges_flows_national_rail.shp')
+    coastal_edge_file = os.path.join(config['paths']['data'], 'Results', 'Flow_shapefiles', 'weighted_edges_flows_national_coastal.shp')
     
-    color = '#006d2c'
-    color_by_type = {'Rail Line': color}
+    color = '#045a8d'
+    color_by_type = {'Coastal Line': color}
     
     crop_cols = ['max_rice','max_cash','max_cass','max_teas','max_maiz','max_rubb','max_swpo','max_acof','max_rcof','max_pepp']
     ind_cols = ['max_sugar','max_wood','max_steel','max_constr','max_cement','max_fertil','max_coal','max_petrol','max_manufa','max_fisher','max_meat', 'max_tons']
@@ -43,7 +43,7 @@ def main():
         weights = [
             record.attributes[column]
             for record
-            in shpreader.Reader(rail_edge_file).records()
+            in shpreader.Reader(coastal_edge_file).records()
         ]
         max_weight = max(weights)
         width_by_range = generate_weight_bins(weights)
@@ -52,14 +52,16 @@ def main():
         for value_range in width_by_range:
             geoms_by_range[value_range] = []
 
-        for record in shpreader.Reader(rail_edge_file).records():
+        for record in shpreader.Reader(coastal_edge_file).records():
             val = record.attributes[column]
             geom = record.geometry
-            for nmin, nmax in geoms_by_range:
-                if nmin <= val and val < nmax:
-                    geoms_by_range[(nmin, nmax)].append(geom)
 
-                    # plot
+            if val > 0: #only add edges that carry this commodity
+                for nmin, nmax in geoms_by_range:
+                    if nmin <= val and val < nmax:
+                        geoms_by_range[(nmin, nmax)].append(geom)
+
+        # plot
         for range_, width in width_by_range.items():
             ax.add_geometries(
                 [geom.buffer(width) for geom in geoms_by_range[range_]],
@@ -107,7 +109,7 @@ def main():
                 size=10)
         
         plt.title(title_cols[c], fontsize = 14)
-        output_file = os.path.join(config['paths']['figures'], 'rail_flow-map-{}.png'.format(column))
+        output_file = os.path.join(config['paths']['figures'], 'coastal_flow-map-{}.png'.format(column))
         save_fig(output_file)
         plt.close()
 

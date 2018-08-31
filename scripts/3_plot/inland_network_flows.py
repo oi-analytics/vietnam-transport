@@ -1,4 +1,4 @@
-"""Rail network flows map
+"""Inland network flows map
 """
 import os
 import sys
@@ -16,10 +16,10 @@ from scripts.utils import *
 
 def main():
     config = load_config()
-    rail_edge_file = os.path.join(config['paths']['data'], 'Results', 'Flow_shapefiles', 'weighted_edges_flows_national_rail.shp')
+    inland_edge_file = os.path.join(config['paths']['data'], 'Results', 'Flow_shapefiles', 'weighted_edges_flows_national_inland.shp')
     
-    color = '#006d2c'
-    color_by_type = {'Rail Line': color}
+    color = '#0689d7'
+    color_by_type = {'Inland Line': color}
     
     crop_cols = ['max_rice','max_cash','max_cass','max_teas','max_maiz','max_rubb','max_swpo','max_acof','max_rcof','max_pepp']
     ind_cols = ['max_sugar','max_wood','max_steel','max_constr','max_cement','max_fertil','max_coal','max_petrol','max_manufa','max_fisher','max_meat', 'max_tons']
@@ -31,6 +31,19 @@ def main():
     title_cols = ['Rice','Cashew','Cassava','Teas','Maize','Rubber','Sweet Potatoes','Coffee Arabica','Coffee Robusta','Pepper',
                 'Sugar','Wood','Steel','Construction materials','Cement','Fertilizer','Coal','Petroleum',
                 'Manufacturing','Fishery','Meat','Total tonnage']
+
+    remove_routes_ids = [
+        ('watern_149', 'watern_429'), 
+        ('watern_429', 'watern_520'), 
+        ('watern_700', 'watern_520'),
+        ('watern_210', 'watern_700'),
+        ('watern_209', 'watern_210'),
+        ('watern_1057', 'watern_1050'),
+        ('watern_1050', 'watern_1051'),
+        ('watern_1051', 'watern_183'),
+        ('watern_183', 'watern_354'),
+        ('watern_176', 'watern_354'),
+    ]
     
     for c in range(len(columns)):
         ax = get_axes()
@@ -43,7 +56,7 @@ def main():
         weights = [
             record.attributes[column]
             for record
-            in shpreader.Reader(rail_edge_file).records()
+            in shpreader.Reader(inland_edge_file).records()
         ]
         max_weight = max(weights)
         width_by_range = generate_weight_bins(weights)
@@ -52,14 +65,17 @@ def main():
         for value_range in width_by_range:
             geoms_by_range[value_range] = []
 
-        for record in shpreader.Reader(rail_edge_file).records():
+        for record in shpreader.Reader(inland_edge_file).records():
             val = record.attributes[column]
             geom = record.geometry
-            for nmin, nmax in geoms_by_range:
-                if nmin <= val and val < nmax:
-                    geoms_by_range[(nmin, nmax)].append(geom)
+            edge_id = (record.attributes['from_node'], record.attributes['to_node'])
 
-                    # plot
+            if val > 0 and (edge_id not in remove_routes_ids): #only add edges that carry this commodity
+                for nmin, nmax in geoms_by_range:
+                    if nmin <= val and val < nmax:
+                        geoms_by_range[(nmin, nmax)].append(geom)
+
+        # plot
         for range_, width in width_by_range.items():
             ax.add_geometries(
                 [geom.buffer(width) for geom in geoms_by_range[range_]],
@@ -107,7 +123,7 @@ def main():
                 size=10)
         
         plt.title(title_cols[c], fontsize = 14)
-        output_file = os.path.join(config['paths']['figures'], 'rail_flow-map-{}.png'.format(column))
+        output_file = os.path.join(config['paths']['figures'], 'inland_flow-map-{}.png'.format(column))
         save_fig(output_file)
         plt.close()
 
