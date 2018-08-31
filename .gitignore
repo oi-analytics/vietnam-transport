@@ -120,3 +120,6 @@ data
 #gams stuff
 gams_runs/
 .gdx
+
+# Figures
+figures/*
