@@ -15,8 +15,8 @@ from scripts.utils import *
 def main():
     config = load_config()
     output_file = os.path.join(config['paths']['figures'], 'rail-map.png')
-    rail_edge_file = os.path.join(config['paths']['data'], 'Railways', 'rail2009', 'railnetworkedges.shp')
-    rail_node_file = os.path.join(config['paths']['data'], 'Railways', 'rail2009', 'railnetworknodes.shp')
+    rail_edge_file = os.path.join(config['paths']['data'], 'Railways', 'national_rail', 'railway_2009_edges.shp')
+    rail_node_file = os.path.join(config['paths']['data'], 'Railways', 'national_rail', 'railwaystations_2009_nodes.shp')
 
     color_by_type = {'Rail line': '#006d2c','Rail stop': '#000000'}
     ax = get_axes()
@@ -41,14 +41,14 @@ def main():
     xs = []
     ys = []
     for record in shpreader.Reader(rail_node_file).records():
-        node_type = record.attributes['name']
+        node_type = record.attributes['NAME']
         if node_type != '0':
             geom = record.geometry
             x = geom.x
             y = geom.y
             xs.append(x)
             ys.append(y)
-            name = record.attributes['name']
+            name = record.attributes['NAME']
 
     ax.scatter(xs, ys,transform=proj_lat_lon, facecolor='#000000', s=4, zorder=5, label = 'Rail station')
     # Legend
