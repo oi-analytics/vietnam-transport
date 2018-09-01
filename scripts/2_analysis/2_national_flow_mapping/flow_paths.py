@@ -61,7 +61,7 @@ def network_od_path_estimations(graph,source,target,cost_criteria,time_criteria)
 
 	return edge_path_list, path_dist_list,path_time_list,path_gcost_list
 
-def network_od_paths_assembly(points_dataframe,node_dict,graph,vehicle_wt,transport_mode,save_edges = True,output_path ='',excel_writer =''):
+def network_od_paths_assembly(points_dataframe,node_dict,graph,vehicle_wt,transport_mode,industry_columns,gdf_edges,save_edges = True,output_path ='',excel_writer =''):
 	"""
 	Assign net revenue to roads assets in Vietnam
 		
@@ -148,15 +148,19 @@ def network_od_paths_assembly(points_dataframe,node_dict,graph,vehicle_wt,transp
 			'min_distance','max_distance','min_time','max_time','min_gcost','max_gcost']
 	save_paths_df = pd.DataFrame(save_paths,columns = cols)
 
+	points_dataframe = points_dataframe.reset_index()
 	save_paths_df = pd.merge(save_paths_df,points_dataframe,how='left', on=['origin','destination']).fillna(0)
-	save_paths_df = save_paths_df[save_paths_df['max_tons'] > 0]
+	
+	save_paths_df = save_paths_df[(save_paths_df['max_tons'] > 0) & (save_paths_df['origin'] != 0)]
 	if transport_mode != 'air':
 		save_paths_df['min_vehicle_nums'] = np.maximum(1,np.ceil(save_paths_df['min_tons']/vehicle_wt))
 		save_paths_df['max_vehicle_nums'] = np.maximum(1,np.ceil(save_paths_df['max_tons']/vehicle_wt))
 
 	save_paths_df.to_excel(excel_writer,transport_mode,index = False)
 	excel_writer.save()
-	del save_paths_df
+	del save_paths
+
+
 
 	# all_edges = [x['edge_id'] for x in graph.es]
 	# all_edges_geom = [x['geometry'] for x in graph.es]
@@ -164,22 +168,52 @@ def network_od_paths_assembly(points_dataframe,node_dict,graph,vehicle_wt,transp
 	# gdf_edges = gpd.GeoDataFrame(pd.DataFrame([all_edges,all_edges_geom]).T,crs='epsg:4326')
 	# gdf_edges.columns = ['edge_id','geometry']
 	
-	# gdf_edges['min_tons'] = 0
-	# gdf_edges['max_tons'] = 0
+	min_ind_cols = []
+	max_ind_cols = []
+	ch_min_ind_cols = []
+	ch_max_ind_cols = []
+	for ind in industry_columns:
+		min_ind_cols.append('min_{}'.format(ind))
+		max_ind_cols.append('max_{}'.format(ind))
+		if ind in ('rice','tons'):
+			ch_min_ind_cols.append('min_{}'.format(ind))
+			ch_max_ind_cols.append('max_{}'.format(ind))
+		else:
+			ch_min_ind_cols.append(ind)
+			ch_max_ind_cols.append(ind)
 
-	# for path in save_paths:
-	# 	gdf_edges.loc[gdf_edges['edge_id'].isin(path[2]),'min_tons'] += path[4]
-	# 	gdf_edges.loc[gdf_edges['edge_id'].isin(path[3]),'max_tons'] += path[5]
+	print (len(ch_min_ind_cols))
+	print (len(ch_max_ind_cols))
+	print (len(min_ind_cols))
+	print (len(max_ind_cols))
+
+
+	for i in range(len(min_ind_cols)):
+		gdf_edges[min_ind_cols[i]] = 0
+		gdf_edges[max_ind_cols[i]] = 0
+
+	for iter_,path in save_paths_df.iterrows():
+		min_path = path['min_edge_path']
+		max_path = path['max_edge_path']
+		
+		gdf_edges.loc[gdf_edges['edge_id'].isin(min_path),min_ind_cols] += path[ch_min_ind_cols].values
+		gdf_edges.loc[gdf_edges['edge_id'].isin(max_path),max_ind_cols] += path[ch_max_ind_cols].values
 	
+	# gdf_edges[min_ind_cols] = gdf_edges['min_vals'].apply(pd.Series)
+	# gdf_edges[max_ind_cols] = gdf_edges['max_vals'].apply(pd.Series)
+	# gdf_edges.drop('min_vals',axis=1,inplace=True)
+	# gdf_edges.drop('max_vals',axis=1,inplace=True)
 
-	# gdf_edges['swap'] = gdf_edges.apply(lambda x: swap_min_max(x,'min_tons','max_tons'),axis = 1)
-	# gdf_edges[['min_tons','max_tons']] = gdf_edges['swap'].apply(pd.Series)
-	# gdf_edges.drop('swap',axis=1,inplace=True)
 
-	# if save_edges == True:
-	# 	gdf_edges.to_file(os.path.join(output_path,'weighted_edges_flows_national_{0}.shp'.format(transport_mode)))
+	for ind in industry_columns:
+		gdf_edges['swap'] = gdf_edges.apply(lambda x: swap_min_max(x,'min_{}'.format(ind),'max_{}'.format(ind)),axis = 1)
+		gdf_edges[['min_{}'.format(ind),'max_{}'.format(ind)]] = gdf_edges['swap'].apply(pd.Series)
+		gdf_edges.drop('swap',axis=1,inplace=True)
 
-	# del gdf_edges
+	if save_edges == True:
+		gdf_edges.to_file(os.path.join(output_path,'weighted_edges_flows_national_{0}.shp'.format(transport_mode)))
+
+	del gdf_edges, save_paths_df
 
 '''
 Create the database connection
@@ -187,22 +221,12 @@ Create the database connection
 def main():
 	data_path,calc_path,output_path = load_config()['paths']['data'],load_config()['paths']['calc'],load_config()['paths']['output']
 
-	# exchange_rate = 1.05*(1000000/21000)
-	# vehicle_wt = 20.0
-
-	# population_points_in = os.path.join(data_path,'Points_of_interest','population_points.shp')
-	# commune_path = os.path.join(data_path,'Vietnam_boundaries','boundaries_stats','commune_level_stats.shp')
-
-	# crop_data_path = os.path.join(data_path,'Agriculture_crops','crop_data')
-	# rice_month_file = os.path.join(data_path,'rice_atlas_vietnam','rice_production.shp')
-	# crop_month_fields = ['P_Jan','P_Feb','P_Mar','P_Apr','P_May','P_Jun','P_Jul','P_Aug','P_Sep','P_Oct','P_Nov','P_Dec']
-	# crop_names = ['rice','cash','cass','teas','maiz','rubb','swpo','acof','rcof','pepp']
-
 	'''
 	Get the modal shares
 	'''
-	modes_file_paths = [('Roads','national_roads'),('Railways','national_rail'),('Airports','airnetwork'),('Waterways','waterways')]
-	modes_file_paths = [('Roads','national_roads'),('Railways','national_rail'),('Airports','airnetwork'),('Waterways','waterways'),('Waterways','waterways')]
+	# modes_file_paths = [('Roads','national_roads'),('Railways','national_rail'),('Airports','airnetwork'),('Waterways','waterways')]
+	# modes_file_paths = [('Roads','national_roads'),('Railways','national_rail'),('Airports','airnetwork'),('Waterways','waterways'),('Waterways','waterways')]
+	modes_file_paths = [('Roads','national_roads')]
 	modes = ['road','rail','air','inland','coastal']
 	veh_wt = [20,800,0,800,1200]
 	usage_factors = [(0,0),(0,0),(0,0),(0.2,0.25),(0.2,0.25)]
@@ -219,6 +243,9 @@ def main():
 	md_prop_file = os.path.join(data_path,'mode_properties','mode_costs.xlsx')
 	rd_prop_file = os.path.join(data_path,'mode_properties','road_properties.xlsx')
 
+	ind_cols = ['cement','coal','constructi','fertilizer','fishery','manufactur','acof','cash','cass','maiz','pepp','rcof',
+				'rubb','swpo','teas','meat','rice','petroluem','steel','sugar','wood','tons']
+
 	for m in range(len(modes_file_paths)):
 		mode_data_path = os.path.join(data_path,modes_file_paths[m][0],modes_file_paths[m][1])
 		for file in os.listdir(mode_data_path):
@@ -230,8 +257,10 @@ def main():
 			
 		if modes[m] == 'road': 
 			G =  national_road_shapefile_to_network(edges_in,rd_prop_file)
+			gdf_edges = national_road_shapefile_to_dataframe(edges_in,rd_prop_file)
 		else:
 			G =  network_shapefile_to_network(edges_in,md_prop_file,modes[m],speeds[m][0],speeds[m][1])
+			gdf_edges = network_shapefile_to_dataframe(edges_in,md_prop_file,modes[m],speeds[m][0],speeds[m][1])
 
 		G = add_igraph_generalised_costs_network(G,1,veh_wt[m],usage_factors[m][0],usage_factors[m][1])
 		nodes_name = np.asarray([x['name'] for x in G.vs])
@@ -249,7 +278,7 @@ def main():
 		# 	all_ods['min_vehicle_nums'] = np.maximum(1,np.ceil(all_ods['min_tons']/vehicle_wt))
 		# 	all_ods['max_vehicle_nums'] = np.maximum(1,np.ceil(all_ods['max_tons']/vehicle_wt))
 			# all_ods = all_ods[['origin','destination','min_croptons','max_croptons','min_netrev','max_netrev']]
-		network_od_paths_assembly(all_ods,node_dict,G,veh_wt[m],modes[m],save_edges = True,output_path =shp_output_path,excel_writer =excl_wrtr)
+		network_od_paths_assembly(all_ods,node_dict,G,veh_wt[m],modes[m],ind_cols,gdf_edges,save_edges = True,output_path =shp_output_path,excel_writer =excl_wrtr)
 			
 
 if __name__ == '__main__':

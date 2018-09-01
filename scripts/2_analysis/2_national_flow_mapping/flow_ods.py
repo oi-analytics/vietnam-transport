@@ -25,7 +25,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 # 						count_points_in_polygon,voronoi_finite_polygons_2d,extract_nodes_within_gdf,
 # 						assign_value_in_area_proportions,assign_value_in_area_proportions_within_common_region
 from scripts.utils import *
-from scripts.transport_network_creation import national_shapefile_to_dataframe
+from scripts.transport_network_creation import *
 
 def crop_od_pairs(start_points,end_points,crop_name):
 	save_paths = []
@@ -77,8 +77,8 @@ def main():
 	Get the modal shares
 	'''
 	# modes_file_paths = [('Roads','national_roads'),('Railways','national_rail'),('Airports','airnetwork'),('Waterways','waterways')]
-	# modes_file_paths = [('Roads','national_roads')]
-	modes_file_paths = [('Roads','national_roads'),('Railways','national_rail'),('Airports','airnetwork'),('Waterways','waterways'),('Waterways','waterways')]
+	modes_file_paths = [('Roads','national_roads')]
+	# modes_file_paths = [('Roads','national_roads'),('Railways','national_rail'),('Airports','airnetwork'),('Waterways','waterways'),('Waterways','waterways')]
 	modes = ['road','rail','air','inland','coastal']
 	mode_cols = ['road','rail','air','inland','coastal']
 	new_mode_cols = ['o','d','road','rail','air','inland','coastal']
@@ -142,12 +142,12 @@ def main():
 	
 	province_path = os.path.join(data_path,'Vietnam_boundaries','boundaries_stats','province_level_stats.shp')
 	commune_path = os.path.join(data_path,'Vietnam_boundaries','boundaries_stats','commune_level_stats.shp')
-	rd_prop_file = os.path.join(data_path,'Roads','road_properties','road_properties.xlsx')
+	rd_prop_file = os.path.join(data_path,'mode_properties','road_properties.xlsx')
 
-	flow_output_excel = os.path.join(output_path,'flow_mapping_paths','national_scale_flow_ods.xlsx')
+	flow_output_excel = os.path.join(output_path,'flow_mapping_paths','national_scale_flow_ods_road.xlsx')
 	excl_wrtr = pd.ExcelWriter(flow_output_excel)
 
-	flow_output_excel = os.path.join(output_path,'flow_mapping_paths','national_scale_od_matrix.xlsx')
+	flow_output_excel = os.path.join(output_path,'flow_mapping_paths','national_scale_od_matrix_road.xlsx')
 	excl_wrtr_reg = pd.ExcelWriter(flow_output_excel)
 
 	# load provinces and get geometry of the right province
@@ -199,7 +199,7 @@ def main():
 		# nodes['province_name'] = extract_gdf_values_containing_nodes(x,input_gdf,column_name)
 
 		if modes[m] == 'road':
-			edges_df =  national_shapefile_to_dataframe(edges_in,rd_prop_file)
+			edges_df =  national_road_shapefile_to_dataframe(edges_in,rd_prop_file)
 			nodes_vehs = list(zip(edges_df['from_node'].values.tolist(),edges_df['from_node'].values.tolist(),edges_df['vehicle_co'].values.tolist()))
 			nd_veh_list = []
 			for nd in nodes['node_id'].values.tolist():
@@ -444,11 +444,11 @@ def main():
 		excl_wrtr.save()
 		del all_ods
 	
-	all_ods = pd.concat(region_total, axis=0, sort = 'False', ignore_index=True).fillna(0)
-	all_ods_val_cols = [c for c in all_ods.columns.values.tolist() if c not in ('o_region','d_region')]
-	all_ods_regions = all_ods.groupby(['o_region','d_region'])[all_ods_val_cols].sum().reset_index()
-	all_ods_regions.to_excel(excl_wrtr_reg,'total',index = False)
-	excl_wrtr_reg.save()
+	# all_ods = pd.concat(region_total, axis=0, sort = 'False', ignore_index=True).fillna(0)
+	# all_ods_val_cols = [c for c in all_ods.columns.values.tolist() if c not in ('o_region','d_region')]
+	# all_ods_regions = all_ods.groupby(['o_region','d_region'])[all_ods_val_cols].sum().reset_index()
+	# all_ods_regions.to_excel(excl_wrtr_reg,'total',index = False)
+	# excl_wrtr_reg.save()
 
 
 if __name__ == '__main__':

@@ -53,7 +53,7 @@ def networkedge_hazard_intersection(edge_shapefile,hazard_shapefile,output_shape
 						data.append({'edge_id': lines['edge_id'],'exposure_length':1000.0*line_length(lines['geometry'].intersection(poly['geometry'])),'geometry':lines['geometry'].intersection(poly['geometry'])})
 			if data: 
 				# intersections_data = gpd.GeoDataFrame(data,columns=['edge_id','width','length','geometry'],crs='epsg:4326')
-				intersections_data = gpd.GeoDataFrame(data,columns=['edge_id','exposure_length','geometry'],crs='epsg:4326')
+				intersections_data = gpd.GeoDataFrame(data,columns=['edge_id','length','geometry'],crs='epsg:4326')
 				# intersections_data['area'] = intersections_data['width']*intersections_data['length']
 				intersections_data.to_file(output_shapefile)
 
@@ -115,11 +115,12 @@ def main():
 	# 				print ('Done with vietbando_{0}_edges.shp and {1}'.format(province_name,file))
 
 	# modes_file_paths = [('Roads','national_roads'),('Railways','national_rail'),('Airports','airnetwork'),('Waterways','waterways'),('Waterways','waterways')]
-	# modes = ['road','rail','air','inland','coastal']
-	# out_modes = ['national_roads','national_rail','air_ports','inland_ports','sea_ports']
-	modes_file_paths = [('Airports','airnetwork'),('Waterways','waterways'),('Waterways','waterways')]
-	modes = ['air','inland','coastal']
-	out_modes = ['air_ports','inland_ports','sea_ports']
+	modes_file_paths = [('Roads','national_roads')]
+	modes = ['road','rail','air','inland','coastal']
+	out_modes = ['national_roads','national_rail','air_ports','inland_ports','sea_ports']
+	# modes_file_paths = [('Airports','airnetwork'),('Waterways','waterways'),('Waterways','waterways')]
+	# modes = ['air','inland','coastal']
+	# out_modes = ['air_ports','inland_ports','sea_ports']
 	for m in range(len(modes_file_paths)):
 		mode_data_path = os.path.join(data_path,modes_file_paths[m][0],modes_file_paths[m][1])		
 		if modes[m] in ['road','rail']:

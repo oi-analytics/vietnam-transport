@@ -20,8 +20,8 @@ import math
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
-from scripts.utils import load_config,extract_value_from_gdf,get_nearest_node,gdf_clip,gdf_geom_clip,count_points_in_polygon
-from scripts.transport_network_creation import province_shapefile_to_network, add_igraph_generalised_costs_roads
+from scripts.utils import *
+from scripts.transport_network_creation import *
 
 def swap_min_max(x,min_col,max_col):
 	'''
@@ -101,7 +101,7 @@ def network_od_path_estimations(graph,source,target,cost_criteria,time_criteria)
 
 	return edge_path_list, path_dist_list,path_time_list,path_gcost_list
 
-def network_od_paths_assembly(points_dataframe,node_dict,graph,vehicle_wt,region_name,save_edges = True,output_path ='',excel_writer =''):
+def network_od_paths_assembly(points_dataframe,node_dict,graph,vehicle_wt,region_name,gdf_edges,save_edges = True,output_path ='',excel_writer =''):
 	"""
 	Assign net revenue to roads assets in Vietnam
 		
@@ -213,11 +213,11 @@ def network_od_paths_assembly(points_dataframe,node_dict,graph,vehicle_wt,region
 	excel_writer.save()
 	del save_paths_df
 
-	all_edges = [x['edge_id'] for x in graph.es]
-	all_edges_geom = [x['geometry'] for x in graph.es]
+	# all_edges = [x['edge_id'] for x in graph.es]
+	# all_edges_geom = [x['geometry'] for x in graph.es]
 	
-	gdf_edges = gpd.GeoDataFrame(pd.DataFrame([all_edges,all_edges_geom]).T,crs='epsg:4326')
-	gdf_edges.columns = ['edge_id','geometry']
+	# gdf_edges = gpd.GeoDataFrame(pd.DataFrame([all_edges,all_edges_geom]).T,crs='epsg:4326')
+	# gdf_edges.columns = ['edge_id','geometry']
 	
 	gdf_edges['min_netrev'] = 0
 	gdf_edges['max_netrev'] = 0
@@ -248,6 +248,7 @@ if __name__ == '__main__':
 	data_path,calc_path,output_path = load_config()['paths']['data'],load_config()['paths']['calc'],load_config()['paths']['output']
 
 	truck_unit_wt = [5.0,20.0]
+	truck_unit_wt = [5.0]
 	# provinces to consider 
 	province_list = ['Lao Cai','Binh Dinh','Thanh Hoa']
 	province_terrian = ['mountain','flat','flat']
@@ -261,7 +262,7 @@ if __name__ == '__main__':
 	flow_output_excel = os.path.join(output_path,'flow_mapping_paths','province_roads_commune_center_flow_paths.xlsx')
 	excl_wrtr = pd.ExcelWriter(flow_output_excel)
 
-	rd_prop_file = os.path.join(data_path,'Roads','road_properties','road_properties.xlsx')
+	rd_prop_file = os.path.join(data_path,'mode_properties','road_properties.xlsx')
 
 	
 
@@ -274,6 +275,7 @@ if __name__ == '__main__':
 		edges_in = os.path.join(data_path,'Roads','{}_roads'.format(province_name),'vietbando_{}_edges.shp'.format(province_name))
 
 		G = province_shapefile_to_network(edges_in,province_terrian[prn],rd_prop_file)
+		gdf_edges = province_shapefile_to_dataframe(edges_in,province_terrian[prn],rd_prop_file)
 		nodes_name = np.asarray([x['name'] for x in G.vs])
 		nodes_index = np.asarray([x.index for x in G.vs])
 		node_dict = dict(zip(nodes_name,nodes_index))
@@ -285,5 +287,5 @@ if __name__ == '__main__':
 			all_ods['max_vehicle_nums'] = np.maximum(1,np.ceil(all_ods['max_croptons']/tr_wt))
 			# print (all_ods)
 			G = add_igraph_generalised_costs_roads(G,1,tr_wt)
-			network_od_paths_assembly(all_ods,node_dict,G,tr_wt,province_name,save_edges = True,output_path =shp_output_path,excel_writer =excl_wrtr)
+			network_od_paths_assembly(all_ods,node_dict,G,tr_wt,province_name,gdf_edges,save_edges = True,output_path =shp_output_path,excel_writer =excl_wrtr)
 	

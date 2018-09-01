@@ -218,8 +218,9 @@ def main():
 	'''
 	Get the modal shares
 	'''
-	modes_file_paths = [('Roads','national_roads'),('Railways','national_rail'),('Waterways','waterways'),('Waterways','waterways')]
-	modes_file_paths = [('Roads','national_roads'),('Railways','national_rail')]
+	# modes_file_paths = [('Roads','national_roads'),('Railways','national_rail'),('Waterways','waterways'),('Waterways','waterways')]
+	# modes_file_paths = [('Roads','national_roads'),('Railways','national_rail')]
+	modes_file_paths = [('Roads','national_roads')]
 	modes = ['road','rail','inland','coastal']
 	veh_wt = [20,800,800,1200]
 	usage_factors = [(0,0),(0,0),(0.2,0.25),(0.2,0.25)]
@@ -293,7 +294,7 @@ def main():
 				print ('Done with mode {0} edge {1} type {2}'.format(modes[m],edge,types[t]))
 
 			df = pd.DataFrame(ef_list)
-			df.to_csv(os.path.join(output_path,'failure_results','single_edge_failures_all_paths_national_{0}_{1}.csv'.format(modes[m],types[t])),index = False)
+			df.to_csv(os.path.join(output_path,'failure_results','single_edge_failures_all_paths_national_{0}_{1}_2.csv'.format(modes[m],types[t])),index = False)
 			
 			select_cols = ['origin','destination','o_region','d_region',dist_types[t],time_types[t],cost_types[t],vehicle_types[t]] + ind_crop_cols + [rice_type[t],tons_types[t]]
 			flow_df_select = flow_df[select_cols]
@@ -303,20 +304,20 @@ def main():
 			flow_df_select['dist_diff'] = flow_df_select['new_distance'] - flow_df_select[dist_types[t]]
 			flow_df_select['time_diff'] = flow_df_select['new_time'] - flow_df_select[time_types[t]]
 			flow_df_select['transport_loss'] = (1 - flow_df_select['no_access'])*flow_df_select[vehicle_types[t]]*(flow_df_select['new_cost'] - flow_df_select[cost_types[t]])
-			df_path = os.path.join(output_path,'failure_results','single_edge_failures_all_path_impacts_national_{0}_{1}.csv'.format(modes[m],types[t]))
+			df_path = os.path.join(output_path,'failure_results','single_edge_failures_all_path_impacts_national_{0}_{1}_2.csv'.format(modes[m],types[t]))
 			flow_df_select.to_csv(df_path,index = False)
 
 			select_cols = ['edge_id','o_region','d_region','no_access'] + ind_crop_cols + [rice_type[t],tons_types[t]]
 			egde_impact = flow_df_select[select_cols]
 			egde_impact = egde_impact[egde_impact['no_access'] == 1]
 			egde_impact = egde_impact.groupby(['edge_id', 'o_region','d_region'])[ind_crop_cols + [rice_type[t],tons_types[t]]].sum().reset_index()
-			df_path = os.path.join(output_path,'failure_results','single_edge_failures_totals_national_{0}_{1}.csv'.format(modes[m],types[t]))
+			df_path = os.path.join(output_path,'failure_results','single_edge_failures_totals_national_{0}_{1}_2.csv'.format(modes[m],types[t]))
 			egde_impact.to_csv(df_path,index = False)
 			# edge_fail_ranges.append(egde_impact)
 			egde_impact = flow_df_select[select_cols+['transport_loss']]
 			egde_impact = egde_impact[egde_impact['no_access'] == 0]
 			egde_impact = egde_impact.groupby(['edge_id', 'o_region','d_region'])['transport_loss'].sum().reset_index()
-			df_path = os.path.join(output_path,'failure_results','single_edge_failures_transport_loss_national_{0}_{1}.csv'.format(modes[m],types[t]))
+			df_path = os.path.join(output_path,'failure_results','single_edge_failures_transport_loss_national_{0}_{1}_2.csv'.format(modes[m],types[t]))
 			egde_impact.to_csv(df_path,index = False)
 
 			
