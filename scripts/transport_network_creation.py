@@ -312,7 +312,7 @@ def assign_national_road_conditions(x):
 
 	if road_cond is None:
 		return 'paved'
-	elif road_cond in road_cond.lower().strip(): # Assume asphalt for all roads with no condition
+	elif 'asphalt' in road_cond.lower().strip(): # Assume asphalt for all roads with no condition
 		return 'paved'
 	else:			# Anything else not included above
 		return 'unpaved'
@@ -322,15 +322,15 @@ def assign_national_road_class(x):
 	vehicle_numbers = x.vehicle_co
 
 	if road_class is None:
-		if vehicle_numbers >= 8000:
+		if vehicle_numbers >= 6000:
 			return 1
-		elif 3000 <= vehicle_numbers < 8000:
+		elif 3000 <= vehicle_numbers < 6000:
 			return 2
 		elif 1000 <= vehicle_numbers < 3000:
 			return 3
-		elif 200 <= vehicle_numbers < 1000:
+		elif 300 <= vehicle_numbers < 1000:
 			return 4
-		elif 50 <= vehicle_numbers < 200:
+		elif 50 <= vehicle_numbers < 300:
 			return 5
 		else:
 			return 6
@@ -359,15 +359,15 @@ def assign_national_road_class(x):
 			return 5
 		elif class_6:
 			return 6
-		elif vehicle_numbers >= 8000:
+		elif vehicle_numbers >= 6000:
 			return 1
-		elif 3000 <= vehicle_numbers < 8000:
+		elif 3000 <= vehicle_numbers < 6000:
 			return 2
 		elif 1000 <= vehicle_numbers < 3000:
 			return 3
-		elif 200 <= vehicle_numbers < 1000:
+		elif 300 <= vehicle_numbers < 1000:
 			return 4
-		elif 50 <= vehicle_numbers < 200:
+		elif 50 <= vehicle_numbers < 300:
 			return 5
 		else:
 			return 6
@@ -402,8 +402,8 @@ def assign_assumed_width_to_national_roads_from_file(x,flat_width_range_list,mou
 	if road_terrain == 'flat':
 		for vals in flat_width_range_list:
 			if road_class == vals.road_class:
-				if road_lanes > 0:
-					assumed_width = road_lanes*vals.lane_width + vals.median_strip + vals.shoulder_width
+				if road_lanes > 0 and road_lanes <= 8:
+					assumed_width = road_lanes*vals.lane_width + vals.median_strip + 2.0*vals.shoulder_width
 				else:
 					assumed_width = vals.road_width
 				break
@@ -411,8 +411,8 @@ def assign_assumed_width_to_national_roads_from_file(x,flat_width_range_list,mou
 	else:
 		for vals in mountain_width_range_list:
 			if road_class == vals.road_class:
-				if road_lanes > 0:
-					assumed_width = road_lanes*vals.lane_width + vals.median_strip + vals.shoulder_width
+				if road_lanes > 0 and road_lanes <= 8:
+					assumed_width = road_lanes*vals.lane_width + vals.median_strip + 2.0*vals.shoulder_width
 				else:
 					assumed_width = vals.road_width
 				break
