@@ -15,14 +15,6 @@ from scripts.utils import *
 
 def main():
     config = load_config()
-    edges_file = os.path.join(config['paths']['data'], 'Roads', 'roads2009', 'roads2009edges.shp')
-
-    # edge_id => type
-    edge_type_by_id = {}
-    for record in shpreader.Reader(edges_file).records():
-        id_ = record.attributes['edge_id']
-        type_ = record.attributes['type']
-        edge_type_by_id[id_] = type_
 
     regions = ['Lao Cai', 'Binh Dinh', 'Thanh Hoa']
     plot_set = [
@@ -58,7 +50,7 @@ def main():
     
     for region in regions:
 
-        region_file = os.path.join(config['paths']['data'], 'Results', 'Flow_shapefiles', 'weighted_edges_district_center_flows_' + region.lower().replace(' ', '') + '_5_tons.shp')
+        region_file = os.path.join(config['paths']['data'], 'Results', 'Flow_shapefiles', 'weighted_edges_commune_center_flows_' + region.lower().replace(' ', '') + '_5_tons.shp')
         plot_settings = get_region_plot_settings(region)
 
         for c in range(len(plot_set)):
@@ -160,7 +152,7 @@ def main():
             plt.title(region + ' (' + plot_set[c]['title'] + ')', fontsize = 14) 
 
             # output
-            output_file = os.path.join(config['paths']['figures'], 'district_center-{}-{}.png'.format(region.lower().replace(' ', ''), column))
+            output_file = os.path.join(config['paths']['figures'], 'commune_center-{}-{}.png'.format(region.lower().replace(' ', ''), column))
             save_fig(output_file)
             plt.close()
 
