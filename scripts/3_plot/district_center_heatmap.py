@@ -47,7 +47,7 @@ def main():
             'significance': 0
         }
     ]
-    
+
     for region in regions:
 
         region_file = os.path.join(config['paths']['data'], 'Results', 'Flow_shapefiles', 'weighted_edges_commune_center_flows_' + region.lower().replace(' ', '') + '_5_tons.shp')
@@ -57,10 +57,12 @@ def main():
             ax = get_axes(plot_settings['bbox'], figsize=plot_settings['figure_size'])
 
             if region == 'Binh Dinh':
-                plot_basemap(ax, config['paths']['data'], country_border='none', plot_states=False)
+                plot_basemap(ax, config['paths']['data'], country_border='none',
+                             plot_states=False, plot_districts=True, highlight_region=region)
             else:
-                plot_basemap(ax, config['paths']['data'], country_border='none', plot_states=True)
-        
+                plot_basemap(ax, config['paths']['data'], country_border='none',
+                             plot_states=True, plot_districts=True, highlight_region=region)
+
             scale_bar(ax, location=(0.8, 0.05), length=plot_settings['scale_legend'])
             proj_lat_lon = ccrs.PlateCarree()
 
@@ -120,7 +122,7 @@ def main():
                 transform=proj_lat_lon,
                 size=10)
 
-            # weight legend            
+            # weight legend
             divisor = plot_set[c]['divisor']
 
             for (i, ((nmin, nmax), line_style)) in enumerate(width_by_range.items()):
@@ -148,8 +150,13 @@ def main():
                     transform=proj_lat_lon,
                     size=10)
 
+            # district labels
+            plot_district_labels(ax, config['paths']['data'], highlight_region=region)
+
             # plot
-            plt.title(region + ' (' + plot_set[c]['title'] + ')', fontsize = 14) 
+            title = '{} ({})'.format(region, plot_set[c]['title'])
+            print(" * Plotting", title)
+            plt.title(title, fontsize = 14)
 
             # output
             output_file = os.path.join(config['paths']['figures'], 'commune_center-{}-{}.png'.format(region.lower().replace(' ', ''), column))

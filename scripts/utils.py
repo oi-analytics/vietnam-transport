@@ -28,7 +28,7 @@ import rasterio
 from scipy.spatial import Voronoi
 import shapely.geometry
 import shapely.ops
-from shapely.geometry import Polygon
+from shapely.geometry import Polygon, shape
 
 def load_config():
     """Read config.json
@@ -70,7 +70,8 @@ def set_ax_bg(ax, color='#c6e0ff'):
 
 
 def plot_basemap(ax, data_path, focus='VNM', neighbours=['VNM', 'CHN', 'LAO', 'KHM', 'THA'],
-                 country_border='white', plot_regions=True, plot_states=True, highlight_region=[]):
+                 country_border='white', plot_regions=True, plot_states=True,
+                 plot_districts=False, highlight_region=None):
     """Plot countries and regions background
     """
     proj = ccrs.PlateCarree()
@@ -96,6 +97,13 @@ def plot_basemap(ax, data_path, focus='VNM', neighbours=['VNM', 'CHN', 'LAO', 'K
         'who_provinces.shp'
     )
 
+    districts_filename = os.path.join(
+        data_path,
+        'Vietnam_boundaries',
+        'who_boundaries',
+        'who_districts.shp'
+    )
+
     lakes_filename = os.path.join(
         data_path,
         'Global_boundaries',
@@ -104,7 +112,7 @@ def plot_basemap(ax, data_path, focus='VNM', neighbours=['VNM', 'CHN', 'LAO', 'K
     )
 
     # Neighbours
-    if plot_states == True:
+    if plot_states:
         for record in shpreader.Reader(states_filename).records():
             country_code = record.attributes['ISO_A3']
             if country_code in neighbours:
@@ -117,12 +125,28 @@ def plot_basemap(ax, data_path, focus='VNM', neighbours=['VNM', 'CHN', 'LAO', 'K
                     zorder=1)
 
     # Regions
-    if plot_regions == True:
+    highlight_region_geom = None
+    if plot_regions:
         for record in shpreader.Reader(provinces_filename).records():
             if record.attributes['NAME_ENG'] in highlight_region:
                 ax.add_geometries([record.geometry], crs=proj, edgecolor='#ffffff', facecolor='#7c7c7c')
+                highlight_region_geom = record.geometry
             else:
                 ax.add_geometries([record.geometry], crs=proj, edgecolor='#ffffff', facecolor='#d2d2d2')
+
+    # Districts
+    if plot_districts:
+        for record in shpreader.Reader(districts_filename).records():
+            if highlight_region and highlight_region_geom:
+                district_region = record.attributes['name_prov']
+                if district_region == highlight_region or \
+                        shape(record.geometry.centroid).intersects(highlight_region_geom):
+                    ax.add_geometries([record.geometry], crs=proj, edgecolor='#ffffff',
+                                      facecolor='#c7c7c7')
+
+            else:
+                ax.add_geometries([record.geometry], crs=proj, edgecolor='#ffffff',
+                                  facecolor='#d2d2d2')
 
     # Lakes
     for record in shpreader.Reader(lakes_filename).records():
@@ -137,20 +161,57 @@ def plot_basemap(ax, data_path, focus='VNM', neighbours=['VNM', 'CHN', 'LAO', 'K
 
 def plot_basemap_labels_large_region(ax, data_path):
 
-        labels = [
-            ('Vietnam', 108.633, 13.625, 9),
-            ('Myanmar', 97.383, 21.535, 9),
-            ('Malaysia', 99.404, 8.624, 9),
-            ('Indonesia', 97.822, 3.338, 9),
-            ('Singapore', 103.799, 1.472, 9),
-            ('Cambodia', 105.25, 12.89, 9),
-            ('Laos', 105.64, 16.55, 9),
-            ('Thailand', 101.360, 16.257, 9),
-            ('China', 108.08, 22.71, 9),
-            ('South China Sea', 108.17, 17.37, 7)
-        ]
-        plot_basemap_labels(ax, data_path, labels, province_zoom=False, plot_regions=False)
+    labels = [
+        ('Vietnam', 108.633, 13.625, 9),
+        ('Myanmar', 97.383, 21.535, 9),
+        ('Malaysia', 99.404, 8.624, 9),
+        ('Indonesia', 97.822, 3.338, 9),
+        ('Singapore', 103.799, 1.472, 9),
+        ('Cambodia', 105.25, 12.89, 9),
+        ('Laos', 105.64, 16.55, 9),
+        ('Thailand', 101.360, 16.257, 9),
+        ('China', 108.08, 22.71, 9),
+        ('South China Sea', 108.17, 17.37, 7)
+    ]
+    plot_basemap_labels(ax, data_path, labels, province_zoom=False, plot_regions=False)
 
+def plot_district_labels(ax, data_path, highlight_region=None):
+    provinces_filename = os.path.join(
+        data_path,
+        'Vietnam_boundaries',
+        'who_boundaries',
+        'who_provinces.shp'
+    )
+    districts_filename = os.path.join(
+        data_path,
+        'Vietnam_boundaries',
+        'who_boundaries',
+        'who_districts.shp'
+    )
+
+    highlight_region_geom = None
+    if highlight_region:
+        for record in shpreader.Reader(provinces_filename).records():
+            if record.attributes['NAME_ENG'] in highlight_region:
+                highlight_region_geom = record.geometry
+
+    district_labels = []
+    for record in shpreader.Reader(districts_filename).records():
+        if highlight_region:
+            district_region = record.attributes['name_prov']
+            if district_region == highlight_region:
+                district_labels.append(get_district_label(record))
+            elif highlight_region_geom and \
+                    shape(record.geometry.centroid).intersects(highlight_region_geom):
+                district_labels.append(get_district_label(record))
+        else:
+            district_labels.append(get_district_label(record))
+    plot_basemap_labels(ax, None, district_labels)
+
+def get_district_label(record):
+    district_name = record.attributes['NAME_ENG']
+    centroid = shape(record.geometry).centroid
+    return (district_name, centroid.x, centroid.y, 9)
 
 def plot_basemap_labels(ax, data_path, labels=None, province_zoom=False, plot_regions=True):
     """Plot countries and regions background
@@ -166,73 +227,73 @@ def plot_basemap_labels(ax, data_path, labels=None, province_zoom=False, plot_re
             ('China', 108.08, 22.71, 9),
             ('South China Sea', 108.17, 17.37, 7)]
 
-        if plot_regions == True:
+        if plot_regions:
             labels = labels + [
-            # Provinces
-            ('An Giang', 105.182, 10.491, 5),
-            ('Ba Ria-Vung Tau', 107.250, 10.510, 5),
-            ('Bac Giang', 106.480, 21.357, 5),
-            ('Bac Kan', 105.826, 22.261, 5),
-            ('Bac Lieu', 105.489, 9.313, 5),
-            ('Bac Ninh', 106.106, 21.109, 5),
-            ('Ben Tre', 106.469, 10.118, 5),
-            ('Binh Dinh', 108.951, 14.121, 5),
-            ('Binh Duong', 106.658, 11.216, 5),
-            ('Binh Phuoc', 106.907, 11.754, 5),
-            ('Binh Thuan', 108.048, 11.117, 5),
-            ('Ca Mau', 105.036, 9.046, 5),
-            ('Can Tho', 105.530, 10.184, 5),
-            ('Cao Bang', 106.087, 22.744, 5),
-            # ('Da Nang', 109.634, 16.188, 5),
-            ('Dak Lak', 108.212, 12.823, 5),
-            ('Dak Nong', 107.688, 12.228, 5),
-            ('Dien Bien', 103.022, 21.710, 5),
-            ('Dong Nai', 107.185, 11.058, 5),
-            ('Dong Thap', 105.608, 10.564, 5),
-            ('Gia Lai', 108.241, 13.797, 5),
-            ('Ha Giang', 104.979, 22.767, 5),
-            ('Ha Nam', 105.966, 20.540, 5),
-            ('Ha Noi', 105.700, 20.998, 5),
-            ('Ha Tinh', 105.737, 18.290, 5),
-            ('Hai Duong', 106.361, 20.930, 5),
-            ('Hai Phong', 106.686, 20.798, 5),
-            ('Hau Giang', 105.624, 9.784, 5),
-            ('Ho Chi Minh', 106.697, 10.743, 5),
-            ('Hoa Binh', 105.343, 20.684, 5),
-            ('Hung Yen', 106.060, 20.814, 5),
-            # ('Khanh Hoa', 111.307, 10.890, 5),
-            ('Kien Giang', 104.942, 9.998, 5),
-            ('Kon Tum', 107.875, 14.647, 5),
-            ('Lai Chau', 103.187, 22.316, 5),
-            ('Lam Dong', 108.095, 11.750, 5),
-            ('Lang Son', 106.621, 21.838, 5),
-            ('Lao Cai', 104.112, 22.365, 5),
-            ('Long An', 106.171, 10.730, 5),
-            ('Nam Dinh', 106.217, 20.268, 5),
-            ('Nghe An', 104.944, 19.236, 5),
-            ('Ninh Binh', 105.903, 20.170, 5),
-            ('Ninh Thuan', 108.869, 11.705, 5),
-            ('Phu Tho', 105.116, 21.308, 5),
-            ('Phu Yen', 109.059, 13.171, 5),
-            ('Quang Binh', 106.293, 17.532, 5),
-            ('Quang Nam', 107.960, 15.589, 5),
-            ('Quang Ngai', 108.650, 14.991, 5),
-            ('Quang Ninh', 107.278, 21.245, 5),
-            ('Quang Tri', 106.929, 16.745, 5),
-            ('Soc Trang', 105.928, 9.558, 5),
-            ('Son La', 104.070, 21.192, 5),
-            ('Tay Ninh', 106.161, 11.404, 5),
-            ('Thai Binh', 106.419, 20.450, 5),
-            ('Thai Nguyen', 105.823, 21.692, 5),
-            ('Thanh Hoa', 105.319, 20.045, 5),
-            ('Thua Thien Hue', 107.512, 16.331, 5),
-            ('Tien Giang', 106.309, 10.396, 5),
-            ('Tra Vinh', 106.318, 9.794, 5),
-            ('Tuyen Quang', 105.267, 22.113, 5),
-            ('Vinh Long', 105.991, 10.121, 5),
-            ('Vinh Phuc', 105.559, 21.371, 5),
-            ('Yen Bai', 104.568, 21.776, 5),
-        ]
+                # Provinces
+                ('An Giang', 105.182, 10.491, 5),
+                ('Ba Ria-Vung Tau', 107.250, 10.510, 5),
+                ('Bac Giang', 106.480, 21.357, 5),
+                ('Bac Kan', 105.826, 22.261, 5),
+                ('Bac Lieu', 105.489, 9.313, 5),
+                ('Bac Ninh', 106.106, 21.109, 5),
+                ('Ben Tre', 106.469, 10.118, 5),
+                ('Binh Dinh', 108.951, 14.121, 5),
+                ('Binh Duong', 106.658, 11.216, 5),
+                ('Binh Phuoc', 106.907, 11.754, 5),
+                ('Binh Thuan', 108.048, 11.117, 5),
+                ('Ca Mau', 105.036, 9.046, 5),
+                ('Can Tho', 105.530, 10.184, 5),
+                ('Cao Bang', 106.087, 22.744, 5),
+                # ('Da Nang', 109.634, 16.188, 5),
+                ('Dak Lak', 108.212, 12.823, 5),
+                ('Dak Nong', 107.688, 12.228, 5),
+                ('Dien Bien', 103.022, 21.710, 5),
+                ('Dong Nai', 107.185, 11.058, 5),
+                ('Dong Thap', 105.608, 10.564, 5),
+                ('Gia Lai', 108.241, 13.797, 5),
+                ('Ha Giang', 104.979, 22.767, 5),
+                ('Ha Nam', 105.966, 20.540, 5),
+                ('Ha Noi', 105.700, 20.998, 5),
+                ('Ha Tinh', 105.737, 18.290, 5),
+                ('Hai Duong', 106.361, 20.930, 5),
+                ('Hai Phong', 106.686, 20.798, 5),
+                ('Hau Giang', 105.624, 9.784, 5),
+                ('Ho Chi Minh', 106.697, 10.743, 5),
+                ('Hoa Binh', 105.343, 20.684, 5),
+                ('Hung Yen', 106.060, 20.814, 5),
+                # ('Khanh Hoa', 111.307, 10.890, 5),
+                ('Kien Giang', 104.942, 9.998, 5),
+                ('Kon Tum', 107.875, 14.647, 5),
+                ('Lai Chau', 103.187, 22.316, 5),
+                ('Lam Dong', 108.095, 11.750, 5),
+                ('Lang Son', 106.621, 21.838, 5),
+                ('Lao Cai', 104.112, 22.365, 5),
+                ('Long An', 106.171, 10.730, 5),
+                ('Nam Dinh', 106.217, 20.268, 5),
+                ('Nghe An', 104.944, 19.236, 5),
+                ('Ninh Binh', 105.903, 20.170, 5),
+                ('Ninh Thuan', 108.869, 11.705, 5),
+                ('Phu Tho', 105.116, 21.308, 5),
+                ('Phu Yen', 109.059, 13.171, 5),
+                ('Quang Binh', 106.293, 17.532, 5),
+                ('Quang Nam', 107.960, 15.589, 5),
+                ('Quang Ngai', 108.650, 14.991, 5),
+                ('Quang Ninh', 107.278, 21.245, 5),
+                ('Quang Tri', 106.929, 16.745, 5),
+                ('Soc Trang', 105.928, 9.558, 5),
+                ('Son La', 104.070, 21.192, 5),
+                ('Tay Ninh', 106.161, 11.404, 5),
+                ('Thai Binh', 106.419, 20.450, 5),
+                ('Thai Nguyen', 105.823, 21.692, 5),
+                ('Thanh Hoa', 105.319, 20.045, 5),
+                ('Thua Thien Hue', 107.512, 16.331, 5),
+                ('Tien Giang', 106.309, 10.396, 5),
+                ('Tra Vinh', 106.318, 9.794, 5),
+                ('Tuyen Quang', 105.267, 22.113, 5),
+                ('Vinh Long', 105.991, 10.121, 5),
+                ('Vinh Phuc', 105.559, 21.371, 5),
+                ('Yen Bai', 104.568, 21.776, 5),
+            ]
 
     for text, x, y, size in labels:
 
@@ -246,6 +307,7 @@ def plot_basemap_labels(ax, data_path, labels=None, province_zoom=False, plot_re
                 alpha=0.7,
                 size=size,
                 horizontalalignment='center',
+                zorder=10,
                 transform=proj)
 
 def get_region_plot_settings(region):
@@ -293,13 +355,13 @@ def get_region_plot_settings(region):
             },
             'scale_legend': 10,
             'figure_size': (10, 10)
-        }                 
+        }
     ]
 
     for region_plot_settings in region_plot_settings_lut:
         if region == region_plot_settings['name']:
             return region_plot_settings
-    
+
     raise Exception('Region plot settings not defined for this region')
 
 def within_extent(x, y, extent):
@@ -384,7 +446,7 @@ def generate_weight_bins_with_colour_gradient(weights, n_steps=9, width_step=0.0
     low_color = Color(colours[0])
     high_color = Color(colours[1])
     colors = list(low_color.range_to(high_color, n_steps))
-    
+
     for i, (min_, max_) in enumerate(zip(mins, maxs)):
         width_by_range[(min_, max_)] = (i, (i+1) * width_step, colors[i])
 
@@ -453,7 +515,7 @@ def line_length(line, ellipsoid='WGS-84'):
 
     Args:
         line: a shapely LineString object with WGS-84 coordinates.
-        
+
         ellipsoid: string name of an ellipsoid that `geopy` understands (see http://geopy.readthedocs.io/en/latest/#module-geopy.distance).
 
     Returns:
@@ -528,7 +590,7 @@ def extract_value_from_gdf(x,gdf_sindex,gdf,column_name):
         gdf_sindex -- spatial index of dataframe of which we want to extract the value
         gdf -- GeoDataFrame of which we want to extract the value
         column_name -- column that contains the value we want to extract
-        
+
     Outputs are:
         extracted value from other gdf
     """
@@ -542,7 +604,7 @@ def assign_value_in_area_proportions(poly_1_gpd,poly_2_gpd,poly_attribute):
         for p_1_index, polys_1 in intersected_polys.iterrows():
             if (polys_2['geometry'].intersects(polys_1['geometry']) is True) and (polys_1.geometry.is_valid is True) and (polys_2.geometry.is_valid is True):
                 poly2_attr += polys_1[poly_attribute]*polys_2['geometry'].intersection(polys_1['geometry']).area/polys_1['geometry'].area
-        
+
         poly_2_gpd.loc[p_2_index,poly_attribute] = poly2_attr
 
     return poly_2_gpd
@@ -556,7 +618,7 @@ def assign_value_in_area_proportions_within_common_region(poly_1_gpd,poly_2_gpd,
         for p_1_index, polys_1 in intersected_polys.iterrows():
             if  (polys_1[common_region_id] == poly2_id) and (polys_2['geometry'].intersects(polys_1['geometry']) is True) and (polys_1.geometry.is_valid is True) and (polys_2.geometry.is_valid is True):
                 poly2_attr += polys_1[poly_attribute]*polys_2['geometry'].intersection(polys_1['geometry']).area/polys_1['geometry'].area
-        
+
         poly_2_gpd.loc[p_2_index,poly_attribute] = poly2_attr
 
     return poly_2_gpd
@@ -650,5 +712,5 @@ def extract_gdf_values_containing_nodes(x,sindex_input_gdf,input_gdf,column_name
     a = input_gdf.loc[list(input_gdf.geometry.contains(x.geometry))]
     if len(a.index) > 0:
         return input_gdf.loc[list(input_gdf.geometry.contains(x.geometry))][column_name].values[0]
-    else:   
+    else:
         return get_nearest_node(x.geometry,sindex_input_gdf,input_gdf,column_name)
