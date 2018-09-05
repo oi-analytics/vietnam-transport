@@ -1,0 +1,35 @@
+# Conda environment specification
+# To import/create a copy of the environment:
+#    conda env create -f .environment.yml
+name: vietnam-transport
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - boltons
+  - cartopy
+  - colour
+  - fiona
+  - GDAL
+  - geoalchemy2
+  - geopandas
+  - geopy
+  - haversine
+  - ipopt
+  - jupyter
+  - matplotlib
+  - nbstripout
+  - networkx
+  - numpy
+  - openpyxl
+  - pandas
+  - pathos
+  - psycopg2
+  - pyomo
+  - rasterio
+  - rasterstats
+  - requests
+  - rtree
+  - scipy
+  - shapely
+  - sqlalchemy
