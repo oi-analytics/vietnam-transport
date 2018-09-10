@@ -94,13 +94,13 @@ def main():
 
 			# 8 colors - for each of n_steps
 			# Colorbrewer http://colorbrewer2.org/#type=diverging&scheme=RdBu&n=8
-			negative_colors = [
+			positive_colors = [
 				'#f4a582',
 				'#d6604d',
 				'#b2182b',
 				'#67001f'
 			]
-			positive_colors = [
+			negative_colors = [
 				'#92c5de',
 				'#4393c3',
 				'#2166ac',
