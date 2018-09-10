@@ -21,14 +21,14 @@ def main():
         {
             'column': 'min_netrev',
             'title': 'Min Net Rev',
-            'legend_label': "MNR ('000 $/day)",
+            'legend_label': "MNR ('000 USD/day)",
             'divisor': 1000,
             'significance': 0
         },
         {
             'column': 'max_netrev',
             'title': 'Max Net Rev',
-            'legend_label': "MNR ('000 $/day)",
+            'legend_label': "MNR ('000 USD/day)",
             'divisor': 1000,
             'significance': 0
         },

@@ -16,7 +16,7 @@ from scripts.utils import *
 
 def main():
 	config = load_config()
-	flows_file = os.path.join(config['paths']['data'], 'Results', 'Failure_shapefiles', 'weighted_edges_failures_national_rail.shp')
+	flows_file = os.path.join(config['paths']['data'], 'Results', 'Failure_shapefiles', 'weighted_edges_failures_national_rail_2.shp')
 	
 	plot_sets = [
 		{
@@ -60,7 +60,7 @@ def main():
 	for plot_set in plot_sets:
 		for c in range(len(plot_set['columns'])):
 			ax = get_axes()
-			plot_basemap(ax, config['paths']['data'])
+			plot_basemap(ax, config['paths']['data'], highlight_region = [])
 			scale_bar(ax, location=(0.8, 0.05))
 			plot_basemap_labels(ax, config['paths']['data'])
 			proj_lat_lon = ccrs.PlateCarree()

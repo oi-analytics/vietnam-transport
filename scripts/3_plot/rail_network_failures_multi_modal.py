@@ -1,4 +1,4 @@
-"""Road network flows
+"""Rail network flows map
 """
 import os
 import sys
@@ -8,6 +8,7 @@ from collections import OrderedDict
 import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
 import matplotlib.pyplot as plt
+import numpy as np
 from shapely.geometry import LineString
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -15,17 +16,9 @@ from scripts.utils import *
 
 def main():
 	config = load_config()
-	flows_file = os.path.join(config['paths']['data'], 'Results', 'Failure_shapefiles', 'weighted_edges_failures_national_road_2.shp')
-
+	flows_file = os.path.join(config['paths']['data'], 'Results', 'Failure_shapefiles', 'weighted_edges_failures_national_rail_multi_modal_options.shp')
+	
 	plot_sets = [
-		{
-			'file_tag': 'reroute',
-			'no_access': [-1,0],
-			'legend_label': "(million USD/day)",
-			'divisor': 1000000,
-			'columns': ['min_tr_los','max_tr_los'],
-			'title_cols': ['Rerouting costs (min)','Rerouting costs (max)']
-		},
 		{
 			'file_tag': 'commodities',
 			'no_access':[-1,1],
@@ -41,16 +34,12 @@ def main():
 			'divisor': 1000000,
 			'columns': ['min_econ_l','max_econ_l'],
 			'title_cols': ['Economic losses (min)','Economic losses (max)']
-		},
-		{
-			'file_tag': 'total',
-			'no_access':[0,1],
-			'legend_label': "(million USD/day)",
-			'divisor': 1000000,
-			'columns': ['min_loss','max_loss'],
-			'title_cols': ['Total economic impact (min)','Total economic impact (max)']
 		}
+
 	]
+
+	color = '#006d2c'
+	color_by_type = {'Rail Line': color}
 	
 	for plot_set in plot_sets:
 		for c in range(len(plot_set['columns'])):
@@ -59,8 +48,7 @@ def main():
 			scale_bar(ax, location=(0.8, 0.05))
 			plot_basemap_labels(ax, config['paths']['data'])
 			proj_lat_lon = ccrs.PlateCarree()
-
-			# generate weight bins
+			
 			column = plot_set['columns'][c]
 			weights = [
 				record.attributes[column]
@@ -70,54 +58,27 @@ def main():
 			
 			max_weight = max(weights)
 			width_by_range = generate_weight_bins(weights)
-
-			road_geoms_by_category = {
-				'1': [],
-				'2': [],
-				'3': [],
-				'4': [],
-				'5': [],
-				'6': []
-			}
+		
+			geoms_by_range = {}
+			for value_range in width_by_range:
+				geoms_by_range[value_range] = []
 
 			for record in [rec for rec in shpreader.Reader(flows_file).records() if int(rec.attributes['no_access']) in plot_set['no_access']]: 
-				cat = str(record.attributes['road_class'])
-				if cat not in road_geoms_by_category:
-					raise Exception
-				geom = record.geometry
-
 				val = record.attributes[column]
-
-				buffered_geom = None
-				for (nmin, nmax), width in width_by_range.items():
+				geom = record.geometry
+				for nmin, nmax in geoms_by_range:
 					if nmin <= val and val < nmax:
-						buffered_geom = geom.buffer(width)
+						geoms_by_range[(nmin, nmax)].append(geom)
 
-				if buffered_geom is not None:
-					road_geoms_by_category[cat].append(buffered_geom)
-				else:
-					print("Feature was outside range to plot", record.attributes)
-
-			styles = OrderedDict([
-				('1',  Style(color='#000004', zindex=9, label='Class 1')), #red
-				('2', Style(color='#2c115f', zindex=8, label='Class 2')), #orange
-				('3', Style(color='#721f81', zindex=7, label='Class 3')), #blue
-				('4',  Style(color='#b73779', zindex=6, label='Class 4')), #green
-				('5', Style(color='#f1605d', zindex=5, label='Class 5')), #black
-				('6', Style(color='#feb078', zindex=4, label='Class 6')), #grey
-			])
-
-			for cat, geoms in road_geoms_by_category.items():
-				cat_style =styles[cat]
+						# plot
+			for range_, width in width_by_range.items():
 				ax.add_geometries(
-					geoms,
+					[geom.buffer(width) for geom in geoms_by_range[range_]],
 					crs=proj_lat_lon,
-					linewidth=0,
-					facecolor=cat_style.color,
 					edgecolor='none',
-					zorder=cat_style.zindex
-				)
-
+					facecolor=color,
+					zorder=2)
+	
 			x_l = 102.3
 			x_r = x_l + 0.4
 			base_y = 14
@@ -136,13 +97,13 @@ def main():
 			divisor = plot_set['divisor']
 			for (i, ((nmin, nmax), width)) in enumerate(width_by_range.items()):
 				y = base_y - (i*y_step)
-				line = LineString([(x_l, y), (x_r, y)]).buffer(width)
+				line = LineString([(x_l, y), (x_r, y)])
 				ax.add_geometries(
-					[line],
+					[line.buffer(width)],
 					crs=proj_lat_lon,
 					linewidth=0,
-					edgecolor='#000000',
-					facecolor='#000000',
+					edgecolor=color,
+					facecolor=color,
 					zorder=2)
 				if nmin == max_weight:
 					label = '>{:.2f}'.format(max_weight/divisor)
@@ -155,14 +116,11 @@ def main():
 					horizontalalignment='left',
 					transform=proj_lat_lon,
 					size=10)
-
+			
 			plt.title(plot_set['title_cols'][c], fontsize = 14)
-			legend_from_style_spec(ax, styles)
-			output_file = os.path.join(config['paths']['figures'], 'road_failure-map-{}-{}.png'.format(plot_set['file_tag'], column))
+			output_file = os.path.join(config['paths']['figures'], 'rail_failure-map-{}-{}-multi-modal-options.png'.format(plot_set['file_tag'],column))
 			save_fig(output_file)
 			plt.close()
-
-
 
 if __name__ == '__main__':
 	main()
