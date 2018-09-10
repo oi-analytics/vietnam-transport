@@ -50,7 +50,7 @@ def networkedge_hazard_intersection(edge_shapefile,hazard_shapefile,output_shape
 				for p_index, poly in intersected_polys.iterrows():
 					if (lines['geometry'].intersects(poly['geometry']) is True) and (poly.geometry.is_valid is True):
 						# data.append({'edge_id': lines['edge_id'],'width':lines['width'],'length':1000.0*line_length(lines['geometry'].intersection(poly['geometry'])),'geometry':lines['geometry'].intersection(poly['geometry'])})
-						data.append({'edge_id': lines['edge_id'],'exposure_length':1000.0*line_length(lines['geometry'].intersection(poly['geometry'])),'geometry':lines['geometry'].intersection(poly['geometry'])})
+						data.append({'edge_id': lines['edge_id'],'length':1000.0*line_length(lines['geometry'].intersection(poly['geometry'])),'geometry':lines['geometry'].intersection(poly['geometry'])})
 			if data: 
 				# intersections_data = gpd.GeoDataFrame(data,columns=['edge_id','width','length','geometry'],crs='epsg:4326')
 				intersections_data = gpd.GeoDataFrame(data,columns=['edge_id','length','geometry'],crs='epsg:4326')

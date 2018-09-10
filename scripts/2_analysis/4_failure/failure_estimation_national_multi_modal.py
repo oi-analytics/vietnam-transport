@@ -29,18 +29,18 @@ from scripts.transport_network_creation import *
 def swap_min_max(x,min_col,max_col):
 	'''
 	'''
-	if abs(x[min_col]) > abs(x[max_col]):
+	if x[min_col] > x[max_col]:
 		return x[max_col],x[min_col]
 	else:
 		return x[min_col],x[max_col]
 
-def igraph_scenario_edge_failures_changing_tonnages(network_df_in,edge_failure_set,flow_dataframe,vehicle_wt,utilization_factors,path_criteria,tons_criteria,cost_criteria,time_criteria):
+def igraph_scenario_edge_failures_changing_tonnages(network_df_in,edge_failure_set,flow_dataframe,vehicle_wt,path_criteria,rev_criteria,tons_criteria,cost_criteria,distance_criteria,time_criteria):
 	network_graph_df = copy.deepcopy(network_df_in)
 	edge_fail_dictionary = []
 	edge_path_index = []
 	for edge in edge_failure_set:
 		network_graph_df = network_graph_df[network_graph_df.edge_id != edge]
-		edge_path_index += flow_dataframe.loc[flow_dataframe[path_criteria].str.contains("'{}'".format(edge))].index.tolist() 
+		edge_path_index += flow_dataframe.loc[flow_dataframe[path_criteria].str.contains(edge)].index.tolist() 
 
 
 	edge_path_index = list(set(edge_path_index))
@@ -48,47 +48,47 @@ def igraph_scenario_edge_failures_changing_tonnages(network_df_in,edge_failure_s
 	if edge_path_index:
 		network_graph = ig.Graph.TupleList(network_graph_df.itertuples(index=False), edge_attrs=list(network_graph_df.columns)[2:])
 		# only keep connected network
-		# network_graph = network_graph.clusters().giant()
+		network_graph = network_graph.clusters().giant()
 
 		for e in edge_path_index:
-			origin = flow_dataframe.iloc[e]['origin']
-			destination = flow_dataframe.iloc[e]['destination']
-			origin_node = [x for x in network_graph.vs if x['name'] == origin]
-			destination_node = [x for x in network_graph.vs if x['name'] == destination]
+			od_pair = ast.literal_eval(flow_dataframe.iloc[e]['od_nodes'])
+
+			origin_node = [x for x in network_graph.vs if x['name'] == od_pair[0]]
+			destination_node = [x for x in network_graph.vs if x['name'] == od_pair[-1]]
 
 			if not origin_node or not destination_node:
 				'''
 				no alternative path exists
 				'''
-				edge_fail_dictionary.append({'edge_id':edge,'origin':origin,'destination':destination,
-									'new_distance':0,'new_time':0,'new_cost':0,'no_access': 1})
-				
+				edge_fail_dictionary.append({'edge_id':edge,'econ_value':flow_dataframe.iloc[e][rev_criteria],'tons':flow_dataframe.iloc[e][tons_criteria],
+									'old_distance':flow_dataframe.iloc[e][distance_criteria],'old_time':flow_dataframe.iloc[e][time_criteria],
+									'econ_loss':flow_dataframe.iloc[e][rev_criteria],'new_distance':0,'new_time':0,'no_access': True})
 			else:
 				tons = flow_dataframe.iloc[e][tons_criteria]
 				vh_nums = math.ceil(1.0*tons/vehicle_wt)
-				# print (tons,vh_nums,utilization_factors[0],utilization_factors[1])
-				network_graph = add_igraph_generalised_costs_network(network_graph,vh_nums,tons,utilization_factors[0],utilization_factors[1])
+				network_graph = add_igraph_generalised_costs_province_roads(network_graph,vh_nums,tons)
 				new_route = network_graph.get_shortest_paths(origin_node[0],destination_node[0], weights = cost_criteria, output='epath')[0]
 				if not new_route:
 					'''
 					no alternative path exists
 					'''
 					# path_index = path_index_list[e]
-					edge_fail_dictionary.append({'edge_id':edge,'origin':origin,'destination':destination,
-										'new_distance':0,'new_time':0,'new_cost':0,'no_access': 1})
-
+					edge_fail_dictionary.append({'edge_id':edge,'econ_value':flow_dataframe.iloc[e][rev_criteria],'tons':flow_dataframe.iloc[e][tons_criteria],
+									'old_distance':flow_dataframe.iloc[e][distance_criteria],'old_time':flow_dataframe.iloc[e][time_criteria],
+									'econ_loss':flow_dataframe.iloc[e][rev_criteria],'new_distance':0,'new_time':0,'no_access': True})
 				else:
 					new_dist = 0
 					new_time = 0
-					new_gcost = 0
+					new_travel_cost = 0
 					for n in new_route:
 						new_dist += network_graph.es[n]['length']
 						new_time += network_graph.es[n][time_criteria]
-						new_gcost += network_graph.es[n][cost_criteria]
-
-					edge_fail_dictionary.append({'edge_id':edge,'origin':origin,'destination':destination,
-										'new_distance':new_dist,'new_time':new_time,'new_cost':new_gcost,'no_access': 0})
+						new_travel_cost += network_graph.es[n][cost_criteria]
 					
+					edge_fail_dictionary.append({'edge_id':edge,'econ_value':flow_dataframe.iloc[e][rev_criteria],'tons':flow_dataframe.iloc[e][tons_criteria],
+										'old_distance':flow_dataframe.iloc[e][distance_criteria],'old_time':flow_dataframe.iloc[e][time_criteria],
+										'econ_loss':new_travel_cost - flow_dataframe.iloc[e][cost_criteria],'new_distance':new_dist,'new_time':new_time,'no_access': False})
+
 
 	return edge_fail_dictionary
 
@@ -135,7 +135,7 @@ def igraph_scenario_edge_failures(network_df_in,edge_failure_set,flow_dataframe,
 	if edge_path_index:
 		network_graph = ig.Graph.TupleList(network_graph_df.itertuples(index=False), edge_attrs=list(network_graph_df.columns)[2:])
 		# only keep connected network
-		# network_graph = network_graph.clusters().giant()
+		network_graph = network_graph.clusters().giant()
 		network_graph = add_igraph_generalised_costs_network(network_graph,1,vehicle_wt,min_factor,max_factor)
 		nodes_name = np.asarray([x['name'] for x in network_graph.vs])
 
@@ -258,7 +258,7 @@ def network_failure_assembly(edge_failure_dataframe,vehicle_wt,transport_mode,gd
 		gdf_edges.drop('swap',axis=1,inplace=True)
 
 	if save_edges == True:
-		gdf_edges.to_file(os.path.join(output_path,'weighted_edges_failures_national_{0}_2.shp'.format(transport_mode)))
+		gdf_edges.to_file(os.path.join(output_path,'weighted_edges_failures_national_{0}.shp'.format(transport_mode)))
 
 	del gdf_edges, edge_failure_dataframe
 
@@ -277,7 +277,7 @@ def main():
 				'fishery','meat','cash','cass','teas','maiz','rubb','swpo','acof','rcof','pepp'] 
 
 	shp_output_path = os.path.join(output_path,'failure_shapefiles')
-	flow_paths_data = os.path.join(output_path,'flow_mapping_paths','national_scale_flow_paths_2.xlsx')
+	flow_paths_data = os.path.join(output_path,'flow_mapping_paths','national_scale_flow_paths.xlsx')
 	fail_scenarios_data = os.path.join(output_path,'hazard_scenarios','national_scale_hazard_intersections.xlsx')
 
 	cols = ['origin','destination','min_edge_path','max_edge_path','min_netrev','max_netrev','min_croptons','max_croptons',
@@ -322,7 +322,7 @@ def main():
 
 		fail_df = pd.read_excel(fail_scenarios_data,sheet_name = modes[m])
 		single_ef_list = list(set(fail_df['edge_id'].values.tolist()))
-		print ('scenarios in national {0} are {1}'.format(modes[m],len(single_ef_list)))
+		print (len(single_ef_list))
 		'''
 		Select individual edge first
 		columns of failure excel are
@@ -353,8 +353,7 @@ def main():
 		for t in range(len(types)):
 			ef_list = []
 			for edge in single_ef_list:
-				# ef_dict = igraph_scenario_edge_failures(G_df,[edge],flow_df,veh_wt[m],usage_factors[m][0],usage_factors[m][1],path_types[t],cost_types[t],time_types[t])
-				ef_dict = igraph_scenario_edge_failures_changing_tonnages(G_df,[edge],flow_df,veh_wt[m],usage_factors[m],path_types[t],tons_types[t],cost_types[t],time_types[t])
+				ef_dict = igraph_scenario_edge_failures(G_df,[edge],flow_df,veh_wt[m],usage_factors[m][0],usage_factors[m][1],path_types[t],cost_types[t],time_types[t])
 				if ef_dict:
 					ef_list += ef_dict
 			
@@ -370,9 +369,7 @@ def main():
 			
 			flow_df_select['dist_diff'] = flow_df_select['new_distance'] - flow_df_select[dist_types[t]]
 			flow_df_select['time_diff'] = flow_df_select['new_time'] - flow_df_select[time_types[t]]
-			# flow_df_select['tr_loss'] = (1 - flow_df_select['no_access'])*flow_df_select[vehicle_types[t]]*(flow_df_select['new_cost'] - flow_df_select[cost_types[t]])
-			flow_df_select['tr_loss'] = (1 - flow_df_select['no_access'])*(flow_df_select['new_cost'] - flow_df_select[cost_types[t]])
-			
+			flow_df_select['tr_loss'] = (1 - flow_df_select['no_access'])*flow_df_select[vehicle_types[t]]*(flow_df_select['new_cost'] - flow_df_select[cost_types[t]])
 			df_path = os.path.join(output_path,'failure_results','single_edge_failures_all_path_impacts_national_{0}_{1}_2.csv'.format(modes[m],types[t]))
 			flow_df_select.to_csv(df_path,index = False)
 			# flow_df_select = pd.read_csv(df_path).fillna(0)
@@ -402,7 +399,7 @@ def main():
 
 		edge_impact = edge_fail_ranges[0]
 		edge_impact = pd.merge(edge_impact,edge_fail_ranges[1],how='left', on=['edge_id','no_access']).fillna(0)
-		df_path = os.path.join(output_path,'failure_results','single_edge_failures_all_losses_national_{0}_2.csv'.format(modes[m]))
+		df_path = os.path.join(output_path,'failure_results','single_edge_failures_all_losses_national_{0}.csv'.format(modes[m]))
 		edge_impact.to_csv(df_path,index = False)
 
 		network_failure_assembly(edge_impact,veh_wt[m],modes[m],G_df,save_edges = True,output_path =shp_output_path)

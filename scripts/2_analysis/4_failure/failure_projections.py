@@ -23,8 +23,8 @@ import sys
 import math
 import copy 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-from scripts.utils import load_config
-from scripts.transport_network_creation import province_shapefile_to_network, add_igraph_generalised_costs_province_roads, province_shapefile_to_dataframe
+from scripts.utils import *
+from scripts.transport_network_creation import *
 
 def swap_min_max(x,min_col,max_col):
 	'''
@@ -37,7 +37,8 @@ def swap_min_max(x,min_col,max_col):
 def main():
 	data_path,calc_path,output_path = load_config()['paths']['data'],load_config()['paths']['calc'],load_config()['paths']['output']
 
-	truck_unit_wt = [5.0,20.0]
+	# truck_unit_wt = [5.0,20.0]
+	truck_unit_wt = [5.0]
 	# provinces to consider 
 	province_list = ['Lao Cai','Binh Dinh','Thanh Hoa']
 	province_terrian = ['mountain','flat','flat']
@@ -45,21 +46,22 @@ def main():
 	growth_scenarios = [(5,'low'),(6.5,'forecast'),(10,'high')]
 	base_year = 2016
 	types = ['min','max']
-	path_types = ['min_edge_path','max_edge_path']
-	rev_types = ['min_netrev','max_netrev']
-	tons_types = ['min_croptons','max_croptons']
-	dist_types = ['min_distance','max_distance']
-	time_types = ['min_time','max_time']
-	cost_types = ['min_gcost','max_gcost']
-	vechicle_types = ['min_vehicle_nums','max_vehicle_nums']
+	# path_types = ['min_edge_path','max_edge_path']
+	# rev_types = ['min_netrev','max_netrev']
+	# tons_types = ['min_croptons','max_croptons']
+	# dist_types = ['min_distance','max_distance']
+	# time_types = ['min_time','max_time']
+	# cost_types = ['min_gcost','max_gcost']
+	# vechicle_types = ['min_vehicle_nums','max_vehicle_nums']
 
-	flow_paths_data = os.path.join(output_path,'flow_mapping_paths','province_roads_district_center_flow_paths.xlsx')
-	fail_scenarios_data = os.path.join(output_path,'hazard_scenarios','province_roads_hazard_intersections.xlsx')
+	# flow_paths_data = os.path.join(output_path,'flow_mapping_paths','province_roads_district_center_flow_paths.xlsx')
+	# flow_paths_data = os.path.join(output_path,'flow_mapping_paths','province_roads_commune_center_flow_paths.xlsx')
+	# fail_scenarios_data = os.path.join(output_path,'hazard_scenarios','province_roads_hazard_intersections.xlsx')
 
-	rd_prop_file = os.path.join(data_path,'Roads','road_properties','road_properties.xlsx')
+	# rd_prop_file = os.path.join(data_path,'Roads','road_properties','road_properties.xlsx')
 
-	cols = ['origin','destination','min_edge_path','max_edge_path','min_netrev','max_netrev','min_croptons','max_croptons',
-			'min_distance','max_distance','min_time','max_time','min_gcost','max_gcost']
+	# cols = ['origin','destination','min_edge_path','max_edge_path','min_netrev','max_netrev','min_croptons','max_croptons',
+	# 		'min_distance','max_distance','min_time','max_time','min_gcost','max_gcost']
 
 	'''
 	Path OD flow disruptions
@@ -70,12 +72,12 @@ def main():
 		# set all paths for all input files we are going to use
 		province_name = province.replace(' ','').lower()
 		for tr_wt in truck_unit_wt:
-			flow_output_excel = os.path.join(output_path,'failure_results','single_edge_failures_totals_{0}_{1}_tons_projections.xlsx'.format(province_name,int(tr_wt)))
+			flow_output_excel = os.path.join(output_path,'failure_results','single_edge_failures_commune_access_totals_{0}_{1}_tons_projections.xlsx'.format(province_name,int(tr_wt)))
 			excl_wrtr_1 = pd.ExcelWriter(flow_output_excel)
 			for grth in growth_scenarios:
 				edge_fail_ranges = []
 				for t in range(len(types)):
-					df_path = os.path.join(output_path,'failure_results','single_edge_failures_all_path_impacts_{0}_{1}_{2}_tons.csv'.format(province_name,types[t],int(tr_wt)))
+					df_path = os.path.join(output_path,'failure_results','single_edge_failures_commune_access_all_path_impacts_{0}_{1}_{2}_tons.csv'.format(province_name,types[t],int(tr_wt)))
 					df = pd.read_csv(df_path).fillna(0)
 					edge_impact = df[['edge_id']]
 					# print (edge_impact)

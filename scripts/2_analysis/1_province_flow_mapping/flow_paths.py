@@ -263,9 +263,7 @@ if __name__ == '__main__':
 	excl_wrtr = pd.ExcelWriter(flow_output_excel)
 
 	rd_prop_file = os.path.join(data_path,'mode_properties','road_properties.xlsx')
-
 	
-
 	for prn in range(len(province_list)):
 	# for prn in range(0,1):
 		province = province_list[prn]

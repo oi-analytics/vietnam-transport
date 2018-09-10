@@ -29,6 +29,7 @@ from scipy.spatial import Voronoi
 import shapely.geometry
 import shapely.ops
 from shapely.geometry import Polygon, shape
+from math import log10, floor
 
 def load_config():
     """Read config.json

@@ -639,6 +639,15 @@ def add_igraph_generalised_costs_network(G,vehicle_numbers,tonnage,operating_fac
 
 	return G
 
+def add_generalised_costs_network_dataframe(network_dataframe,vehicle_numbers,tonnage,operating_factor_min,operating_factor_max):
+	# G.es['max_cost'] = list(cost_param*(np.array(G.es['length'])/np.array(G.es['max_speed'])))
+	# G.es['min_cost'] = list(cost_param*(np.array(G.es['length'])/np.array(G.es['min_speed'])))
+	# print (G.es['max_time'])
+	network_dataframe['max_gcost'] = (1 + operating_factor_max)*(vehicle_numbers*network_dataframe['max_time_cost'] + tonnage*network_dataframe['max_tariff_cost'])
+	network_dataframe['min_gcost'] = (1 + operating_factor_max)*(vehicle_numbers*network_dataframe['min_time_cost'] + tonnage*network_dataframe['min_tariff_cost'])
+
+	return network_dataframe	
+
 def assign_minmax_time_costs_networks_apply(x,cost_dataframe):
 	'''
 	'''
@@ -711,6 +720,77 @@ def network_shapefile_to_network(edges_in,mode_properties_file,mode_name,speed_m
 
 	# only keep connected network
 	return G.clusters().giant()
+
+def assign_minmax_tariff_costs_multi_modal_apply(x,cost_dataframe):
+	min_tariff_cost = 0
+	max_tariff_cost = 0
+	cost_list = list(cost_dataframe.itertuples(index=False))
+	for cost_param in cost_list:
+		if cost_param.one_mode == x.port_type and cost_param.other_mode == x.to_mode:
+			min_tariff_cost = cost_param.tariff_min_usd
+			max_tariff_cost = cost_param.tariff_max_usd
+			break
+		elif cost_param.one_mode == x.to_mode and cost_param.other_mode == x.from_mode:
+			min_tariff_cost = cost_param.tariff_min_usd
+			max_tariff_cost = cost_param.tariff_max_usd
+			break
+		elif cost_param.one_mode == x.to_mode and cost_param.other_mode == x.port_type:
+			min_tariff_cost = cost_param.tariff_min_usd
+			max_tariff_cost = cost_param.tariff_max_usd
+			break
+		elif cost_param.one_mode == x.from_mode and cost_param.other_mode == x.to_mode:
+			min_tariff_cost = cost_param.tariff_min_usd
+			max_tariff_cost = cost_param.tariff_max_usd
+			break
+
+	return min_tariff_cost, max_tariff_cost
+
+def multi_modal_shapefile_to_dataframe(edges_in,mode_properties_file,mode_name,length_threshold):
+	"""
+	input parameters:
+		edges_in : string of path to edges file/network file. 
+		
+	output:
+		SG: connected graph of the shapefile
+	"""
+	
+	edges = gpd.read_file(edges_in)
+	edges.columns = map(str.lower, edges.columns)
+	
+	# assgin asset terrain
+
+	# get the right linelength
+	edges['length'] = edges.geometry.apply(line_length)
+
+
+	cost_values_df = pd.read_excel(mode_properties_file,sheet_name=mode_name)
+
+	# assign minimum and maximum cost of tonnage in USD/ton to the network
+	# the costs of time  = (unit cost of tariff in USD/ton)
+	edges['tariff_cost'] = edges.apply(lambda x: assign_minmax_tariff_costs_multi_modal_apply(x,cost_values_df),axis = 1)
+	edges[['min_tariff_cost', 'max_tariff_cost']] = edges['tariff_cost'].apply(pd.Series)
+	edges.drop('tariff_cost',axis=1,inplace=True)
+
+	edges['min_time'] = 0
+	edges['max_time'] = 0
+	edges['min_time_cost'] = 0
+	edges['max_time_cost'] = 0	
+
+	# make sure that From and To node are the first two columns of the dataframe
+	# to make sure the conversion from dataframe to igraph network goes smooth
+	edges = edges.reindex(list(edges.columns)[2:]+list(edges.columns)[:2],axis=1)
+	edges = edges[edges['length'] < length_threshold]
+
+	return edges
+
+def multi_modal_shapefile_to_network(edges_in,mode_properties_file,mode_name,length_threshold):
+	# create network from edge file
+	edges = multi_modal_shapefile_to_dataframe(edges_in,mode_properties_file,mode_name,length_threshold)
+	G = ig.Graph.TupleList(edges.itertuples(index=False), edge_attrs=list(edges.columns)[2:])
+
+	# only keep connected network
+	return G
+
 '''
 Functions we are not using at present for provincial analysis. Will clean them later
 '''

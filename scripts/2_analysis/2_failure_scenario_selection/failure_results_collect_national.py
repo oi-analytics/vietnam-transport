@@ -45,7 +45,7 @@ def spatial_scenario_selection_national(line_shapefile,polygon_shapefile,hazard_
 			for p_index, poly in intersected_polys.iterrows():
 				if (lines['geometry'].intersects(poly['geometry']) is True) and (poly.geometry.is_valid is True):
 					if transport_mode in ['road','rail']:
-						value_dictionary = {'edge_id': lines['edge_id'],'length':lines['exposure_l'],
+						value_dictionary = {'edge_id': lines['edge_id'],'length':lines['length'],
 								'province_id':poly['province_i'],'province_name':poly['pro_name_e'],
 								'district_id':poly['district_i'],'district_name':poly['dis_name_e'],
 								'commune_id':poly['commune_id'],'commune_name':poly['name_eng']}
@@ -64,7 +64,8 @@ def spatial_scenario_selection_national(line_shapefile,polygon_shapefile,hazard_
 def main():
 	data_path = load_config()['paths']['data']
 	hazard_intersections_path = load_config()['paths']['output']
-	modes = ['road','rail','air','inland','coastal']
+	# modes = ['road','rail','air','inland','coastal']
+	modes = ['road']
 	out_modes = ['national_roads','national_rail','air_ports','inland_ports','sea_ports']
 	bnds = [3,4,5]
 	thresholds = [1,2,3,4,999]
@@ -75,7 +76,7 @@ def main():
 	hazard_df = pd.read_excel(hazard_description_file,sheet_name ='file_contents')
 	hazard_files = hazard_df['file_name'].values.tolist()
 
-	data_excel = os.path.join(hazard_intersections_path,'hazard_scenarios','national_scale_hazard_intersections_water.xlsx')
+	data_excel = os.path.join(hazard_intersections_path,'hazard_scenarios','national_scale_hazard_intersections_roads.xlsx')
 	excel_writer = pd.ExcelWriter(data_excel)
 	for m in range(len(modes)):
 		# set all paths for all input files we are going to use
@@ -113,9 +114,9 @@ def main():
 		
 		data_df = pd.DataFrame(data_dict)
 		data_df_cols = data_df.columns.values.tolist()
-		if 'exposure_l' in data_df_cols:
-			selected_cols = [cols for cols in data_df_cols if cols != 'exposure_l']
-			data_df = data_df.groupby(selected_cols)['exposure_l'].sum().reset_index()
+		if 'length' in data_df_cols:
+			selected_cols = [cols for cols in data_df_cols if cols != 'length']
+			data_df = data_df.groupby(selected_cols)['length'].sum().reset_index()
 		
 		data_df.to_excel(excel_writer,modes[m],index = False)
 		excel_writer.save()
