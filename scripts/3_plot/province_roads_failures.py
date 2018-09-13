@@ -17,38 +17,99 @@ def main():
 	config = load_config()
 
 	regions = ['Lao Cai', 'Binh Dinh', 'Thanh Hoa']
+	# plot_set = [
+	# 	{
+	# 		'column': 'min_econ_l',
+	# 		'title': 'Min Economic impact',
+	# 		'legend_label': "Economic Loss('000 USD/day)",
+	# 		'divisor': 1000,
+	# 		'significance': 0
+	# 	},
+	# 	{
+	# 		'column': 'max_econ_l',
+	# 		'title': 'Max Economic impact',
+	# 		'legend_label': "Economic Loss('000 USD/day)",
+	# 		'divisor': 1000,
+	# 		'significance': 0
+	# 	},
+	# 	{
+	# 		'column': 'min_tons',
+	# 		'title': 'Min Daily Tons loss',
+	# 		'legend_label': "MT (tons/day)",
+	# 		'divisor': 1,
+	# 		'significance': 0
+	# 	},
+	# 	{
+	# 		'column': 'max_tons',
+	# 		'title': 'Max Daily Tons loss',
+	# 		'legend_label': "MT (tons/day)",
+	# 		'divisor': 1,
+	# 		'significance': 0
+	# 	},
+	# 	{
+	# 		'column': 'min_adapt_',
+	# 		'title': 'Min NPV of adaptation over time',
+	# 		'legend_label': "NPV(USD million)",
+	# 		'divisor': 1000000,
+	# 		'significance': 0
+	# 	},
+	# 	{
+	# 		'column': 'max_econ_l',
+	# 		'title': 'Max NPV of adaptation over time',
+	# 		'legend_label': "NPV(USD million)",
+	# 		'divisor': 1000000,
+	# 		'significance': 0
+	# 	},
+	# 	{
+	# 		'column': 'min_bc_rat',
+	# 		'title': 'Min BCR of adaptation over time',
+	# 		'legend_label': "BCR",
+	# 		'divisor': 1,
+	# 		'significance': 0
+	# 	},
+	# 	{
+	# 		'column': 'max_bc_rat',
+	# 		'title': 'Max BCR of adaptation over time',
+	# 		'legend_label': "BCR",
+	# 		'divisor': 1,
+	# 		'significance': 0
+	# 	}
+	# ]
+
 	plot_set = [
 		{
-			'column': 'min_econ_l',
-			'title': 'Min Economic impact',
-			'legend_label': "Economic Loss('000 USD/day)",
-			'divisor': 1000,
+			'column': 'min_adapt_',
+			'title': 'Min NPV of adaptation over time',
+			'legend_label': "NPV(USD million)",
+			'divisor': 1000000,
 			'significance': 0
 		},
 		{
-			'column': 'max_econ_l',
-			'title': 'Max Economic impact',
-			'legend_label': "Economic Loss('000 USD/day)",
-			'divisor': 1000,
+			'column': 'max_adapt_',
+			'title': 'Max NPV of adaptation over time',
+			'legend_label': "NPV(USD million)",
+			'divisor': 1000000,
 			'significance': 0
 		},
 		{
-			'column': 'min_tons',
-			'title': 'Min Daily Tons loss',
-			'legend_label': "MT (tons/day)",
+			'column': 'min_bc_rat',
+			'title': 'Min BCR of adaptation over time',
+			'legend_label': "BCR",
 			'divisor': 1,
 			'significance': 0
 		},
 		{
-			'column': 'max_tons',
-			'title': 'Max Daily Tons loss',
-			'legend_label': "MT (tons/day)",
+			'column': 'max_bc_rat',
+			'title': 'Max BCR of adaptation over time',
+			'legend_label': "BCR",
 			'divisor': 1,
 			'significance': 0
 		}
 	]
 	
-	for region in regions:
+	# for region in regions:
+	for re in range(0,1):
+		region = regions[re]
 
 		region_file = os.path.join(config['paths']['data'], 'Results', 'Failure_shapefiles', 'weighted_edges_commune_center_failures_' + region.lower().replace(' ', '') + '_5_tons.shp')
 		plot_settings = get_region_plot_settings(region)
@@ -68,12 +129,29 @@ def main():
 
 			# generate weight bins
 			column = plot_set[c]['column']
-			weights = [
-				record.attributes[column]
-				for record in shpreader.Reader(region_file).records()
-			]
+			if column in ('min_adapt_','max_adapt_'):
+				weights = [
+					record.attributes[column]
+					for record in shpreader.Reader(region_file).records()
+					if record.attributes[column] > 0 and record.attributes['max_econ_l'] > 0
+				]
+			elif column in ('min_bc_rat','max_bc_rat'):
+				weights = [
+					record.attributes[column]
+					for record in shpreader.Reader(region_file).records()
+					if record.attributes[column] > 1 and record.attributes['max_econ_l'] > 0
+				]
+			else:
+				weights = [
+					record.attributes[column]
+					for record in shpreader.Reader(region_file).records()
+				]
+
 			max_weight = max(weights)
-			width_by_range = generate_weight_bins_with_colour_gradient(weights, width_step=0.001)
+			if column in ('min_bc_rat','max_bc_rat') and region == 'Lao Cai':
+				width_by_range = generate_weight_bins_with_colour_gradient(weights,n_steps = 6,width_step=0.001) 
+			else:
+				width_by_range = generate_weight_bins_with_colour_gradient(weights, width_step=0.001)
 
 			road_geoms_by_category = {
 				region: []
@@ -83,7 +161,25 @@ def main():
 				(region,  Style(color='#ba0f03', zindex=6, label=region))
 			])
 
-			for record in shpreader.Reader(region_file).records():
+			if column in ('min_adapt_','max_adapt_'):
+				rec_set = [
+					record
+					for record in shpreader.Reader(region_file).records()
+					if record.attributes[column] > 0 and record.attributes['max_econ_l'] > 0
+				]
+			elif column in ('min_bc_rat','max_bc_rat'):
+				rec_set = [
+					record
+					for record in shpreader.Reader(region_file).records()
+					if record.attributes[column] > 1 and record.attributes['max_econ_l'] > 0
+				]
+			else:
+				rec_set = [
+					record
+					for record in shpreader.Reader(region_file).records()
+				]
+
+			for record in rec_set:
 				cat = region
 				geom = record.geometry
 
@@ -159,7 +255,7 @@ def main():
 			plt.title(title, fontsize = 14)
 
 			# output
-			output_file = os.path.join(config['paths']['figures'], 'commune_center-{}-{}-failures.png'.format(region.lower().replace(' ', ''), column))
+			output_file = os.path.join(config['paths']['figures'], 'commune_center-{}-{}-failures_2.png'.format(region.lower().replace(' ', ''), column))
 			save_fig(output_file)
 			plt.close()
 

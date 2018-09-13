@@ -121,9 +121,9 @@ def network_od_paths_assembly_changing_tonnages(points_dataframe,node_dict,graph
 		try: 
 			origin = row['origin']
 			destinations = [row['destination']]
-			tons = row['min_tons']
+			tons = 0.9*row['min_tons']
 			get_min_path, get_min_dist, get_min_time, get_min_gcost = network_od_path_estimations_changing_tonnages(graph,origin,destinations,tons,vehicle_wt,utilization_factors,'min_gcost','min_time')
-			tons = row['max_tons']
+			tons = 0.9*row['max_tons']
 			get_max_path, get_max_dist, get_max_time, get_max_gcost = network_od_path_estimations_changing_tonnages(graph,origin,destinations,tons,vehicle_wt,utilization_factors,'max_gcost','max_time')
 			save_paths += list(zip([origin]*len(destinations),destinations,get_min_path,get_max_path,
 								get_min_dist,get_max_dist,get_min_time,get_max_time,get_min_gcost,get_max_gcost))
@@ -146,53 +146,54 @@ def network_od_paths_assembly_changing_tonnages(points_dataframe,node_dict,graph
 	save_paths_df.to_excel(excel_writer,transport_mode,index = False)
 	excel_writer.save()
 	del save_paths
+	del save_paths_df
 	
-	min_ind_cols = []
-	max_ind_cols = []
-	ch_min_ind_cols = []
-	ch_max_ind_cols = []
-	for ind in industry_columns:
-		min_ind_cols.append('min_{}'.format(ind))
-		max_ind_cols.append('max_{}'.format(ind))
-		if ind in ('rice','tons'):
-			ch_min_ind_cols.append('min_{}'.format(ind))
-			ch_max_ind_cols.append('max_{}'.format(ind))
-		else:
-			ch_min_ind_cols.append(ind)
-			ch_max_ind_cols.append(ind)
+	# min_ind_cols = []
+	# max_ind_cols = []
+	# ch_min_ind_cols = []
+	# ch_max_ind_cols = []
+	# for ind in industry_columns:
+	# 	min_ind_cols.append('min_{}'.format(ind))
+	# 	max_ind_cols.append('max_{}'.format(ind))
+	# 	if ind in ('rice','tons'):
+	# 		ch_min_ind_cols.append('min_{}'.format(ind))
+	# 		ch_max_ind_cols.append('max_{}'.format(ind))
+	# 	else:
+	# 		ch_min_ind_cols.append(ind)
+	# 		ch_max_ind_cols.append(ind)
 
-	print (len(ch_min_ind_cols))
-	print (len(ch_max_ind_cols))
-	print (len(min_ind_cols))
-	print (len(max_ind_cols))
+	# print (len(ch_min_ind_cols))
+	# print (len(ch_max_ind_cols))
+	# print (len(min_ind_cols))
+	# print (len(max_ind_cols))
 
 
-	for i in range(len(min_ind_cols)):
-		gdf_edges[min_ind_cols[i]] = 0
-		gdf_edges[max_ind_cols[i]] = 0
+	# for i in range(len(min_ind_cols)):
+	# 	gdf_edges[min_ind_cols[i]] = 0
+	# 	gdf_edges[max_ind_cols[i]] = 0
 
-	for iter_,path in save_paths_df.iterrows():
-		min_path = path['min_edge_path']
-		max_path = path['max_edge_path']
+	# for iter_,path in save_paths_df.iterrows():
+	# 	min_path = path['min_edge_path']
+	# 	max_path = path['max_edge_path']
 		
-		gdf_edges.loc[gdf_edges['edge_id'].isin(min_path),min_ind_cols] += path[ch_min_ind_cols].values
-		gdf_edges.loc[gdf_edges['edge_id'].isin(max_path),max_ind_cols] += path[ch_max_ind_cols].values
+	# 	gdf_edges.loc[gdf_edges['edge_id'].isin(min_path),min_ind_cols] += path[ch_min_ind_cols].values
+	# 	gdf_edges.loc[gdf_edges['edge_id'].isin(max_path),max_ind_cols] += path[ch_max_ind_cols].values
 	
-	# gdf_edges[min_ind_cols] = gdf_edges['min_vals'].apply(pd.Series)
-	# gdf_edges[max_ind_cols] = gdf_edges['max_vals'].apply(pd.Series)
-	# gdf_edges.drop('min_vals',axis=1,inplace=True)
-	# gdf_edges.drop('max_vals',axis=1,inplace=True)
+	# # gdf_edges[min_ind_cols] = gdf_edges['min_vals'].apply(pd.Series)
+	# # gdf_edges[max_ind_cols] = gdf_edges['max_vals'].apply(pd.Series)
+	# # gdf_edges.drop('min_vals',axis=1,inplace=True)
+	# # gdf_edges.drop('max_vals',axis=1,inplace=True)
 
 
-	for ind in industry_columns:
-		gdf_edges['swap'] = gdf_edges.apply(lambda x: swap_min_max(x,'min_{}'.format(ind),'max_{}'.format(ind)),axis = 1)
-		gdf_edges[['min_{}'.format(ind),'max_{}'.format(ind)]] = gdf_edges['swap'].apply(pd.Series)
-		gdf_edges.drop('swap',axis=1,inplace=True)
+	# for ind in industry_columns:
+	# 	gdf_edges['swap'] = gdf_edges.apply(lambda x: swap_min_max(x,'min_{}'.format(ind),'max_{}'.format(ind)),axis = 1)
+	# 	gdf_edges[['min_{}'.format(ind),'max_{}'.format(ind)]] = gdf_edges['swap'].apply(pd.Series)
+	# 	gdf_edges.drop('swap',axis=1,inplace=True)
 
-	if save_edges == True:
-		gdf_edges.to_file(os.path.join(output_path,'weighted_edges_flows_national_{0}_2.shp'.format(transport_mode)))
+	# if save_edges == True:
+	# 	gdf_edges.to_file(os.path.join(output_path,'weighted_edges_flows_national_{0}_2.shp'.format(transport_mode)))
 
-	del gdf_edges, save_paths_df
+	# del gdf_edges, save_paths_df
 
 def network_od_paths_assembly(points_dataframe,node_dict,graph,vehicle_wt,transport_mode,industry_columns,gdf_edges,save_edges = True,output_path ='',excel_writer =''):
 	"""
@@ -351,8 +352,8 @@ def main():
 	'''
 	# modes_file_paths = [('Roads','national_roads'),('Railways','national_rail'),('Airports','airnetwork'),('Waterways','waterways')]
 	modes_file_paths = [('Roads','national_roads'),('Railways','national_rail'),('Airports','airnetwork'),('Waterways','waterways'),('Waterways','waterways')]
-	# modes_file_paths = [('Roads','national_roads')]
-	modes_file_paths = [('Roads','national_roads'),('Railways','national_rail')]
+	modes_file_paths = [('Roads','national_roads')]
+	# modes_file_paths = [('Roads','national_roads'),('Railways','national_rail')]
 	modes = ['road','rail','air','inland','coastal']
 	veh_wt = [20,800,0,800,1200]
 	usage_factors = [(0,0),(0,0),(0,0),(0.2,0.25),(0.2,0.25)]
@@ -363,7 +364,7 @@ def main():
 	shp_output_path = os.path.join(output_path,'flow_mapping_shapefiles')
 	od_output_excel = os.path.join(output_path,'flow_mapping_paths','national_scale_flow_ods.xlsx')
 
-	flow_output_excel = os.path.join(output_path,'flow_mapping_paths','national_scale_flow_paths_2.xlsx')
+	flow_output_excel = os.path.join(output_path,'flow_mapping_paths','national_scale_flow_paths_roads_90_percent.xlsx')
 	excl_wrtr = pd.ExcelWriter(flow_output_excel)
 
 	md_prop_file = os.path.join(data_path,'mode_properties','mode_costs.xlsx')

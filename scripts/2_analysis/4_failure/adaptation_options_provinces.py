@@ -274,6 +274,7 @@ def main():
 		del edges
 
 		all_edge_fail_scenarios.rename(columns={'length': 'road_length','min_econ_l':'min_daily_loss_{}'.format(start_year),'max_econ_l':'max_daily_loss_{}'.format(start_year)}, inplace=True)
+		all_edge_fail_scenarios = all_edge_fail_scenarios[all_edge_fail_scenarios['max_daily_loss_{}'.format(start_year)] > 0]
 		all_edge_fail_scenarios['road_length'] = 1000.0*all_edge_fail_scenarios['road_length']
 
 		# all_edge_fail_scenarios = all_edge_fail_scenarios.groupby(index_cols + ['probability'])['exposure_length'].sum().reset_index()
