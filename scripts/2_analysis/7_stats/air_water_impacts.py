@@ -154,7 +154,7 @@ def read_ports(ports_file_with_ids, ports_file_with_names):
 
 def read_hazards(hazard_file):
     data = pd.read_excel(hazard_file, ['air', 'inland', 'coastal'])
-    keep_cols = ['node_id', 'hazard_type', 'model', 'climate_scenario', 'probability', 'year']
+    keep_cols = ['node_id','commune_name','district_name','province_name', 'hazard_type', 'model', 'climate_scenario', 'probability', 'year']
     air_exposure = data['air'][keep_cols]
     inland_exposure = data['inland'][keep_cols]
     coastal_exposure = data['coastal'][keep_cols]
@@ -206,9 +206,9 @@ def join_hazards(nodes_with_flows_df, hazards_df):
 
 def summarise(nodes_with_hazards_df):
     grouped = nodes_with_hazards_df[
-        ['name', 'min_tons', 'max_tons', 'hazard_type', 'climate_scenario', 'probability']
+        ['name','commune_name','district_name','province_name', 'min_tons', 'max_tons', 'hazard_type', 'climate_scenario', 'probability']
     ].groupby(
-        ['name', 'min_tons', 'max_tons', 'hazard_type','climate_scenario']
+        ['name','commune_name','district_name','province_name', 'min_tons', 'max_tons', 'hazard_type','climate_scenario']
     )
 
     min_prob = grouped.min(
@@ -233,8 +233,11 @@ def summarise(nodes_with_hazards_df):
 
     summary.index.names = [
         'Name',  # was 'name'
-        'Minimum flow (tons)',  # was 'min_tons'
-        'Maximum flow (tons)',  # was 'max_tons'
+        'Commune',
+        'District',
+        'Province',
+        'Minimum flow (tons/day)',  # was 'min_tons'
+        'Maximum flow (tons/day)',  # was 'max_tons'
         'Hazard type',  # was 'hazard_type'
         'Climate scenario',  # was 'climate_scenario'
     ]
