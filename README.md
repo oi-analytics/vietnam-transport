@@ -11,7 +11,7 @@ Data processing, modelling, analyis and visualisation for a Vietnam Transport Ri
 Data prerequisites and formats will be documented and linked to here. (TODO)
 
 
-### Python
+### Python and libraries
 
 Python is required to run the scripts in this project. We suggest using
 [miniconda](https://conda.io/miniconda.html) to set up an environment and manage library
@@ -27,6 +27,10 @@ See http://igraph.org/python/ for instructions on Windows installation of `pytho
 Activate the environment:
 
     conda activate vietnam-transport
+
+Set up the `vtra` package (this project) for development use:
+
+    python setup.py develop
 
 
 ### GAMS

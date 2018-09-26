@@ -25,11 +25,15 @@ dependencies:
   - pandas
   - pathos
   - psycopg2
+  - pylint  # dev
   - pyomo
+  - pytest  # test
+  - pytest-cov  # test
   - rasterio
   - rasterstats
   - requests
   - rtree
   - scipy
   - shapely
+  - sphinx  # docs
   - sqlalchemy
