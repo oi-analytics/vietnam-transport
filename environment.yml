@@ -2,9 +2,6 @@
 # To import/create a copy of the environment:
 #    conda env create -f .environment.yml
 name: vietnam-transport
-channels:
-  - conda-forge
-  - defaults
 dependencies:
   - boltons
   - cartopy
