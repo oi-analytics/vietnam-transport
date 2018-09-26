@@ -10,8 +10,8 @@ import cartopy.io.shapereader as shpreader
 import matplotlib.pyplot as plt
 from shapely.geometry import LineString
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
-from scripts.utils import *
+
+from vtra.utils import *
 
 def main():
     config = load_config()
@@ -30,7 +30,7 @@ def main():
             'legend_label': "AADF ('000 tons/day)",
             'divisor': 1000,
             'columns': ['max_rice','max_cash','max_cass','max_teas','max_maiz',
-                        'max_rubb','max_swpo','max_acof','max_rcof','max_pepp', 
+                        'max_rubb','max_swpo','max_acof','max_rcof','max_pepp',
                         'max_sugar','max_wood','max_steel','max_constr','max_cement',
                         'max_fertil','max_coal','max_petrol','max_manufa','max_fisher',
                         'max_meat', 'max_tons'],
@@ -41,7 +41,7 @@ def main():
                            'Fishery','Meat','Total tonnage']
         },
     ]
-    
+
     for plot_set in plot_sets:
         for c in range(len(plot_set['columns'])):
             ax = get_axes()
@@ -55,7 +55,7 @@ def main():
                 column = plot_set['columns'][c]
             else:
                 column = 'max_tons'
-            
+
             weights = [
                 record.attributes[column]
                 for record in shpreader.Reader(flows_file).records()

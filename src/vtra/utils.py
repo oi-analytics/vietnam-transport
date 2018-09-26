@@ -575,8 +575,9 @@ def get_nearest_node_within_region(x,input_nodes,id_column,region_id):
 
 
 def count_points_in_polygon(x,points_sindex):
-    """
-   Inputs are:
+    """Count points in a polygon
+
+    Inputs are:
         x -- row of dataframe
         points_sindex -- spatial index of dataframe with points in the region to consider
     Outputs are:
@@ -586,7 +587,7 @@ def count_points_in_polygon(x,points_sindex):
 
 def extract_value_from_gdf(x,gdf_sindex,gdf,column_name):
     """
-   Inputs are:
+    Inputs are:
         x -- row of dataframe
         gdf_sindex -- spatial index of dataframe of which we want to extract the value
         gdf -- GeoDataFrame of which we want to extract the value
@@ -626,16 +627,18 @@ def assign_value_in_area_proportions_within_common_region(poly_1_gpd,poly_2_gpd,
 
 def voronoi_finite_polygons_2d(vor, radius=None):
     """
-    Copy-pasted from: https://stackoverflow.com/questions/36063533/clipping-a-voronoi-diagram-python
+    Source: https://stackoverflow.com/questions/36063533/clipping-a-voronoi-diagram-python
 
     Reconstruct infinite voronoi regions in a 2D diagram to finite
     regions.
+
     Parameters
     ----------
     vor : Voronoi
         Input diagram
     radius : float, optional
         Distance to 'points at infinity'.
+
     Returns
     -------
     regions : list of tuples

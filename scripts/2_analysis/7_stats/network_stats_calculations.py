@@ -23,10 +23,10 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 import matplotlib.patches as mpatches
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
-from scripts.utils import *
-from scripts.transport_network_creation import *
+
+from vtra.utils import *
+from vtra.transport_network_creation import *
 
 mpl.style.use('ggplot')
 mpl.rcParams['font.size'] = 13.
@@ -49,10 +49,10 @@ def main():
 	for m in range(len(modes_cols)):
 		mode_data_path = os.path.join(data_path,'Results','Flow_shapefiles','weighted_edges_flows_national_{0}.shp'.format(modes_cols[m]))
 		edges_df = gpd.read_file(mode_data_path)
-		
+
 		if modes_cols[m] in ('air','inland','coastal'):
-			edges_df = edges_df[edges_df['max_tons'] > 0]	
-		
+			edges_df = edges_df[edges_df['max_tons'] > 0]
+
 		length = sum(edges_df['length'].values.tolist())
 		print ('Total length of {0} network = {1}'.format(modes_cols[m],length))
 
@@ -75,7 +75,7 @@ def main():
 				print ('Road class {0} length = {1}'.format(road_class,class_length))
 				print ('Road class {0} length percentage = {1}'.format(road_class,100.0*class_length/length))
 
-			
+
 			road_width_list = []
 			unique_rd_widths = sorted(list(set(edges_df['width'].values.tolist())))
 			for u_rdw in unique_rd_widths:
@@ -97,7 +97,7 @@ def main():
 			# plt.tight_layout()
 			# output_file = os.path.join(figure_path, 'national_road_width-histogram.png')
 			# plt.savefig(output_file,dpi=500)
- 
+
 			# plt.close()
 
 		if modes_cols[m] == 'rail':
@@ -120,7 +120,7 @@ def main():
 	for prn in range(len(province_list)):
 		province = province_list[prn]
 		province_name = province.replace(' ','').lower()
-		
+
 		edges_in = os.path.join(data_path,'Results','Flow_shapefiles','weighted_edges_commune_center_flows_{0}_5_tons.shp'.format(province_name))
 		edges_df = gpd.read_file(edges_in)
 		length = sum(edges_df['length'].values.tolist())
@@ -133,7 +133,7 @@ def main():
 
 	province_stats_df = pd.DataFrame(province_stats,columns = ['Province name','Road level','Paved (km)','Unpaved (km)', 'Paved(%)', 'Unpaved (%)'])
 	province_stats_df.to_csv(os.path.join(data_path,'Results','network_stats','province_roads_conditions.csv'),index = False)
-		
+
 
 if __name__ == '__main__':
 	main()

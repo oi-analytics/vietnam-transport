@@ -11,8 +11,8 @@ from rtree import index
 from shapely.geometry import mapping, shape, Point, LineString, MultiLineString
 
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from utils import load_config
+
+from vtra.utils import load_config
 
 # C Incoming data/20170801.zip -> data/raw/cvts/20170801
 # D Work Processes/Vietnam/data/Roads/ -> data/raw/cvts/Roads
@@ -31,7 +31,7 @@ def reduse_dataset(source_dir, dest_dir):
     # Reduce the size of the dataset to speed up further processing
     # and output this in an intermediate mirror dataset
     #
-    # MIN_MOV: 
+    # MIN_MOV:
     #   0.001: is a good setting to remove all standstill (
     #        69.276 items (13.5GB) -> 69.261 items (8.4GB))
 
@@ -80,14 +80,14 @@ def reduse_dataset(source_dir, dest_dir):
 
                                     if sample_lat_mov >= MIN_LAT_SAMPLE or sample_lon_mov >= MIN_LON_SAMPLE:
                                         data_moving.append(current)
-                            
+
                         # Write clean dataset to file
                         wr = csv.writer(sink, delimiter=',')
                         [wr.writerow(row) for row in data_moving]
 
 def process_gps_trace_into_points(source_dir):
     # Generate geojson format dictionaries from a gps point folder
-    
+
     geojson = []
     for root, dirs, files in os.walk(source_dir):
         for file in files:
@@ -109,10 +109,10 @@ def process_gps_trace_into_points(source_dir):
                                     "id": file,
                                     "time": row[2]
                                 }
-                            })        
+                            })
                     except:
                         print('File ' + root + file + ' was not processed because of an issue')
-    return geojson                     
+    return geojson
 
 def clip_gps_points(road_network, source_dir, dest_dir):
 
@@ -179,27 +179,27 @@ def find_routes(road_network, gps_points_folder, routes_folder):
                             geom = LineString([Point(row[0], row[1]) for row in data])
                             timestamps = [row[2] for row in data]
 
-                            route = []                        
+                            route = []
                             for previous, current, timestamp in zip(list(geom.coords), list(geom.coords)[1:], timestamps):
-                                
+
                                 route_segment = LineString([previous, current])
                                 route_segment_buf = route_segment.buffer(BUFFER_SIZE)
 
                                 for edge_id in list(rtree.intersection(route_segment_buf.bounds)):
-                                    
+
                                     add_route_id = False
 
                                     # Keep long edges if its intersection is at least 90% of the line segment within buffer
                                     if road_network_lut[edge_id].intersection(route_segment_buf).length > route_segment.length * 0.8:
                                         add_route_id = True
 
-                                    # Keep short edges if 
+                                    # Keep short edges if
                                     elif road_network_lut[edge_id].length < route_segment.length \
                                         and road_network_lut[edge_id].intersection(route_segment_buf).length > road_network_lut[edge_id].length * 0.7:
                                         add_route_id = True
-                                    
+
                                     # Only add route id, if it doesnt exist in last x route points
-                                    if add_route_id:    
+                                    if add_route_id:
                                         if edge_id not in [row[0] for row in route[-NUM_RETURN_JOURNEY:]]:
                                             route.append([edge_id, timestamp])
 
@@ -211,7 +211,7 @@ def find_routes(road_network, gps_points_folder, routes_folder):
 
 
 def add_traffic_count_to_road_network(road_network, routes_folder, results_folder):
-        
+
     # Process road network into lookup friendly dictionary
     road_network_lut = {}
     for road in road_network:
@@ -287,7 +287,7 @@ def write_shapefile(data, folder, filename):
             new_prop_schema.append((prop[0], 'str'))
         else:
             new_prop_schema.append(prop)
-    
+
     sink_driver = 'ESRI Shapefile'
     sink_crs = {'init': 'epsg:4326'}
     sink_schema = {
@@ -311,7 +311,7 @@ if __name__ == "__main__":
     # Reduse dataset with 70 percent (processing 4s/100mb)
     print('Reduce dataset size')
     reduse_dataset(dir_raw_cvts, dir_inter_reduse)
-    
+
     # # Read road network in memory
     print('Read road network')
     geojson_road_network = read_shapefile(dir_raw_roads, 'national_network_edges.shp')
@@ -327,7 +327,7 @@ if __name__ == "__main__":
     # add traffic attribute to route network (count id's in routes)
     print('Add traffic count attribute to road network')
     geojson_road_network = add_traffic_count_to_road_network(geojson_road_network, dir_results_routes, dir_results_traffic_count)
-   
+
     write_shapefile(geojson_road_network, dir_results_traffic_count, 'road_network.shp')
 
     # add routes to single file

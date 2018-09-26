@@ -7,8 +7,8 @@ import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
 import matplotlib.pyplot as plt
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
-from scripts.utils import *
+
+from vtra.utils import *
 
 def plot_admin_map():
     config = load_config()

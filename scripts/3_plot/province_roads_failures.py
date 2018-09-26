@@ -10,8 +10,8 @@ import cartopy.io.shapereader as shpreader
 import matplotlib.pyplot as plt
 from shapely.geometry import LineString
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
-from scripts.utils import *
+
+from vtra.utils import *
 
 def main():
 	config = load_config()
@@ -106,7 +106,7 @@ def main():
 			'significance': 0
 		}
 	]
-	
+
 	# for region in regions:
 	for re in range(0,1):
 		region = regions[re]
@@ -149,7 +149,7 @@ def main():
 
 			max_weight = max(weights)
 			if column in ('min_bc_rat','max_bc_rat') and region == 'Lao Cai':
-				width_by_range = generate_weight_bins_with_colour_gradient(weights,n_steps = 6,width_step=0.001) 
+				width_by_range = generate_weight_bins_with_colour_gradient(weights,n_steps = 6,width_step=0.001)
 			else:
 				width_by_range = generate_weight_bins_with_colour_gradient(weights, width_step=0.001)
 

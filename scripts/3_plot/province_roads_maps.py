@@ -10,21 +10,21 @@ import cartopy.io.shapereader as shpreader
 import matplotlib.pyplot as plt
 from shapely.geometry import LineString
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
-from scripts.utils import *
+
+from vtra.utils import *
 
 def main():
     config = load_config()
 
     regions = ['Lao Cai', 'Binh Dinh', 'Thanh Hoa']
-   
+
     styles = OrderedDict([
         ('National_Road',  Style(color='#ba0f03', zindex=6, label='National')),
         ('Provincial_Road', Style(color='#e0881f', zindex=5, label='Provincial')),
         ('Local_Road', Style(color='#1f99e0', zindex=4, label='Local')),
         ('Other', Style(color='#777777', zindex=3, label='Other')),
     ])
-    
+
     for region in regions:
 
         region_file = os.path.join(config['paths']['data'], 'Results', 'Flow_shapefiles', 'weighted_edges_commune_center_flows_' + region.lower().replace(' ', '') + '_5_tons.shp')
@@ -36,7 +36,7 @@ def main():
             plot_basemap(ax, config['paths']['data'], country_border='none', plot_states=False)
         else:
             plot_basemap(ax, config['paths']['data'], country_border='none', plot_states=True)
-        
+
         scale_bar(ax, location=(0.8, 0.05), length=plot_settings['scale_legend'])
         proj_lat_lon = ccrs.PlateCarree()
 
@@ -53,7 +53,7 @@ def main():
             val = record.attributes['level']
             if val > 3 or val < 0:
                 val = 3
-                
+
             road_geoms_by_category[road_geoms_by_category_keys[val]].append(geom)
 
 

@@ -20,8 +20,8 @@ mpl.rcParams['xtick.labelsize'] = 11.
 mpl.rcParams['ytick.labelsize'] = 11.
 mpl.rcParams['savefig.pad_inches'] = 0.05
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
-from scripts.utils import *
+
+from vtra.utils import *
 
 def main():
 	config = load_config()
@@ -51,7 +51,7 @@ def main():
 				data[data <= 0] = np.nan
 				max_val = np.nanmax(data)
 				norm=mpl.colors.Normalize(vmin=0, vmax=max_val)
-				
+
 				# Plot population data
 				im = ax.imshow(data, extent=lat_lon_extent,transform=proj_lat_lon, cmap=colors,norm =norm, zorder=5)
 
@@ -64,7 +64,7 @@ def main():
 				cbar.outline.set_color("none")
 				cbar.ax.yaxis.set_tick_params(color='black')
 				cbar.ax.set_xlabel('Crop Annual Production(tons)',fontsize=12,color='black')
-				
+
 				plt.title(crop_title, fontsize = 14)
 				output_file = os.path.join(config['paths']['figures'], '{}_production.png'.format(crop_name))
 				save_fig(output_file)

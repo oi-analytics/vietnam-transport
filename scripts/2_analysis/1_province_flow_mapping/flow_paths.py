@@ -18,10 +18,10 @@ import operator
 import ast
 import math
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
-from scripts.utils import *
-from scripts.transport_network_creation import *
+
+from vtra.utils import *
+from vtra.transport_network_creation import *
 
 def swap_min_max(x,min_col,max_col):
 	'''
@@ -34,13 +34,13 @@ def swap_min_max(x,min_col,max_col):
 def network_od_paths_check(points_dataframe,node_dict,graph,vehicle_wt):
 	"""
 	Assign net revenue to roads assets in Vietnam
-		
+
 	Inputs are:
 	start_points - GeoDataFrame of start points for shortest path analysis.
 	end_points - GeoDataFrame of potential end points for shorest path analysis.
 	G - iGraph network of the province.
-	save_edges - 
-		
+	save_edges -
+
 	Outputs are:
 	Shapefile with all edges and the total net reveneu transferred along each edge
 	GeoDataFrame of total net revenue transferred along each edge
@@ -61,8 +61,8 @@ def network_od_paths_check(points_dataframe,node_dict,graph,vehicle_wt):
 					vh_nums = math.ceil(1.0*tons/vehicle_wt)
 					graph = add_igraph_generalised_costs_roads(graph,vh_nums,tons)
 					path = graph.get_shortest_paths(pos0_i,pos1_i,weights=g_costs[t],output="epath")
-				
-					# get the path edges, path length 
+
+					# get the path edges, path length
 					get_path = [graph.es[n]['edge_id'] for n in path][0]
 					if get_path not in od_paths:
 						od_paths.append(get_path)
@@ -75,7 +75,7 @@ def network_od_paths_check(points_dataframe,node_dict,graph,vehicle_wt):
 def network_od_path_estimations(graph,source,target,cost_criteria,time_criteria):
 	# compute min cost paths and values
 	paths = graph.get_shortest_paths(source,target,weights=cost_criteria,output="epath")
-	
+
 	edge_path_list = []
 	path_dist_list = []
 	path_time_list = []
@@ -104,13 +104,13 @@ def network_od_path_estimations(graph,source,target,cost_criteria,time_criteria)
 def network_od_paths_assembly(points_dataframe,node_dict,graph,vehicle_wt,region_name,gdf_edges,save_edges = True,output_path ='',excel_writer =''):
 	"""
 	Assign net revenue to roads assets in Vietnam
-		
+
 	Inputs are:
 	start_points - GeoDataFrame of start points for shortest path analysis.
 	end_points - GeoDataFrame of potential end points for shorest path analysis.
 	G - iGraph network of the province.
-	save_edges - 
-		
+	save_edges -
+
 	Outputs are:
 	Shapefile with all edges and the total net reveneu transferred along each edge
 	GeoDataFrame of total net revenue transferred along each edge
@@ -131,16 +131,16 @@ def network_od_paths_assembly(points_dataframe,node_dict,graph,vehicle_wt,region
 
 	# 			get_min_path, get_min_dist, get_min_time, get_min_gcost = network_od_path_estimations(graph,pos0_i,pos1_i,'min_gcost','min_time')
 	# 			get_max_path, get_max_dist, get_max_time, get_max_gcost = network_od_path_estimations(graph,pos0_i,pos1_i,'max_gcost','max_time')
-				
+
 	# 			if get_min_path == get_max_path:
 	# 				minmax_path_match = 'True'
 	# 			else:
 	# 				minmax_path_match = 'False'
-		
+
 
 	# 			save_paths.append((od_pair,get_min_path,get_max_path,row['min_netrev'],row['max_netrev'],
 	# 								row['min_croptons'],row['max_croptons'],get_min_dist,get_max_dist,get_min_time,
-	# 								get_max_time,vh_nums*get_min_gcost,vh_nums*get_max_gcost,minmax_path_match))				
+	# 								get_max_time,vh_nums*get_min_gcost,vh_nums*get_max_gcost,minmax_path_match))
 	save_paths = []
 	points_dataframe = points_dataframe.set_index('origin')
 	# print (points_dataframe)
@@ -190,16 +190,16 @@ def network_od_paths_assembly(points_dataframe,node_dict,graph,vehicle_wt,region
 
 	# 			get_min_path, get_min_dist, get_min_time, get_min_gcost = network_od_path_estimations(graph,pos0_i,pos1_i,'min_gcost','min_time')
 	# 			get_max_path, get_max_dist, get_max_time, get_max_gcost = network_od_path_estimations(graph,pos0_i,pos1_i,'max_gcost','max_time')
-				
+
 	# 			if get_min_path == get_max_path:
 	# 				minmax_path_match = 'True'
 	# 			else:
 	# 				minmax_path_match = 'False'
-		
+
 
 	# 			save_paths.append((od_pair,get_min_path,get_max_path,row['min_netrev'],row['max_netrev'],
 	# 								row['min_croptons'],row['max_croptons'],get_min_dist,get_max_dist,get_min_time,
-	# 								get_max_time,vh_nums*get_min_gcost,vh_nums*get_max_gcost,minmax_path_match))				
+	# 								get_max_time,vh_nums*get_min_gcost,vh_nums*get_max_gcost,minmax_path_match))
 
 	# 	except:
 	# 		print(iter_)
@@ -215,10 +215,10 @@ def network_od_paths_assembly(points_dataframe,node_dict,graph,vehicle_wt,region
 
 	# all_edges = [x['edge_id'] for x in graph.es]
 	# all_edges_geom = [x['geometry'] for x in graph.es]
-	
+
 	# gdf_edges = gpd.GeoDataFrame(pd.DataFrame([all_edges,all_edges_geom]).T,crs='epsg:4326')
 	# gdf_edges.columns = ['edge_id','geometry']
-	
+
 	gdf_edges['min_netrev'] = 0
 	gdf_edges['max_netrev'] = 0
 	gdf_edges['min_tons'] = 0
@@ -229,7 +229,7 @@ def network_od_paths_assembly(points_dataframe,node_dict,graph,vehicle_wt,region
 		gdf_edges.loc[gdf_edges['edge_id'].isin(path[3]),'max_netrev'] += path[5]
 		gdf_edges.loc[gdf_edges['edge_id'].isin(path[2]),'min_tons'] += path[6]
 		gdf_edges.loc[gdf_edges['edge_id'].isin(path[3]),'max_tons'] += path[7]
-	
+
 	gdf_edges['swap'] = gdf_edges.apply(lambda x: swap_min_max(x,'min_netrev','max_netrev'),axis = 1)
 	gdf_edges[['min_netrev','max_netrev']] = gdf_edges['swap'].apply(pd.Series)
 	gdf_edges.drop('swap',axis=1,inplace=True)
@@ -249,7 +249,7 @@ if __name__ == '__main__':
 
 	truck_unit_wt = [5.0,20.0]
 	truck_unit_wt = [5.0]
-	# provinces to consider 
+	# provinces to consider
 	province_list = ['Lao Cai','Binh Dinh','Thanh Hoa']
 	province_terrian = ['mountain','flat','flat']
 
@@ -263,13 +263,13 @@ if __name__ == '__main__':
 	excl_wrtr = pd.ExcelWriter(flow_output_excel)
 
 	rd_prop_file = os.path.join(data_path,'mode_properties','road_properties.xlsx')
-	
+
 	for prn in range(len(province_list)):
 	# for prn in range(0,1):
 		province = province_list[prn]
 		# set all paths for all input files we are going to use
 		province_name = province.replace(' ','').lower()
-		
+
 		edges_in = os.path.join(data_path,'Roads','{}_roads'.format(province_name),'vietbando_{}_edges.shp'.format(province_name))
 
 		G = province_shapefile_to_network(edges_in,province_terrian[prn],rd_prop_file)
@@ -286,4 +286,3 @@ if __name__ == '__main__':
 			# print (all_ods)
 			G = add_igraph_generalised_costs_roads(G,1,tr_wt)
 			network_od_paths_assembly(all_ods,node_dict,G,tr_wt,province_name,gdf_edges,save_edges = True,output_path =shp_output_path,excel_writer =excl_wrtr)
-	

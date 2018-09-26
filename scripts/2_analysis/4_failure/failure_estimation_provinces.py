@@ -16,15 +16,15 @@ import operator
 import ast
 from sqlalchemy import create_engine
 import numpy as np
-import igraph as ig 
+import igraph as ig
 import copy
 from collections import Counter
 import sys
 import math
-import copy 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-from scripts.utils import *
-from scripts.transport_network_creation import *
+import copy
+
+from vtra.utils import *
+from vtra.transport_network_creation import *
 
 def igraph_scenario_edge_failures_changing_tonnages(network_df_in,edge_failure_set,flow_dataframe,vehicle_wt,path_criteria,rev_criteria,tons_criteria,cost_criteria,distance_criteria,time_criteria):
 	network_graph_df = copy.deepcopy(network_df_in)
@@ -32,7 +32,7 @@ def igraph_scenario_edge_failures_changing_tonnages(network_df_in,edge_failure_s
 	edge_path_index = []
 	for edge in edge_failure_set:
 		network_graph_df = network_graph_df[network_graph_df.edge_id != edge]
-		edge_path_index += flow_dataframe.loc[flow_dataframe[path_criteria].str.contains(edge)].index.tolist() 
+		edge_path_index += flow_dataframe.loc[flow_dataframe[path_criteria].str.contains(edge)].index.tolist()
 
 
 	edge_path_index = list(set(edge_path_index))
@@ -76,7 +76,7 @@ def igraph_scenario_edge_failures_changing_tonnages(network_df_in,edge_failure_s
 						new_dist += network_graph.es[n]['length']
 						new_time += network_graph.es[n][time_criteria]
 						new_travel_cost += network_graph.es[n][cost_criteria]
-					
+
 					edge_fail_dictionary.append({'edge_id':edge,'econ_value':flow_dataframe.iloc[e][rev_criteria],'tons':flow_dataframe.iloc[e][tons_criteria],
 										'old_distance':flow_dataframe.iloc[e][distance_criteria],'old_time':flow_dataframe.iloc[e][time_criteria],
 										'econ_loss':new_travel_cost - flow_dataframe.iloc[e][cost_criteria],'new_distance':new_dist,'new_time':new_time,'no_access': False})
@@ -87,7 +87,7 @@ def igraph_scenario_edge_failures_changing_tonnages(network_df_in,edge_failure_s
 def network_od_path_estimations(graph,source,target,cost_criteria,time_criteria):
 	# compute min cost paths and values
 	paths = graph.get_shortest_paths(source,target,weights=cost_criteria,output="epath")
-	
+
 	edge_path_list = []
 	path_dist_list = []
 	path_time_list = []
@@ -119,7 +119,7 @@ def igraph_scenario_edge_failures(network_df_in,edge_failure_set,flow_dataframe,
 	edge_path_index = []
 	for edge in edge_failure_set:
 		network_graph_df = network_graph_df[network_graph_df.edge_id != edge]
-		edge_path_index += flow_dataframe.loc[flow_dataframe[path_criteria].str.contains("'{}'".format(edge))].index.tolist() 
+		edge_path_index += flow_dataframe.loc[flow_dataframe[path_criteria].str.contains("'{}'".format(edge))].index.tolist()
 
 
 	edge_path_index = list(set(edge_path_index))
@@ -186,7 +186,7 @@ def igraph_scenario_edge_failures(network_df_in,edge_failure_set,flow_dataframe,
 				# 	dist = po_access.loc[origin,distance_criteria].values.tolist()
 				# 	time = po_access.loc[origin,time_criteria].values.tolist()
 				# 	gcost = po_access.loc[origin,cost_criteria].values.tolist()
-				
+
 				# 	# compute min cost paths and values
 				# 	paths = network_graph.get_shortest_paths(origin,destinations,weights=cost_criteria,output="epath")
 				# 	for p in range(len(paths)):
@@ -214,7 +214,7 @@ def igraph_scenario_edge_failures(network_df_in,edge_failure_set,flow_dataframe,
 				dist = po_access.loc[[origin],distance_criteria].values.tolist()
 				time = po_access.loc[[origin],time_criteria].values.tolist()
 				gcost = po_access.loc[[origin],cost_criteria].values.tolist()
-				
+
 				# compute min cost paths and values
 				paths = network_graph.get_shortest_paths(origin,destinations,weights=cost_criteria,output="epath")
 				for p in range(len(paths)):
@@ -239,17 +239,17 @@ def igraph_scenario_edge_failures(network_df_in,edge_failure_set,flow_dataframe,
 def network_failure_assembly(edge_failure_dataframe,region_name,vehicle_wt,gdf_edges,save_edges = True,output_path =''):
 	"""
 	Assign net revenue to roads assets in Vietnam
-		
+
 	Inputs are:
 	start_points - GeoDataFrame of start points for shortest path analysis.
 	end_points - GeoDataFrame of potential end points for shorest path analysis.
 	G - iGraph network of the province.
-	save_edges - 
-		
+	save_edges -
+
 	Outputs are:
 	Shapefile with all edges and the total net reveneu transferred along each edge
 	GeoDataFrame of total net revenue transferred along each edge
-	"""				
+	"""
 
 	failure_columns = edge_failure_dataframe.columns.values.tolist()
 	failure_columns = [f for f in failure_columns if f != 'edge_id']
@@ -270,7 +270,7 @@ def main():
 
 	# truck_unit_wt = [5.0,20.0]
 	truck_unit_wt = [5.0]
-	# provinces to consider 
+	# provinces to consider
 	province_list = ['Lao Cai','Binh Dinh','Thanh Hoa']
 	province_terrian = ['mountain','flat','flat']
 
@@ -308,23 +308,23 @@ def main():
 		'''
 		Select individual edge first
 		columns of failure excel are
-		band_name	
-		band_num	
-		climate_scenario	
-		commune_id	
-		commune_name	
-		district_id	
-		district_name	
-		edge_id	
-		hazard_type	
-		max_val	
-		min_val	
-		probability	
-		province_id	
-		province_name	
-		sector	
-		year	
-		length 
+		band_name
+		band_num
+		climate_scenario
+		commune_id
+		commune_name
+		district_id
+		district_name
+		edge_id
+		hazard_type
+		max_val
+		min_val
+		probability
+		province_id
+		province_name
+		sector
+		year
+		length
 		'''
 
 		'''
@@ -343,7 +343,7 @@ def main():
 					ef_dict = igraph_scenario_edge_failures(G_df,[edge],flow_df,tr_wt,path_types[t],rev_types[t],tons_types[t],cost_types[t],dist_types[t],time_types[t],vechicle_types[t])
 					if ef_dict:
 						ef_list += ef_dict
-			
+
 					print ('Done with province {0} edge {1} type {2}'.format(province_name,edge,types[t]))
 
 				df = pd.DataFrame(ef_list)
@@ -365,8 +365,8 @@ def main():
 
 			# edge_impact = pd.read_csv(df_path).fillna(0)
 			network_failure_assembly(edge_impact,province_name,tr_wt,G_df,save_edges = True,output_path =shp_output_path)
-		
-			
+
+
 
 if __name__ == "__main__":
 	main()

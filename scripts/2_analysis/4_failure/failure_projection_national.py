@@ -16,16 +16,16 @@ import operator
 import ast
 from sqlalchemy import create_engine
 import numpy as np
-import igraph as ig 
+import igraph as ig
 import copy
 from collections import Counter
 import sys
 import math
-import copy 
+import copy
 import geopandas as gpd
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-from scripts.utils import *
-from scripts.transport_network_creation import *
+
+from vtra.utils import *
+from vtra.transport_network_creation import *
 
 def swap_min_max(x,min_col,max_col):
 	'''
@@ -38,7 +38,7 @@ def swap_min_max(x,min_col,max_col):
 def main():
 	data_path,calc_path,output_path = load_config()['paths']['data'],load_config()['paths']['calc'],load_config()['paths']['output']
 
-	# provinces to consider 
+	# provinces to consider
 
 	growth_scenarios = [(5,'low'),(6.5,'forecast'),(10,'high')]
 	base_year = 2016
@@ -59,9 +59,9 @@ def main():
 				cols = []
 				for year in range(2016,2050):
 					edge_impact['{0}_loss_{1}'.format(types[t],year)] = math.pow((1+grth[0]/100),year - base_year)*df['{}_loss'.format(types[t])]
-						
+
 					cols += ['{0}_loss_{1}'.format(types[t],year)]
-					
+
 				edge_impact = edge_impact.groupby(['edge_id'])[cols].sum().reset_index()
 				edge_fail_ranges.append(edge_impact)
 
@@ -72,8 +72,8 @@ def main():
 
 			edge_impact.to_excel(excl_wrtr_1,grth[1],index = False)
 			excl_wrtr_1.save()
-		
-			
+
+
 
 if __name__ == "__main__":
 	main()

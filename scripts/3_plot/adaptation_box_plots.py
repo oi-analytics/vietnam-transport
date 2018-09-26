@@ -15,8 +15,8 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 import matplotlib.patches as mpatches
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
-from scripts.utils import *
+
+from vtra.utils import *
 
 
 mpl.style.use('ggplot')
@@ -33,7 +33,7 @@ def plot_boxplots(input_data,input_labels,input_colors,x_label,y_label,plot_titl
 	for element in ['boxes','whiskers', 'means', 'medians', 'caps']:
 		for e, color in zip(bp[element], input_colors):
 			plt.setp(e,color = '#252525',linewidth = 0.5)
-	
+
 	for patch, color in zip(bp['boxes'], input_colors):
 		patch.set_facecolor(color)
 
@@ -90,7 +90,7 @@ def plot_boxplots_subplots(scenario_groups,input_data,x_label,y_label,plot_title
 		for element in ['boxes','whiskers', 'means', 'medians', 'caps']:
 			for e, color in zip(bp[element], gr_colors):
 				plt.setp(e,color = '#252525',linewidth = 0.5)
-	
+
 		for patch, color in zip(bp['boxes'], gr_colors):
 			patch.set_facecolor(color)
 
@@ -101,7 +101,7 @@ def plot_boxplots_subplots(scenario_groups,input_data,x_label,y_label,plot_title
 		axs[a].text(0.7*len(gr_vals),1.04*max_input_val,adapt.title(),ha="center", va="center",fontweight='bold')
 		axs[a].set_ylim([min_input_val,1.2*max_input_val])
 		axs[a].tick_params(axis='x', rotation=45)
-	
+
 	fig.text(0.5,0.04, 'Hazard scenarios', ha="center", va="center",fontweight='bold')
 	fig.text(0.015,0.5, y_label, ha="center", va="center", rotation=90,fontweight='bold')
 
@@ -116,7 +116,7 @@ def plot_boxplots_subplots(scenario_groups,input_data,x_label,y_label,plot_title
 def main():
 	data_path, output_path,figure_path = load_config()['paths']['data'],load_config()['paths']['output'],load_config()['paths']['figures']
 
-	# provinces to consider 
+	# provinces to consider
 	# province_list = ['Lao Cai','Binh Dinh','Thanh Hoa','National Road']
 	province_list = ['National Road']
 	types = ['min','max']
@@ -126,7 +126,7 @@ def main():
 	index_cols = ['hazard_type','model','climate_scenario','year']
 	val_cols = ['adapt_strategy','min_daily_loss_2016','max_daily_loss_2016','min_initial_cost','max_initial_cost','min_benefit_npv','max_benefit_npv','min_cost_npv','max_cost_npv','min_adapt_npv','max_adapt_npv','min_bc_ratio','max_bc_ratio']
 	var_cols = ['daily_loss_2016','initial_cost','benefit_npv','cost_npv','adapt_npv','bc_ratio']
-	
+
 	var_dict = [
 		{
 			'variable':'daily_loss_2016',
@@ -178,10 +178,10 @@ def main():
 		},
 
 	]
-	
+
 	hazard_df = pd.read_excel(os.path.join(data_path,'Hazard_data','hazard_summary.xlsx'),sheet_name = 'model_nos')
-	# hazard_df = hazard_df[hazard_df['model_no'].isin(['m{}'.format(x) for x in range(16,28)])] 
-	hazard_df = hazard_df[hazard_df['model_no'].isin(['m1'] + ['m{}'.format(x) for x in range(3,12)])] 
+	# hazard_df = hazard_df[hazard_df['model_no'].isin(['m{}'.format(x) for x in range(16,28)])]
+	hazard_df = hazard_df[hazard_df['model_no'].isin(['m1'] + ['m{}'.format(x) for x in range(3,12)])]
 	scenarios = list(h for h in hazard_df.itertuples(index = False))
 	scenario_groups = list(set(list(zip(hazard_df['group_no'].values.tolist(),hazard_df['color'].values.tolist()))))
 	scenario_groups = [(x,y) for (x,y) in sorted(scenario_groups, key=lambda pair: pair[0])]
@@ -195,7 +195,7 @@ def main():
 		province_name = province.replace(' ','_').lower()
 		# adapt_output_excel = os.path.join(output_path,'failure_results','single_edge_failures_commune_access_scenarios_{0}_5_tons_adapt_options.xlsx'.format(province_name))
 		adapt_output_excel = os.path.join(output_path,'failure_results','single_edge_failures_scenarios_{0}_adapt_options.xlsx'.format(province_name))
-		
+
 		'''
 		Box plots for the hazard losses
 		'''

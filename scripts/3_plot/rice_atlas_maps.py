@@ -20,8 +20,8 @@ mpl.rcParams['xtick.labelsize'] = 11.
 mpl.rcParams['ytick.labelsize'] = 11.
 mpl.rcParams['savefig.pad_inches'] = 0.05
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
-from scripts.utils import *
+
+from vtra.utils import *
 
 def main():
 	config = load_config()
@@ -53,7 +53,7 @@ def main():
 				elif region_val > 80 and region_val <= 100:
 					color = '#31a354' # TODO
 					ax.add_geometries([geom], crs=proj, edgecolor='#ffffff', facecolor=color,label = '80 to 100')
-		
+
 			else:
 				ax.add_geometries([geom], crs=proj, edgecolor='#ffffff', facecolor='#ffffcc',label = '0 to 20')
 
@@ -64,14 +64,14 @@ def main():
 		legend_handles = []
 		for c in range(len(colors)):
 			legend_handles.append(mpatches.Patch(color=colors[c], label=labels[c]))
-			
+
 		ax.legend(
 			handles=legend_handles,
 			title = 'Percentage production',
 			loc='center left'
 			)
 
-				
+
 		plt.title(title_cols[cr], fontsize = 14)
 		output_file = os.path.join(config['paths']['figures'], 'rice_production_{}.png'.format(title_cols[cr]))
 		save_fig(output_file)

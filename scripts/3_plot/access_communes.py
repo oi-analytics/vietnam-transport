@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 import matplotlib.patches as mpatches
 
-from scripts.utils import plot_basemap,plot_basemap_labels,scale_bar,set_ax_bg
+from vtra.utils import plot_basemap,plot_basemap_labels,scale_bar,set_ax_bg
 
 
 mpl.style.use('ggplot')
@@ -54,10 +54,10 @@ def main():
     sectors = ['nongnghiep', 'khaikhoang', 'chebien', 'detmay','gogiay', 'sanxuat', 'xaydung', 'thuongmai', 'dichvu']
     sectors_eng = ['agriculture', 'mining', 'processing', 'textile','wood & paper', 'manufacture', 'construction', 'trade', 'service']
     sectors_eng = [x.capitalize() for x in sectors_eng]
-    
+
     rps = ['no_flood','1_freq','5_freq','10_freq','20_freq']
     rp_names = {'no_flood': 'no flooding','1_freq': 'a 1/100 flood','5_freq' : 'a 1/20 flood',
-                '10_freq' : 'a 1/10 flood','20_freq': 'a 1/5 flood'}    
+                '10_freq' : 'a 1/10 flood','20_freq': 'a 1/5 flood'}
 
     # =============================================================================
     #     # create all figures per return period
@@ -66,16 +66,16 @@ def main():
     for rp in rps:
         # create map of affected communes in province
         map_distance_per_commune(rp,communes_affected,figure_path,rp_names,data_path)
-        
+
         if rp != 'no_flood':
-            
+
             # create pie chart of affected firms and employees in affected communes in province
             create_pie_plots(rp,communes_affected,sectors,sectors_eng,rp_names,figure_path)
 
             # create bar plot of affected firms and employees in province
             create_bar_plots(rp,communes_affected,sectors,sectors_eng,rp_names,figure_path)
 
-        
+
 def map_distance_per_commune(rp,communes_affected,figure_path,rp_names,data_path):
 
     # create bin set
@@ -85,7 +85,7 @@ def map_distance_per_commune(rp,communes_affected,figure_path,rp_names,data_path
     communes_affected['binned_{}'.format(rp)] = pd.cut(communes_affected[rp], bins=bins, labels=[0,1,2,3,4,5,6])
     communes_affected.loc[communes_affected.geometry.area.idxmin(),'binned_no_flood'] = 6
 
-    # create figure        
+    # create figure
     fig, ax = plt.subplots(nrows=1, ncols=1,figsize=(8,6))
 
     # set projection
@@ -95,8 +95,8 @@ def map_distance_per_commune(rp,communes_affected,figure_path,rp_names,data_path
     # set bounds and extent
     tot_bounds = list(communes_affected.total_bounds)
     ax.set_extent([tot_bounds[0]-0.1,tot_bounds[2]+0.1,tot_bounds[1]-0.1,tot_bounds[3]+0.1] , crs=proj_lat_lon)
-    
-    # load background 
+
+    # load background
 #    world = gpd.read_file(os.path.join(data_path,'Vietnam_boundaries','who_boundaries','who_provinces.shp'))
 #    world.plot(ax=ax,color='#FEF9E0',lw=0.3,edgecolor='k')
     set_ax_bg(ax)
@@ -104,7 +104,7 @@ def map_distance_per_commune(rp,communes_affected,figure_path,rp_names,data_path
     plot_basemap(ax, data_path,country_border=None)
 #    scale_bar(ax, location=(0.8, 0.05))
     plot_basemap_labels(ax, data_path,province_zoom=True)
-    
+
     # create cmap
     cmap = cm.get_cmap('Reds', len(bins)) # Colour map (there are many others)
     cmaplist = ['#fee5d9','#fcbba1','#fc9272','#fb6a4a','#de2d26','#a50f15','#442c2d']
@@ -122,7 +122,7 @@ def map_distance_per_commune(rp,communes_affected,figure_path,rp_names,data_path
         handles.append(mpatches.Patch(color=color, label=lnames[l]))
         l += 1
 
-    ax.legend(handles=handles,loc=3, prop={'size': 13}) 
+    ax.legend(handles=handles,loc=3, prop={'size': 13})
 
     # set figure title
     plt.title('Distance to major towns in Thanh Hoa for %s' % rp_names[rp],fontweight='bold',fontsize=16)
@@ -130,17 +130,17 @@ def map_distance_per_commune(rp,communes_affected,figure_path,rp_names,data_path
     # save figure
     figure_out= os.path.join(figure_path,'Dist_Major_Towns_Thanh_Hoa_%s.png' % rp)
     plt.savefig(figure_out,dpi=600,bbox_inches='tight')
- 
-    
+
+
 def create_pie_plots(rp,communes_affected,sectors,sectors_eng,rp_names,figure_path):
 
     # estimate some summary statistics for final plotting. Amount of firms per sector in this case
     only_communes_affected = communes_affected.loc[communes_affected['no_flood'] != communes_affected[rp]]
     only_communes_affected = only_communes_affected.copy()
     only_communes_affected[sectors] = only_communes_affected[sectors].multiply(only_communes_affected['nfirm'],axis='index')
-    
+
     firms_affected = only_communes_affected[sectors].sum()
-    
+
     # and get english sector names for plotting
     firms_affected.index = sectors_eng
 
@@ -156,8 +156,8 @@ def create_pie_plots(rp,communes_affected,sectors,sectors_eng,rp_names,figure_pa
 
     # plot figure
     firms_affected.plot(kind='pie',ax=ax2, fontsize=12,cmap=cmap,startangle=90, pctdistance=0.85)
- 
-    ax2.axis('equal')  
+
+    ax2.axis('equal')
     plt.axis('off')
 
     # set figure title
@@ -171,7 +171,7 @@ def create_pie_plots(rp,communes_affected,sectors,sectors_eng,rp_names,figure_pa
     # =============================================================================
     #         # create figure for total number of employees affected
     # =============================================================================
-    
+
     # estimate employees per sector, furthe rmultiplcation of number of firms per sector
     only_communes_affected[sectors] = only_communes_affected[sectors].multiply(only_communes_affected['labor'],axis='index')
     firms_affected = only_communes_affected[sectors].sum()
@@ -182,8 +182,8 @@ def create_pie_plots(rp,communes_affected,sectors,sectors_eng,rp_names,figure_pa
 
     # plot figure
     firms_affected.plot(kind='pie',ax=ax2, fontsize=12,cmap=cmap,startangle=90, pctdistance=0.85)
-    
-    ax2.axis('equal')  
+
+    ax2.axis('equal')
     plt.axis('off')
 
     # set figure title
@@ -193,9 +193,9 @@ def create_pie_plots(rp,communes_affected,sectors,sectors_eng,rp_names,figure_pa
     figure_out= os.path.join(figure_path,'Share_employees_affected_communes_Thanh_Hoa_%s.png' % rp)
     plt.savefig(figure_out,dpi=600,bbox_inches='tight')
 
-    
+
 def create_bar_plots(rp,communes_affected,sectors,sectors_eng,rp_names,figure_path):
-        
+
     # =============================================================================
     #         # create figure relative impact industries for Thanh Hao
     # =============================================================================

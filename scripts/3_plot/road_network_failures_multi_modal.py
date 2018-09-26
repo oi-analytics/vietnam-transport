@@ -10,8 +10,8 @@ import cartopy.io.shapereader as shpreader
 import matplotlib.pyplot as plt
 from shapely.geometry import LineString
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
-from scripts.utils import *
+
+from vtra.utils import *
 
 def main():
 	config = load_config()
@@ -35,7 +35,7 @@ def main():
 			'title_cols': ['Economic losses (min)','Economic losses (max)']
 		}
 	]
-	
+
 	for plot_set in plot_sets:
 		for c in range(len(plot_set['columns'])):
 			ax = get_axes()
@@ -51,7 +51,7 @@ def main():
 				for record in shpreader.Reader(flows_file).records()
 				if int(record.attributes['no_access']) in plot_set['no_access']
 			]
-			
+
 			max_weight = max(weights)
 			width_by_range = generate_weight_bins(weights)
 
@@ -64,7 +64,7 @@ def main():
 				'6': []
 			}
 
-			for record in [rec for rec in shpreader.Reader(flows_file).records() if int(rec.attributes['no_access']) in plot_set['no_access']]: 
+			for record in [rec for rec in shpreader.Reader(flows_file).records() if int(rec.attributes['no_access']) in plot_set['no_access']]:
 				cat = str(record.attributes['road_class'])
 				if cat not in road_geoms_by_category:
 					raise Exception

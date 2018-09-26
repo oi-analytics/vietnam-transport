@@ -6,8 +6,8 @@ import sys
 import geopandas as gpd
 import pandas as pd
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-from scripts.utils import *
+
+from vtra.utils import *
 
 def main():
     config = load_config()

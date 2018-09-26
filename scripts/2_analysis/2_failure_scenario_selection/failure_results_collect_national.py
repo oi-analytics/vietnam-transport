@@ -6,8 +6,8 @@ Created on Wed Jul 18 2018
 
 @author: Raghav Pant
 
-Create tables of all failure scenarios with the follwing attributes 
-Edge_id Hazard_type year climate_scenario hazard_band band_name min_depth max_depth affect_length commune_id commune_name district_id district_name province_id province_name 
+Create tables of all failure scenarios with the follwing attributes
+Edge_id Hazard_type year climate_scenario hazard_band band_name min_depth max_depth affect_length commune_id commune_name district_id district_name province_id province_name
 """
 
 import os
@@ -17,8 +17,8 @@ import geopandas as gpd
 import itertools
 from shapely.geometry import Polygon
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..','..'))
-from scripts.utils import load_config, line_length
+
+from vtra.utils import load_config, line_length
 
 def all_failure_edges(input_shapefile):
 	shape_gpd = gpd.read_file(input_shapefile)
@@ -111,13 +111,13 @@ def main():
 
 					data_dict = spatial_scenario_selection_national(hazard_shp,commune_shp,hazard_dict,data_dict,modes[m])
 					print ('Done with',file)
-		
+
 		data_df = pd.DataFrame(data_dict)
 		data_df_cols = data_df.columns.values.tolist()
 		if 'length' in data_df_cols:
 			selected_cols = [cols for cols in data_df_cols if cols != 'length']
 			data_df = data_df.groupby(selected_cols)['length'].sum().reset_index()
-		
+
 		data_df.to_excel(excel_writer,modes[m],index = False)
 		excel_writer.save()
 		del data_df
@@ -126,6 +126,3 @@ def main():
 
 if __name__ == "__main__":
 	main()
-
-
-

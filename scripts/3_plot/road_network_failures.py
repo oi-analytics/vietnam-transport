@@ -10,13 +10,13 @@ import cartopy.io.shapereader as shpreader
 import matplotlib.pyplot as plt
 from shapely.geometry import LineString
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
-from scripts.utils import *
+
+from vtra.utils import *
 
 def main():
 	config = load_config()
 	flows_file = os.path.join(config['paths']['data'], 'Results', 'Failure_shapefiles', 'weighted_edges_failures_national_road_2.shp')
-	
+
 
 	# plot_sets = [
 	# 	{
@@ -87,7 +87,7 @@ def main():
 			'title_cols': ['BCR of adaptation over time (min)','BCR of adaptation over time (max)']
 		}
 	]
-	
+
 	for plot_set in plot_sets:
 		for c in range(len(plot_set['columns'])):
 			ax = get_axes()
@@ -120,7 +120,7 @@ def main():
 					if int(record.attributes['no_access']) in plot_set['no_access']
 				]
 
-			
+
 			max_weight = max(weights)
 			width_by_range = generate_weight_bins(weights)
 

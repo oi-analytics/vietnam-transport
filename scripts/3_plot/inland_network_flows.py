@@ -11,30 +11,30 @@ import matplotlib.pyplot as plt
 import numpy as np
 from shapely.geometry import LineString
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
-from scripts.utils import *
+
+from vtra.utils import *
 
 def main():
     config = load_config()
     inland_edge_file = os.path.join(config['paths']['data'], 'Results', 'Flow_shapefiles', 'weighted_edges_flows_national_inland.shp')
-    
+
     color = '#0689d7'
     color_by_type = {'Inland Line': color}
-    
+
     crop_cols = ['max_rice','max_cash','max_cass','max_teas','max_maiz','max_rubb','max_swpo','max_acof','max_rcof','max_pepp']
     ind_cols = ['max_sugar','max_wood','max_steel','max_constr','max_cement','max_fertil','max_coal','max_petrol','max_manufa','max_fisher','max_meat', 'max_tons']
 
     columns = crop_cols + ind_cols
     column_label_divisors = {c: 1 for c in columns}
-    
+
     legend_label = "AADF (tons/day)"
     title_cols = ['Rice','Cashew','Cassava','Teas','Maize','Rubber','Sweet Potatoes','Coffee Arabica','Coffee Robusta','Pepper',
                 'Sugar','Wood','Steel','Construction materials','Cement','Fertilizer','Coal','Petroleum',
                 'Manufacturing','Fishery','Meat','Total tonnage']
 
     remove_routes_ids = [
-        ('watern_149', 'watern_429'), 
-        ('watern_429', 'watern_520'), 
+        ('watern_149', 'watern_429'),
+        ('watern_429', 'watern_520'),
         ('watern_700', 'watern_520'),
         ('watern_210', 'watern_700'),
         ('watern_209', 'watern_210'),
@@ -44,14 +44,14 @@ def main():
         ('watern_183', 'watern_354'),
         ('watern_176', 'watern_354'),
     ]
-    
+
     for c in range(len(columns)):
         ax = get_axes()
         plot_basemap(ax, config['paths']['data'])
         scale_bar(ax, location=(0.8, 0.05))
         plot_basemap_labels(ax, config['paths']['data'])
         proj_lat_lon = ccrs.PlateCarree()
-        
+
         column = columns[c]
         weights = [
             record.attributes[column]
@@ -60,7 +60,7 @@ def main():
         ]
         max_weight = max(weights)
         width_by_range = generate_weight_bins(weights)
-    
+
         geoms_by_range = {}
         for value_range in width_by_range:
             geoms_by_range[value_range] = []
@@ -83,7 +83,7 @@ def main():
                 edgecolor='none',
                 facecolor=color,
                 zorder=2)
-    
+
         x_l = 102.3
         x_r = x_l + 0.4
         base_y = 14
@@ -121,7 +121,7 @@ def main():
                 horizontalalignment='left',
                 transform=proj_lat_lon,
                 size=10)
-        
+
         plt.title(title_cols[c], fontsize = 14)
         output_file = os.path.join(config['paths']['figures'], 'inland_flow-map-{}.png'.format(column))
         save_fig(output_file)

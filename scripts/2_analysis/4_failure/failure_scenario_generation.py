@@ -16,15 +16,15 @@ import operator
 import ast
 from sqlalchemy import create_engine
 import numpy as np
-import igraph as ig 
+import igraph as ig
 import copy
 from collections import Counter
 import sys
 import math
-import copy 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-from scripts.utils import load_config
-from scripts.transport_network_creation import province_shapefile_to_network, add_igraph_generalised_costs_province_roads, province_shapefile_to_dataframe
+import copy
+
+from vtra.utils import load_config
+from vtra.transport_network_creation import province_shapefile_to_network, add_igraph_generalised_costs_province_roads, province_shapefile_to_dataframe
 
 def assign_failed_edge_attributes(x,edge_properties):
 	'''
@@ -36,7 +36,7 @@ def assign_failed_edge_attributes(x,edge_properties):
 def main():
 	data_path,calc_path,output_path = load_config()['paths']['data'],load_config()['paths']['calc'],load_config()['paths']['output']
 
-	# provinces to consider 
+	# provinces to consider
 	province_list = ['Lao Cai','Binh Dinh','Thanh Hoa']
 	province_terrian = ['mountain','flat','flat']
 
@@ -70,14 +70,14 @@ def main():
 		edges = province_shapefile_to_dataframe(edges_in,province_terrian[prn],rd_prop_file)
 		edge_attr = list(zip(edges['edge_id'].values.tolist(),edges['road_cond'].values.tolist(),edges['asset_type'].values.tolist(),edges['width'].values.tolist()))
 		# print (edge_attr)
-		
+
 		edge_attr = [e for e in edge_attr if e[0] in all_edges]
 		for e in edge_attr:
 			all_edge_fail_scenarios.loc[all_edge_fail_scenarios['edge_id'] == e[0], 'road_cond'] = e[1]
 			all_edge_fail_scenarios.loc[all_edge_fail_scenarios['edge_id'] == e[0], 'asset_type'] = e[2]
 			all_edge_fail_scenarios.loc[all_edge_fail_scenarios['edge_id'] == e[0], 'width'] = e[3]
 
-		
+
 
 
 		# all_edge_fail_scenarios['attributes'] = all_edge_fail_scenarios.apply(lambda x: assign_failed_edge_attributes(x,edge_attr),axis = 1)
@@ -87,7 +87,7 @@ def main():
 
 		single_edge_path = os.path.join(output_path,'failure_results','single_edge_failures_totals_{0}.csv'.format(province_name))
 		edge_impacts = pd.read_csv(single_edge_path)
-		edge_impacts_attr = list(zip(edge_impacts['edge_id'].values.tolist(),edge_impacts['min_econ_loss'].values.tolist(),edge_impacts['max_econ_loss'].values.tolist())) 
+		edge_impacts_attr = list(zip(edge_impacts['edge_id'].values.tolist(),edge_impacts['min_econ_loss'].values.tolist(),edge_impacts['max_econ_loss'].values.tolist()))
 
 		all_edge_fail_scenarios['min_econ_loss'] = 0
 		all_edge_fail_scenarios['max_econ_loss'] = 0
@@ -104,8 +104,8 @@ def main():
 		df_path = os.path.join(output_path,'hazard_scenarios','roads_hazard_intersections_{}.csv'.format(province_name))
 		all_edge_fail_scenarios.to_csv(df_path,index = False)
 
-		
-			
+
+
 
 if __name__ == "__main__":
 	main()

@@ -11,35 +11,35 @@ import matplotlib.pyplot as plt
 import numpy as np
 from shapely.geometry import LineString
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
-from scripts.utils import *
+
+from vtra.utils import *
 
 def main():
     config = load_config()
     water_edge_file = os.path.join(config['paths']['data'], 'Results', 'Flow_shapefiles', 'wateredges_flows.shp')
-    
+
     color = '#045a8d'
     color_by_type = {'Waterway route': color}
-       
+
     crop_cols = ['rice','cash','cass','teas','maiz','rubb','swpo','acof','rcof','pepp']
     ind_cols = ['sugar','wood','steel','constructi','cement','fertilizer','coal','petroluem','manufactur','fishery','meat']
-    
+
     columns = crop_cols + ind_cols + ['total_flow']
     column_label_divisors = {c: 1000 for c in columns}
-    
+
     legend_label = "AADF ('000 tons/day)"
     title_cols = ['Rice','Cashew','Cassava','Teas','Maize','Rubber','Sweet Potatoes','Coffee Arabica','Coffee Robusta','Pepper',
                 'Sugar','Wood','Steel','Construction materials','Cement','Fertilizer','Coal','Petroleum',
                 'Manufacturing','Fishery','Meat','Total tonnage']
-    
+
     for c in range(len(columns)):
         ax = get_axes()
         plot_basemap(ax, config['paths']['data'])
         scale_bar(ax, location=(0.8, 0.05))
         plot_basemap_labels(ax, config['paths']['data'])
         proj_lat_lon = ccrs.PlateCarree()
-        
-        column = columns[c]                
+
+        column = columns[c]
         # generate weight bins
         weights = [
             record.attributes[column]
@@ -48,7 +48,7 @@ def main():
         ]
         max_weight = max(weights)
         width_by_range = generate_weight_bins(weights)
-    
+
         geoms_by_range = {}
         for value_range in width_by_range:
             geoms_by_range[value_range] = []
@@ -68,7 +68,7 @@ def main():
                 edgecolor='none',
                 facecolor=color,
                 zorder=2)
-    
+
         x_l = 102.3
         x_r = x_l + 0.4
         base_y = 14

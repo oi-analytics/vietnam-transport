@@ -19,27 +19,27 @@ import operator
 import ast
 import math
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
-# from scripts.utils import load_config,extract_value_from_gdf,get_nearest_node,gdf_clip,gdf_geom_clip,
+
+# from vtra.utils import load_config,extract_value_from_gdf,get_nearest_node,gdf_clip,gdf_geom_clip,
 # 						count_points_in_polygon,voronoi_finite_polygons_2d,extract_nodes_within_gdf,
 # 						assign_value_in_area_proportions,assign_value_in_area_proportions_within_common_region
-from scripts.utils import *
-from scripts.transport_network_creation import *
+from vtra.utils import *
+from vtra.transport_network_creation import *
 
 def crop_od_pairs(start_points,end_points,crop_name):
 	save_paths = []
 	for iter_,place in start_points.iterrows():
 		try:
-			closest_center = end_points.loc[end_points['OBJECTID'] 
+			closest_center = end_points.loc[end_points['OBJECTID']
 			== place['NEAREST_C_CENTER']]['NEAREST_G_NODE'].values[0]
-		   
+
 			get_od_pair = (place['NEAREST_G_NODE'],closest_center)
 			save_paths.append((str(get_od_pair),place['tons']))
 		except:
 			print(iter_)
 
-	
+
 	od_pairs_df = pd.DataFrame(save_paths,columns = ['od_nodes',crop_name])
 	od_pairs_df = od_pairs_df.groupby(['od_nodes'])[crop_name].sum().reset_index()
 
@@ -53,7 +53,7 @@ def assign_daily_min_max_tons_rice(crop_df,rice_prod_df):
 
 	crop_df['min_frac'] = crop_df.geometry.apply(lambda x: get_nearest_node(x,sindex_rice_prod_df,rice_prod_df,'min_frac'))
 	crop_df['max_frac'] = crop_df.geometry.apply(lambda x: get_nearest_node(x,sindex_rice_prod_df,rice_prod_df,'max_frac'))
-	
+
 	crop_df['min_rice'] = 1.0*crop_df['min_frac']*crop_df['tons']/30.0
 	crop_df['max_rice'] = 1.0*crop_df['max_frac']*crop_df['tons']/30.0
 
@@ -99,7 +99,7 @@ def main():
 	for m in mode_cols:
 		od_data_modes[m] = od_data_modes[m]/od_data_modes['total'].replace(np.inf, 0)
 
-	# od_data_modes['water'] = od_data_modes['inland'] + od_data_modes['coastal']		
+	# od_data_modes['water'] = od_data_modes['inland'] + od_data_modes['coastal']
 	od_data_modes = od_data_modes.fillna(0)
 	# od_data_modes.to_csv('mode_frac.csv',index = False)
 
@@ -134,12 +134,12 @@ def main():
 	rice_prod_months['total_prod'] = rice_prod_months[crop_month_fields].sum(axis = 1)
 	rice_prod_months['min_tons'] = rice_prod_months[rice_prod_months[crop_month_fields] > 0].min(axis=1)
 	rice_prod_months['max_tons'] = rice_prod_months[rice_prod_months[crop_month_fields] > 0].max(axis=1)
-	
+
 	rice_prod_months['min_frac'] = rice_prod_months['min_tons']/rice_prod_months['total_prod']
 	rice_prod_months['max_frac'] = rice_prod_months['max_tons']/rice_prod_months['total_prod']
 
 	# print (rice_prod_months)
-	
+
 	province_path = os.path.join(data_path,'Vietnam_boundaries','boundaries_stats','province_level_stats.shp')
 	commune_path = os.path.join(data_path,'Vietnam_boundaries','boundaries_stats','commune_level_stats.shp')
 	rd_prop_file = os.path.join(data_path,'mode_properties','road_properties.xlsx')
@@ -154,7 +154,7 @@ def main():
 	provinces = gpd.read_file(province_path)
 	provinces = provinces.to_crs({'init': 'epsg:4326'})
 	sindex_provinces = provinces.sindex
-	
+
 	# load provinces and get geometry of the right province
 	communes = gpd.read_file(commune_path)
 	communes = communes.to_crs({'init': 'epsg:4326'})
@@ -174,8 +174,8 @@ def main():
 					nodes_in = os.path.join(mode_data_path, file)
 			except:
 				print ('Network nodes and edge files necessary')
-			
-		# if modes[m] == 'road': 
+
+		# if modes[m] == 'road':
 		# 	od_net =  national_shapefile_to_network(edges_in,rd_prop_file)
 		# 	od_net = add_igraph_generalised_costs_province_roads(od_net,1,vehicle_wt)
 
@@ -242,7 +242,7 @@ def main():
 				poly = Polygon(polygon)
 				poly = poly.intersection(box)
 				poly_list.append(poly)
-		
+
 
 			poly_index = list(np.arange(0,len(poly_list),1))
 			poly_df = pd.DataFrame(list(zip(poly_index,poly_list)),columns = ['gid','geometry'])
@@ -255,7 +255,7 @@ def main():
 			gdf_pops = gdf_voronoi[['node_id','population']]
 			# print (gdf_pops)
 			del gdf_voronoi, poly_list, poly_df
-		
+
 			nodes = pd.merge(nodes,gdf_pops,how='left', on=['node_id']).fillna(0)
 			del gdf_pops
 
@@ -276,7 +276,7 @@ def main():
 		del nodes_frac, nodes_sums, nodes
 
 
-		
+
 	national_ods_df = []
 	for ind in ind_cols:
 		national_ods_modes_df = []
@@ -312,7 +312,7 @@ def main():
 										d_region = d_vals[1]
 										if od_val > 0 and o_node != d_node:
 											od_list.append((o_node,o_region,d_node,d_region,od_val))
-			
+
 					print (o,d,fval,modes[m],ind)
 
 			national_ods_modes_df.append(pd.DataFrame(od_list,columns = ['origin','o_region','destination','d_region',ind]))
@@ -330,7 +330,7 @@ def main():
 			outCSVName = os.path.join(output_path,'crop_flows','crop_concentrations.csv')
 			subprocess.run(["gdal2xyz.py",'-csv', fpath,outCSVName])
 
-			'''Load points and convert to geodataframe with coordinates'''    
+			'''Load points and convert to geodataframe with coordinates'''
 			load_points = pd.read_csv(outCSVName,header=None,names=['x','y','tons'],index_col=None)
 			load_points = load_points[load_points['tons'] > 0]
 
@@ -338,9 +338,9 @@ def main():
 			load_points = load_points.drop(['x', 'y'], axis=1)
 			crs = {'init': 'epsg:4326'}
 			crop_points = gpd.GeoDataFrame(load_points, crs=crs, geometry=geometry)
-				
-			del load_points	
-			
+
+			del load_points
+
 			# clip all to province
 			# prov_crop = gdf_geom_clip(crop_points,province_geom)
 			if crop_name == 'rice':
@@ -350,7 +350,7 @@ def main():
 				crop_points['max_{}'.format(crop_name)] = 1.0*crop_points['tons']/365.0
 
 			# crop_points_sindex = crop_points.sindex
-				
+
 			crop_points['province_name'] = crop_points.apply(lambda x: extract_gdf_values_containing_nodes(x,sindex_provinces,provinces,'name_eng'),axis = 1)
 			national_ods_modes_df = []
 			for m in range(len(modes_file_paths)):
@@ -402,10 +402,10 @@ def main():
 											d_node = d_vals[0]
 											d_region = d_vals[1]
 											if od_val_max > 0 and o_node != d_node:
-												od_list.append((o_node,o_region,d_node,d_region,od_val_min,od_val_max))			
-									
+												od_list.append((o_node,o_region,d_node,d_region,od_val_min,od_val_max))
+
 					print (o,d,fval,modes[m],crop_name)
-				
+
 				national_ods_modes_df.append(pd.DataFrame(od_list,columns = ['origin','o_region','destination','d_region','min_{}'.format(crop_name),'max_{}'.format(crop_name)]))
 				del od_list, nodes
 
@@ -427,8 +427,8 @@ def main():
 			all_ods.rename(columns={'max_{}'.format(cr): cr}, inplace=True)
 
 		all_ods_val_cols = [c for c in all_ods.columns.values.tolist() if c not in ('origin','o_region','destination','d_region')]
-		all_ods = all_ods.groupby(['origin','o_region','destination','d_region'])[all_ods_val_cols].sum().reset_index() 
-			
+		all_ods = all_ods.groupby(['origin','o_region','destination','d_region'])[all_ods_val_cols].sum().reset_index()
+
 		all_ods_regions = all_ods[['o_region','d_region'] + all_ods_val_cols]
 		all_ods_regions = all_ods_regions.groupby(['o_region','d_region'])[all_ods_val_cols].sum().reset_index()
 		all_ods_regions.to_excel(excl_wrtr_reg,modes[m],index = False)
@@ -436,14 +436,14 @@ def main():
 
 		region_total.append(all_ods_regions)
 		del all_ods_regions
-			
+
 		all_ods = all_ods[all_ods['max_tons'] > 0.5]
 		# flow_output_csv = os.path.join(output_path,'flow_mapping_paths','national_scale_{}_ods.csv'.format(modes[m]))
 		# all_ods.to_csv(flow_output_csv,index = False)
 		all_ods.to_excel(excl_wrtr,modes[m],index = False)
 		excl_wrtr.save()
 		del all_ods
-	
+
 	# all_ods = pd.concat(region_total, axis=0, sort = 'False', ignore_index=True).fillna(0)
 	# all_ods_val_cols = [c for c in all_ods.columns.values.tolist() if c not in ('o_region','d_region')]
 	# all_ods_regions = all_ods.groupby(['o_region','d_region'])[all_ods_val_cols].sum().reset_index()

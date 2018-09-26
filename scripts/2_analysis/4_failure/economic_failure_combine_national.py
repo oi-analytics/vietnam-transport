@@ -16,16 +16,16 @@ import operator
 import ast
 from sqlalchemy import create_engine
 import numpy as np
-import igraph as ig 
+import igraph as ig
 import copy
 from collections import Counter
 import sys
 import math
-import copy 
+import copy
 import geopandas as gpd
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-from scripts.utils import *
-from scripts.transport_network_creation import *
+
+from vtra.utils import *
+from vtra.transport_network_creation import *
 
 def swap_min_max(x,min_col,max_col):
 	'''
@@ -38,13 +38,13 @@ def swap_min_max(x,min_col,max_col):
 def network_failure_assembly(edge_failure_dataframe,transport_mode,gdf_edges,save_edges = True,output_path =''):
 	"""
 	Assign net revenue to roads assets in Vietnam
-		
+
 	Inputs are:
 	start_points - GeoDataFrame of start points for shortest path analysis.
 	end_points - GeoDataFrame of potential end points for shorest path analysis.
 	G - iGraph network of the province.
-	save_edges - 
-		
+	save_edges -
+
 	Outputs are:
 	Shapefile with all edges and the total net reveneu transferred along each edge
 	GeoDataFrame of total net revenue transferred along each edge
@@ -64,7 +64,7 @@ def network_failure_assembly(edge_failure_dataframe,transport_mode,gdf_edges,sav
 	for iter_, row in edge_failure_dataframe.iterrows():
 		# print (row[1:])
 		gdf_edges.loc[gdf_edges['edge_id'] == row['edge_id'],failure_columns] = row[failure_columns].values
-	
+
 	# gdf_edges[min_ind_cols] = gdf_edges['min_vals'].apply(pd.Series)
 	# gdf_edges[max_ind_cols] = gdf_edges['max_vals'].apply(pd.Series)
 	# gdf_edges.drop('min_vals',axis=1,inplace=True)
@@ -93,7 +93,7 @@ def main():
 
 	shp_output_path = os.path.join(output_path,'failure_shapefiles')
 	econ_paths_data = os.path.join(data_path,'Results','Economic_Failure_Results','summarized')
-	
+
 	'''
 	Get the modal shares
 	'''
@@ -113,7 +113,7 @@ def main():
 			df = pd.read_csv(df_path,index_col = 0)
 			df.index.names = ['edge_id']
 			df = df.reset_index()
-			
+
 			df['total_losses'] = -1e6*df['total_losses']
 			df = df[df['total_losses'] > 0]
 			df.rename(columns={'total_losses': '{}_econ_loss'.format(types[t])}, inplace=True)
@@ -128,7 +128,7 @@ def main():
 		network_failure_assembly(edge_impact,modes[m],G_df,save_edges = True,output_path =shp_output_path)
 
 
-			
+
 
 if __name__ == "__main__":
 	main()

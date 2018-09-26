@@ -14,8 +14,8 @@ import geopandas as gpd
 import itertools
 from shapely.geometry import Polygon
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..','..'))
-from scripts.utils import load_config, line_length
+
+from vtra.utils import load_config, line_length
 
 def networkedge_hazard_intersection(edge_shapefile,hazard_shapefile,output_shapefile):
 	line_gpd = gpd.read_file(edge_shapefile)
@@ -51,7 +51,7 @@ def networkedge_hazard_intersection(edge_shapefile,hazard_shapefile,output_shape
 					if (lines['geometry'].intersects(poly['geometry']) is True) and (poly.geometry.is_valid is True):
 						# data.append({'edge_id': lines['edge_id'],'width':lines['width'],'length':1000.0*line_length(lines['geometry'].intersection(poly['geometry'])),'geometry':lines['geometry'].intersection(poly['geometry'])})
 						data.append({'edge_id': lines['edge_id'],'length':1000.0*line_length(lines['geometry'].intersection(poly['geometry'])),'geometry':lines['geometry'].intersection(poly['geometry'])})
-			if data: 
+			if data:
 				# intersections_data = gpd.GeoDataFrame(data,columns=['edge_id','width','length','geometry'],crs='epsg:4326')
 				intersections_data = gpd.GeoDataFrame(data,columns=['edge_id','length','geometry'],crs='epsg:4326')
 				# intersections_data['area'] = intersections_data['width']*intersections_data['length']
@@ -80,7 +80,7 @@ def networknode_hazard_intersection(node_shapefile,hazard_shapefile,output_shape
 			if len(intersected_polys.index) > 0:
 				# data.append({'edge_id': lines['edge_id'],'width':lines['width'],'length':1000.0*line_length(lines['geometry'].intersection(poly['geometry'])),'geometry':lines['geometry'].intersection(poly['geometry'])})
 				data.append({'node_id': points['node_id'],'geometry':points['geometry']})
-		if data: 
+		if data:
 			# intersections_data = gpd.GeoDataFrame(data,columns=['edge_id','width','length','geometry'],crs='epsg:4326')
 			intersections_data = gpd.GeoDataFrame(data,columns=['node_id','geometry'],crs='epsg:4326')
 			# intersections_data['area'] = intersections_data['width']*intersections_data['length']
@@ -100,7 +100,7 @@ def main():
 	# for province in provinces:
 	# 	# set all paths for all input files we are going to use
 	# 	province_name = province.replace(' ','').lower()
-		
+
 	# 	road_shp = os.path.join(data_path,'Roads','{}_roads'.format(province_name),'vietbando_{}_edges.shp'.format(province_name))
 	# 	hazard_dir = os.path.join(data_path,'Hazard_data','Glofris')
 	# 	for root, dirs, files in os.walk(hazard_dir):
@@ -122,7 +122,7 @@ def main():
 	# modes = ['air','inland','coastal']
 	# out_modes = ['air_ports','inland_ports','sea_ports']
 	for m in range(len(modes_file_paths)):
-		mode_data_path = os.path.join(data_path,modes_file_paths[m][0],modes_file_paths[m][1])		
+		mode_data_path = os.path.join(data_path,modes_file_paths[m][0],modes_file_paths[m][1])
 		if modes[m] in ['road','rail']:
 			for mode_file in os.listdir(mode_data_path):
 				try:
@@ -131,8 +131,8 @@ def main():
 						edges_name = mode_file
 				except:
 					return ('Network edge file necessary')
-			
-			
+
+
 			hazard_dir = os.path.join(data_path,'Hazard_data')
 			for root, dirs, files in os.walk(hazard_dir):
 				for file in files:
@@ -153,8 +153,8 @@ def main():
 						nodes_name = mode_file
 				except:
 					return ('Network node file necessary')
-			
-			
+
+
 			hazard_dir = os.path.join(data_path,'Hazard_data')
 			for root, dirs, files in os.walk(hazard_dir):
 				for file in files:
@@ -169,6 +169,3 @@ def main():
 
 if __name__ == "__main__":
 	main()
-
-
-

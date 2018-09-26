@@ -16,7 +16,7 @@ import operator
 import ast
 from sqlalchemy import create_engine
 import numpy as np
-import igraph as ig 
+import igraph as ig
 import copy
 from collections import Counter
 import sys
@@ -25,9 +25,9 @@ import copy
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-from scripts.utils import load_config
-from scripts.transport_network_creation import province_shapefile_to_network, add_igraph_generalised_costs_province_roads, province_shapefile_to_dataframe
+
+from vtra.utils import load_config
+from vtra.transport_network_creation import province_shapefile_to_network, add_igraph_generalised_costs_province_roads, province_shapefile_to_dataframe
 
 
 def main():
@@ -36,13 +36,13 @@ def main():
 
 	truck_unit_wt = [5.0,20.0]
 	duration_max = [10,15,20,25,30]
-	# provinces to consider 
+	# provinces to consider
 	province_list = ['Lao Cai','Binh Dinh','Thanh Hoa']
 	province_terrian = ['mountain','flat','flat']
 
 	growth_scenarios = [(5,'low'),(6.5,'forecast'),(10,'high')]
 	base_year = 2016
-	
+
 	index_cols = ['edge_id','hazard_type','model','climate_scenario','year','road_cond','asset_type','width','road_length']
 	new_cols = ['min_band','max_band','min_height','max_height','min_exposure_percent','max_exposure_percent',
 				'min_duration','max_duration','min_exposure_length','max_exposure_length','min_daily_loss','max_daily_loss',
@@ -108,7 +108,6 @@ def main():
 						plt.tight_layout()
 						plt.savefig(fig_path,dpi=500)
 						plt.close()
- 
 
 
 
@@ -116,9 +115,10 @@ def main():
 
 
 
-			
-		
-			
+
+
+
+
 
 if __name__ == "__main__":
 	main()

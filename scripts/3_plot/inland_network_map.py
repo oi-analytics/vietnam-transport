@@ -9,8 +9,8 @@ import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
 import matplotlib.pyplot as plt
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
-from scripts.utils import *
+
+from vtra.utils import *
 
 def main():
     config = load_config()
@@ -19,8 +19,8 @@ def main():
     inland_node_file = os.path.join(config['paths']['data'], 'Waterways', 'waterways', 'ports_nodes.shp')
 
     remove_routes_ids = [
-        ('watern_149', 'watern_429'), 
-        ('watern_429', 'watern_520'), 
+        ('watern_149', 'watern_429'),
+        ('watern_429', 'watern_520'),
         ('watern_700', 'watern_520'),
         ('watern_210', 'watern_700'),
         ('watern_209', 'watern_210'),
