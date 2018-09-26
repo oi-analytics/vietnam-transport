@@ -1,8 +1,8 @@
 .. _license:
 
-=======
-License
-=======
+===========
+MIT License
+===========
 
 .. literalinclude::  ../LICENSE
     :language: text

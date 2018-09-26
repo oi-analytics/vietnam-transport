@@ -12,9 +12,20 @@ Contents
 ========
 
 .. toctree::
+   :maxdepth: 2
+
+    Data Assembly <data>
+    Networks <networks>
+    Origin-Destination Points <od>
+    Mapping Flows <flows>
+    Hazard Exposure <exposure>
+    Economic Impact Assessment <economic>
+    Adaption Options <adaptation>
+
+.. toctree::
    :maxdepth: 3
 
-   Reference <api/modules>
+   API Reference <api/modules>
 
 .. toctree::
    :maxdepth: 1
