@@ -46,13 +46,13 @@ def main():
         xs.append(x)
         ys.append(y)
 
-    ax.scatter(xs, ys,transform=proj_lat_lon, facecolor='#54278f', s=12, zorder=5)
+    ax.scatter(xs, ys, transform=proj_lat_lon, facecolor='#54278f', s=12, zorder=5)
     # Legend
     legend_handles = [
         mpatches.Patch(color=color, label=line)
         for line, color in color_by_type.items()
 ]
-    plt.legend(handles=legend_handles,loc = 'lower left')
+    plt.legend(handles=legend_handles, loc = 'lower left')
     save_fig(output_file)
 
 if __name__ == '__main__':

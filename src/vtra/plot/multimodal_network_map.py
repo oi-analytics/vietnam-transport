@@ -108,7 +108,7 @@ def main():
         mpatches.Patch(color=color, label=line)
         for line, color in color_by_type.items()
 ]
-    plt.legend(handles=legend_handles,loc = 'lower left')
+    plt.legend(handles=legend_handles, loc = 'lower left')
     save_fig(output_file)
 
 if __name__ == '__main__':

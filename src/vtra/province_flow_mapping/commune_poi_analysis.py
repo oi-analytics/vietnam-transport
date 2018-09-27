@@ -14,10 +14,10 @@ import sys
 
 
 
-from vtra.utils import load_config,extract_value_from_gdf,get_nearest_node,gdf_clip,count_points_in_polygon
+from vtra.utils import load_config, extract_value_from_gdf, get_nearest_node, gdf_clip, count_points_in_polygon
 from vtra.transport_network_creation import province_shapefile_to_network, add_igraph_time_costs_province_roads
 
-def netrev_edges(region_name,start_points,end_points,graph,save_edges = True,output_path ='',excel_writer =''):
+def netrev_edges(region_name, start_points, end_points, graph, save_edges = True, output_path ='', excel_writer =''):
     """
     Assign net revenue to roads assets in Vietnam
 
@@ -33,7 +33,7 @@ def netrev_edges(region_name,start_points,end_points,graph,save_edges = True,out
     """
     save_paths = []
     path_index = 0
-    for iter_,place in start_points.iterrows():
+    for iter_, place in start_points.iterrows():
         try:
             closest_center = end_points.loc[end_points['OBJECTID']
             == place['NEAREST_C_CENTER']]['NEAREST_G_NODE'].values[0]
@@ -42,27 +42,27 @@ def netrev_edges(region_name,start_points,end_points,graph,save_edges = True,out
             pos1_i = graph.vs[node_dict[closest_center]]
 
             if pos0_i != pos1_i:
-                path = graph.get_shortest_paths(pos0_i,pos1_i,weights='min_cost',output="epath")
-                get_od_pair = (place['NEAREST_G_NODE'],closest_center)
+                path = graph.get_shortest_paths(pos0_i, pos1_i, weights='min_cost', output="epath")
+                get_od_pair = (place['NEAREST_G_NODE'], closest_center)
                 get_path = [graph.es[n]['edge_id'] for n in path][0]
                 get_dist = sum([graph.es[n]['length'] for n in path][0])
                 get_time = sum([graph.es[n]['min_time'] for n in path][0])
                 get_travel_cost = sum([graph.es[n]['min_cost'] for n in path][0])
                 path_index += 1
-                save_paths.append(('path_{}'.format(path_index),get_od_pair,get_path,place['netrev'],get_travel_cost,get_dist,get_time))
+                save_paths.append(('path_{}'.format(path_index), get_od_pair, get_path, place['netrev'], get_travel_cost, get_dist, get_time))
         except:
             print(iter_)
 
 
-    save_paths_df = pd.DataFrame(save_paths,columns = ['path_index','od_nodes','edge_path','netrev','travel_cost','distance','time'])
-    save_paths_df.to_excel(excel_writer,province_name,index = False)
+    save_paths_df = pd.DataFrame(save_paths, columns = ['path_index','od_nodes','edge_path','netrev','travel_cost','distance','time'])
+    save_paths_df.to_excel(excel_writer, province_name, index = False)
     excel_writer.save()
     del save_paths_df
 
     all_edges = [x['edge_id'] for x in graph.es]
     all_edges_geom = [x['geometry'] for x in graph.es]
 
-    gdf_edges = gpd.GeoDataFrame(pd.DataFrame([all_edges,all_edges_geom]).T,crs='epsg:4326')
+    gdf_edges = gpd.GeoDataFrame(pd.DataFrame([all_edges, all_edges_geom]).T, crs='epsg:4326')
     gdf_edges.columns = ['edge_id','geometry']
 
     gdf_edges['netrev'] = 0
@@ -77,7 +77,7 @@ def netrev_edges(region_name,start_points,end_points,graph,save_edges = True,out
 
 if __name__ == '__main__':
 
-    data_path,calc_path,output_path = load_config()['paths']['data'],load_config()['paths']['calc'],load_config()['paths']['output']
+    data_path, calc_path, output_path = load_config()['paths']['data'], load_config()['paths']['calc'], load_config()['paths']['output']
 
     # provinces to consider
     province_list = ['Thanh Hoa','Binh Dinh','Lao Cai']
@@ -96,7 +96,7 @@ if __name__ == '__main__':
         edges_in = os.path.join(data_path,'Roads','{}_roads'.format(province_name),'vietbando_{}_edges.shp'.format(province_name))
         nodes_in = os.path.join(data_path,'Roads','{}_roads'.format(province_name),'vietbando_{}_nodes.shp'.format(province_name))
         population_points_in = os.path.join(data_path,'Points_of_interest','population_points.shp')
-        commune_center_in = os.path.join(data_path,'Points_of_interest',district_committe_names[prn])
+        commune_center_in = os.path.join(data_path,'Points_of_interest', district_committe_names[prn])
 
         province_path = os.path.join(data_path,'Vietnam_boundaries','who_boundaries','who_provinces.shp')
         commune_path = os.path.join(data_path,'Vietnam_boundaries','boundaries_stats','commune_level_stats.shp')
@@ -110,13 +110,13 @@ if __name__ == '__main__':
         province_geom = provinces.loc[provinces.NAME_ENG == province].geometry.values[0]
 
         #clip all to province
-        prov_pop = gdf_clip(population_points_in,province_geom)
-        prov_commune_center = gdf_clip(commune_center_in,province_geom)
+        prov_pop = gdf_clip(population_points_in, province_geom)
+        prov_commune_center = gdf_clip(commune_center_in, province_geom)
         if 'OBJECTID' not in prov_commune_center.columns.values.tolist():
             prov_commune_center['OBJECTID'] = prov_commune_center.index
 
         print (prov_commune_center)
-        prov_communes = gdf_clip(commune_path,province_geom)
+        prov_communes = gdf_clip(commune_path, province_geom)
 
         # load nodes and edges
         nodes = gpd.read_file(nodes_in)
@@ -129,34 +129,34 @@ if __name__ == '__main__':
         prov_pop_sindex = prov_pop.sindex
 
         # create new column in prov_communes with amount of villages
-        prov_communes['n_villages'] = prov_communes.geometry.apply(lambda x: count_points_in_polygon(x,prov_pop_sindex))
+        prov_communes['n_villages'] = prov_communes.geometry.apply(lambda x: count_points_in_polygon(x, prov_pop_sindex))
         prov_communes['netrev_village'] = (prov_communes['netrevenue']*prov_communes['nfirm'])/prov_communes['n_villages']
 
         commune_sindex = prov_communes.sindex
         # give each village a net revenue based on average per village in commune
-        prov_pop['netrev'] = prov_pop.geometry.apply(lambda x: extract_value_from_gdf(x,commune_sindex,prov_communes,'netrev_village'))
+        prov_pop['netrev'] = prov_pop.geometry.apply(lambda x: extract_value_from_gdf(x, commune_sindex, prov_communes,'netrev_village'))
 
         # and use average if commune has no stats
         # prov_pop.loc[prov_pop['netrev'] == 0,'netrev'] = prov_pop['netrev'].mean()
 
         # get nearest node in network for all start and end points
-        prov_pop['NEAREST_G_NODE'] = prov_pop.geometry.apply(lambda x: get_nearest_node(x,sindex_nodes,nodes,'NODE_ID'))
-        prov_commune_center['NEAREST_G_NODE'] = prov_commune_center.geometry.apply(lambda x: get_nearest_node(x,sindex_nodes,nodes,'NODE_ID'))
+        prov_pop['NEAREST_G_NODE'] = prov_pop.geometry.apply(lambda x: get_nearest_node(x, sindex_nodes, nodes,'NODE_ID'))
+        prov_commune_center['NEAREST_G_NODE'] = prov_commune_center.geometry.apply(lambda x: get_nearest_node(x, sindex_nodes, nodes,'NODE_ID'))
 
         # prepare for shortest path routing, we'll use the spatial index of the centers
         # to find the nearest center for each population point
         sindex_commune_center = prov_commune_center.sindex
-        prov_pop['NEAREST_C_CENTER'] = prov_pop.geometry.apply(lambda x: get_nearest_node(x,sindex_commune_center,prov_commune_center,'OBJECTID'))
+        prov_pop['NEAREST_C_CENTER'] = prov_pop.geometry.apply(lambda x: get_nearest_node(x, sindex_commune_center, prov_commune_center,'OBJECTID'))
 
         # load network
 
-        # G = province_shapefile_to_network(edges_in,path_width_table)
+        # G = province_shapefile_to_network(edges_in, path_width_table)
         G = province_shapefile_to_network(edges_in)
-        G = add_igraph_time_costs_province_roads(G,0.019)
+        G = add_igraph_time_costs_province_roads(G, 0.019)
 
         nodes_name = np.asarray([x['name'] for x in G.vs])
         nodes_index = np.asarray([x.index for x in G.vs])
-        node_dict = dict(zip(nodes_name,nodes_index))
+        node_dict = dict(zip(nodes_name, nodes_index))
 
         # get updated edges
-        edges_updated = netrev_edges(province_name,prov_pop,prov_commune_center,G,save_edges = True,output_path = shp_output_path,excel_writer = excl_wrtr)
+        edges_updated = netrev_edges(province_name, prov_pop, prov_commune_center, G, save_edges = True, output_path = shp_output_path, excel_writer = excl_wrtr)

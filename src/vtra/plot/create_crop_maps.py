@@ -30,7 +30,7 @@ def main():
     crop_file_path = os.path.join(config['paths']['data'], 'Agriculture_crops', 'crop_data')
     for file in os.listdir(crop_file_path):
         if file.endswith('.tif'):
-            crop_file = os.path.join(crop_file_path,file)
+            crop_file = os.path.join(crop_file_path, file)
             crop_name = [cr for cr in crop_cols if cr in file.lower().strip()]
             if crop_name:
                 crop_name = crop_name[0]
@@ -53,17 +53,17 @@ def main():
                 norm=mpl.colors.Normalize(vmin=0, vmax=max_val)
 
                 # Plot population data
-                im = ax.imshow(data, extent=lat_lon_extent,transform=proj_lat_lon, cmap=colors,norm =norm, zorder=5)
+                im = ax.imshow(data, extent=lat_lon_extent, transform=proj_lat_lon, cmap=colors, norm =norm, zorder=5)
 
                 # Add colorbar
-                cbar = plt.colorbar(im, ax=ax,fraction=0.1, shrink=0.87,pad=0.01, drawedges=False, orientation='horizontal',
-                                    norm=mpl.colors.Normalize(vmin=0, vmax=max_val), ticks=list(np.linspace(0,max_val,3)))
-                cbar.set_clim(vmin=0,vmax=max_val)
+                cbar = plt.colorbar(im, ax=ax, fraction=0.1, shrink=0.87, pad=0.01, drawedges=False, orientation='horizontal',
+                                    norm=mpl.colors.Normalize(vmin=0, vmax=max_val), ticks=list(np.linspace(0, max_val, 3)))
+                cbar.set_clim(vmin=0, vmax=max_val)
 
 
                 cbar.outline.set_color("none")
                 cbar.ax.yaxis.set_tick_params(color='black')
-                cbar.ax.set_xlabel('Crop Annual Production(tons)',fontsize=12,color='black')
+                cbar.ax.set_xlabel('Crop Annual Production(tons)', fontsize=12, color='black')
 
                 plt.title(crop_title, fontsize = 14)
                 output_file = os.path.join(config['paths']['figures'], '{}_production.png'.format(crop_name))

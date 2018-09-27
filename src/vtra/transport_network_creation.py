@@ -20,12 +20,12 @@ def assign_province_road_conditions(x):
     asset_code = x.code
     asset_level = x.level
 
-    if asset_code in (17,303) or asset_level in (0,1): # This is an expressway, national and provincial road
+    if asset_code in (17, 303) or asset_level in (0, 1): # This is an expressway, national and provincial road
         return 'paved'
     else:            # Anything else not included above
         return 'unpaved'
 
-def assign_assumed_width_to_province_roads_from_file(asset_width,width_range_list):
+def assign_assumed_width_to_province_roads_from_file(asset_width, width_range_list):
     '''
     Assign widths to roads assets in Vietnam
     The widths are assigned based on our understanding of:
@@ -34,7 +34,7 @@ def assign_assumed_width_to_province_roads_from_file(asset_width,width_range_lis
 
     Inputs are:
     asset_width - Numeric value for width of asset
-    width_range_list - List of tuples containing (from_width,to_width,assumed_width)
+    width_range_list - List of tuples containing (from_width, to_width, assumed_width)
 
     Outputs are:
     assumed_width - assigned width of the raod asset based on design specifications
@@ -87,7 +87,7 @@ def assign_assumed_width_to_province_roads(x):
     else:
         return x.width
 
-def assign_asset_type_to_province_roads_from_file(asset_code,asset_type_list):
+def assign_asset_type_to_province_roads_from_file(asset_code, asset_type_list):
     '''
     Assign asset types to roads assets in Vietnam
     The types are assigned based on our understanding of:
@@ -97,7 +97,7 @@ def assign_asset_type_to_province_roads_from_file(asset_code,asset_type_list):
     asset code - Numeric value for code of asset
 
     Outputs are:
-    asset type - Which is either of (Bridge,Dam,Culvert,Tunnel,Spillway,Road)
+    asset type - Which is either of (Bridge, Dam, Culvert, Tunnel, Spillway, Road)
     '''
     asset_type = 'road'
     for asset in asset_type_list:
@@ -118,9 +118,9 @@ def assign_asset_type_to_province_roads(x):
     asset code - Numeric value for code of asset
 
     Outputs are:
-    asset type - Which is either of (Bridge,Dam,Culvert,Tunnel,Spillway,Road)
+    asset type - Which is either of (Bridge, Dam, Culvert, Tunnel, Spillway, Road)
     '''
-    if x.code in (12,25):
+    if x.code in (12, 25):
         return 'Bridge'
     elif x.code == (23):
         return 'Dam'
@@ -139,7 +139,7 @@ def assign_minmax_travel_speeds_province_roads_apply(x):
     Assign travel speeds to roads assets in Vietnam
     The speeds are assigned based on our understanding of:
     1. The types of assets
-    2. The levels of classification of assets: 0-National,1-Provinical,2-Local,3-Other
+    2. The levels of classification of assets: 0-National, 1-Provinical, 2-Local, 3-Other
     3. The terrain where the assets are located: Flat or Mountain or No information
 
     Inputs are:
@@ -157,25 +157,25 @@ def assign_minmax_travel_speeds_province_roads_apply(x):
 
     if (not asset_terrain) or ('flat' in  asset_terrain.lower()):
         if asset_code == 17: # This is an expressway
-            return 100,120
-        elif asset_code in (15,4): # This is a residential road or a mountain pass
-            return 40,60
+            return 100, 120
+        elif asset_code in (15, 4): # This is a residential road or a mountain pass
+            return 40, 60
         elif asset_level == 0: # This is any other national network asset
-            return 80,100
+            return 80, 100
         elif asset_level == 1:# This is any other provincial network asset
-            return 60,80
+            return 60, 80
         elif asset_level == 2: # This is any other local network asset
-            return 40,60
+            return 40, 60
         else:            # Anything else not included above
-            return 20,40
+            return 20, 40
 
     else:
         if asset_level < 3:
             return 40, 60
         else:
-            return 20,40
+            return 20, 40
 
-def assign_minmax_time_costs_province_roads_apply(x,cost_dataframe):
+def assign_minmax_time_costs_province_roads_apply(x, cost_dataframe):
     '''
     '''
     asset_code = x.code
@@ -198,12 +198,12 @@ def assign_minmax_time_costs_province_roads_apply(x,cost_dataframe):
     return min_time_cost, max_time_cost
 
 
-def assign_minmax_tariff_costs_province_roads_apply(x,cost_dataframe):
+def assign_minmax_tariff_costs_province_roads_apply(x, cost_dataframe):
     '''
     Assign travel speeds to roads assets in Vietnam
     The speeds are assigned based on our understanding of:
     1. The types of assets
-    2. The levels of classification of assets: 0-National,1-Provinical,2-Local,3-Other
+    2. The levels of classification of assets: 0-National, 1-Provinical, 2-Local, 3-Other
     3. The terrain where the assets are located: Flat or Mountain or No information
 
     Inputs are:
@@ -236,7 +236,7 @@ def assign_minmax_tariff_costs_province_roads_apply(x,cost_dataframe):
     return min_tariff_cost, max_tariff_cost
 
 
-def province_shapefile_to_dataframe(edges_in,road_terrain,road_properties_file):
+def province_shapefile_to_dataframe(edges_in, road_terrain, road_properties_file):
     """
     input parameters:
         edges_in : string of path to edges file/network file.
@@ -252,54 +252,54 @@ def province_shapefile_to_dataframe(edges_in,road_terrain,road_properties_file):
     edges['terrain'] = road_terrain
 
     # assign road conditon
-    edges['road_cond'] = edges.apply(assign_province_road_conditions,axis=1)
+    edges['road_cond'] = edges.apply(assign_province_road_conditions, axis=1)
 
     # assign asset type
-    asset_type_list = [tuple(x) for x in pd.read_excel(road_properties_file,sheet_name ='provincial').values]
-    edges['asset_type'] = edges.code.apply(lambda x: assign_asset_type_to_province_roads_from_file(x,asset_type_list))
+    asset_type_list = [tuple(x) for x in pd.read_excel(road_properties_file, sheet_name ='provincial').values]
+    edges['asset_type'] = edges.code.apply(lambda x: assign_asset_type_to_province_roads_from_file(x, asset_type_list))
 
     # get the right linelength
     edges['length'] = edges.geometry.apply(line_length)
 
     # correct the widths of the road assets
     # get the width of edges
-    width_range_list = [tuple(x) for x in pd.read_excel(road_properties_file,sheet_name ='widths').values]
-    edges['width'] = edges.width.apply(lambda x: assign_assumed_width_to_province_roads_from_file(x,width_range_list))
+    width_range_list = [tuple(x) for x in pd.read_excel(road_properties_file, sheet_name ='widths').values]
+    edges['width'] = edges.width.apply(lambda x: assign_assumed_width_to_province_roads_from_file(x, width_range_list))
 
     # assign minimum and maximum speed to network
-    edges['speed'] = edges.apply(assign_minmax_travel_speeds_province_roads_apply,axis=1)
+    edges['speed'] = edges.apply(assign_minmax_travel_speeds_province_roads_apply, axis=1)
     edges[['min_speed', 'max_speed']] = edges['speed'].apply(pd.Series)
-    edges.drop('speed',axis=1,inplace=True)
+    edges.drop('speed', axis=1, inplace=True)
 
     # assign minimum and maximum travel time to network
     edges['min_time'] = edges['length']/edges['max_speed']
     edges['max_time'] = edges['length']/edges['min_speed']
 
 
-    cost_values_df = pd.read_excel(road_properties_file,sheet_name ='costs')
+    cost_values_df = pd.read_excel(road_properties_file, sheet_name ='costs')
 
     # assign minimum and maximum cost of time in USD to the network
     # the costs of time  = (unit cost of time in USD/hr)*(travel time in hr)
-    edges['time_cost'] = edges.apply(lambda x: assign_minmax_time_costs_province_roads_apply(x,cost_values_df),axis = 1)
+    edges['time_cost'] = edges.apply(lambda x: assign_minmax_time_costs_province_roads_apply(x, cost_values_df), axis = 1)
     edges[['min_time_cost', 'max_time_cost']] = edges['time_cost'].apply(pd.Series)
-    edges.drop('time_cost',axis=1,inplace=True)
+    edges.drop('time_cost', axis=1, inplace=True)
 
     # assign minimum and maximum cost of tonnage in USD/ton to the network
     # the costs of time  = (unit cost of tariff in USD/ton-km)*(length in km)
-    edges['tariff_cost'] = edges.apply(lambda x: assign_minmax_tariff_costs_province_roads_apply(x,cost_values_df),axis = 1)
+    edges['tariff_cost'] = edges.apply(lambda x: assign_minmax_tariff_costs_province_roads_apply(x, cost_values_df), axis = 1)
     edges[['min_tariff_cost', 'max_tariff_cost']] = edges['tariff_cost'].apply(pd.Series)
-    edges.drop('tariff_cost',axis=1,inplace=True)
+    edges.drop('tariff_cost', axis=1, inplace=True)
 
     # make sure that From and To node are the first two columns of the dataframe
     # to make sure the conversion from dataframe to igraph network goes smooth
-    edges = edges.reindex(list(edges.columns)[2:]+list(edges.columns)[:2],axis=1)
+    edges = edges.reindex(list(edges.columns)[2:]+list(edges.columns)[:2], axis=1)
 
     return edges
 
 
-def province_shapefile_to_network(edges_in,road_terrain,road_properties_file):
+def province_shapefile_to_network(edges_in, road_terrain, road_properties_file):
     # create network from edge file
-    edges = province_shapefile_to_dataframe(edges_in,road_terrain,road_properties_file)
+    edges = province_shapefile_to_dataframe(edges_in, road_terrain, road_properties_file)
     G = ig.Graph.TupleList(edges.itertuples(index=False), edge_attrs=list(edges.columns)[2:])
 
     # only keep connected network
@@ -382,7 +382,7 @@ def assign_national_road_class(x):
             return 6
 
 
-def assign_assumed_width_to_national_roads_from_file(x,flat_width_range_list,mountain_width_range_list):
+def assign_assumed_width_to_national_roads_from_file(x, flat_width_range_list, mountain_width_range_list):
     '''
     Assign widths to roads assets in Vietnam
     The widths are assigned based on our understanding of:
@@ -392,7 +392,7 @@ def assign_assumed_width_to_national_roads_from_file(x,flat_width_range_list,mou
 
     Inputs are:
     x - dataframe row
-    flat_width_range_list - List of tuples containing (from_width,to_width,assumed_width)
+    flat_width_range_list - List of tuples containing (from_width, to_width, assumed_width)
 
     Outputs are:
     assumed_width - assigned width of the raod asset based on design specifications
@@ -428,7 +428,7 @@ def assign_assumed_width_to_national_roads_from_file(x,flat_width_range_list,mou
 
     return assumed_width
 
-def assign_min_max_speeds_to_national_roads_from_file(x,flat_width_range_list,mountain_width_range_list):
+def assign_min_max_speeds_to_national_roads_from_file(x, flat_width_range_list, mountain_width_range_list):
     '''
     Assign speeds to national roads in Vietnam
     The speeds are assigned based on our understanding of:
@@ -483,7 +483,7 @@ def assign_min_max_speeds_to_national_roads_from_file(x,flat_width_range_list,mo
 
     return min_speed, max_speed
 
-def assign_minmax_time_costs_national_roads_apply(x,cost_dataframe):
+def assign_minmax_time_costs_national_roads_apply(x, cost_dataframe):
     '''
     '''
     if x.vehicle_co > 2000:
@@ -510,12 +510,12 @@ def assign_minmax_time_costs_national_roads_apply(x,cost_dataframe):
 
     return min_time_cost, max_time_cost
 
-def assign_minmax_tariff_costs_national_roads_apply(x,cost_dataframe):
+def assign_minmax_tariff_costs_national_roads_apply(x, cost_dataframe):
     '''
     Assign travel speeds to roads assets in Vietnam
     The speeds are assigned based on our understanding of:
     1. The types of assets
-    2. The levels of classification of assets: 0-National,1-Provinical,2-Local,3-Other
+    2. The levels of classification of assets: 0-National, 1-Provinical, 2-Local, 3-Other
     3. The terrain where the assets are located: Flat or Mountain or No information
 
     Inputs are:
@@ -560,7 +560,7 @@ def assign_minmax_tariff_costs_national_roads_apply(x,cost_dataframe):
 
     return min_tariff_cost, max_tariff_cost
 
-def national_road_shapefile_to_dataframe(edges_in,road_properties_file):
+def national_road_shapefile_to_dataframe(edges_in, road_properties_file):
     """
     input parameters:
         edges_in : string of path to edges file/network file.
@@ -573,51 +573,51 @@ def national_road_shapefile_to_dataframe(edges_in,road_properties_file):
     edges.columns = map(str.lower, edges.columns)
 
     # assgin asset terrain
-    edges['terrain'] = edges.apply(assign_national_road_terrain,axis=1)
+    edges['terrain'] = edges.apply(assign_national_road_terrain, axis=1)
 
     # assign road conditon
-    edges['road_cond'] = edges.apply(assign_national_road_conditions,axis=1)
+    edges['road_cond'] = edges.apply(assign_national_road_conditions, axis=1)
 
     # assign road class
-    edges['road_class'] = edges.apply(assign_national_road_class,axis=1)
+    edges['road_class'] = edges.apply(assign_national_road_class, axis=1)
 
     # get the right linelength
     edges['length'] = edges.geometry.apply(line_length)
 
     # correct the widths of the road assets
     # get the width of edges
-    flat_width_range_list = list(pd.read_excel(road_properties_file,sheet_name ='flat_terrain_designs').itertuples(index = False))
-    mountain_width_range_list = list(pd.read_excel(road_properties_file,sheet_name ='mountain_terrain_designs').itertuples(index = False))
+    flat_width_range_list = list(pd.read_excel(road_properties_file, sheet_name ='flat_terrain_designs').itertuples(index = False))
+    mountain_width_range_list = list(pd.read_excel(road_properties_file, sheet_name ='mountain_terrain_designs').itertuples(index = False))
 
-    edges['width'] = edges.apply(lambda x: assign_assumed_width_to_national_roads_from_file(x,flat_width_range_list,mountain_width_range_list),axis = 1)
+    edges['width'] = edges.apply(lambda x: assign_assumed_width_to_national_roads_from_file(x, flat_width_range_list, mountain_width_range_list), axis = 1)
 
     # assign minimum and maximum speed to network
-    edges['speed'] = edges.apply(lambda x: assign_min_max_speeds_to_national_roads_from_file(x,flat_width_range_list,mountain_width_range_list),axis = 1)
+    edges['speed'] = edges.apply(lambda x: assign_min_max_speeds_to_national_roads_from_file(x, flat_width_range_list, mountain_width_range_list), axis = 1)
     edges[['min_speed', 'max_speed']] = edges['speed'].apply(pd.Series)
-    edges.drop('speed',axis=1,inplace=True)
+    edges.drop('speed', axis=1, inplace=True)
 
     # assign minimum and maximum travel time to network
     edges['min_time'] = edges['length']/edges['max_speed']
     edges['max_time'] = edges['length']/edges['min_speed']
 
 
-    cost_values_df = pd.read_excel(road_properties_file,sheet_name ='costs')
+    cost_values_df = pd.read_excel(road_properties_file, sheet_name ='costs')
 
     # assign minimum and maximum cost of time in USD to the network
     # the costs of time  = (unit cost of time in USD/hr)*(travel time in hr)
-    edges['time_cost'] = edges.apply(lambda x: assign_minmax_time_costs_national_roads_apply(x,cost_values_df),axis = 1)
+    edges['time_cost'] = edges.apply(lambda x: assign_minmax_time_costs_national_roads_apply(x, cost_values_df), axis = 1)
     edges[['min_time_cost', 'max_time_cost']] = edges['time_cost'].apply(pd.Series)
-    edges.drop('time_cost',axis=1,inplace=True)
+    edges.drop('time_cost', axis=1, inplace=True)
 
     # assign minimum and maximum cost of tonnage in USD/ton to the network
     # the costs of time  = (unit cost of tariff in USD/ton-km)*(length in km)
-    edges['tariff_cost'] = edges.apply(lambda x: assign_minmax_tariff_costs_national_roads_apply(x,cost_values_df),axis = 1)
+    edges['tariff_cost'] = edges.apply(lambda x: assign_minmax_tariff_costs_national_roads_apply(x, cost_values_df), axis = 1)
     edges[['min_tariff_cost', 'max_tariff_cost']] = edges['tariff_cost'].apply(pd.Series)
-    edges.drop('tariff_cost',axis=1,inplace=True)
+    edges.drop('tariff_cost', axis=1, inplace=True)
 
     # make sure that From and To node are the first two columns of the dataframe
     # to make sure the conversion from dataframe to igraph network goes smooth
-    edges = edges.reindex(list(edges.columns)[2:]+list(edges.columns)[:2],axis=1)
+    edges = edges.reindex(list(edges.columns)[2:]+list(edges.columns)[:2], axis=1)
 
     return edges
 
@@ -625,15 +625,15 @@ def national_shapefile_to_dataframe():
     # called from analysis.national_flow_mapping.national_industry_flows
     raise NotImplementedError()
 
-def national_road_shapefile_to_network(edges_in,road_properties_file):
+def national_road_shapefile_to_network(edges_in, road_properties_file):
     # create network from edge file
-    edges = national_road_shapefile_to_dataframe(edges_in,road_properties_file)
+    edges = national_road_shapefile_to_dataframe(edges_in, road_properties_file)
     G = ig.Graph.TupleList(edges.itertuples(index=False), edge_attrs=list(edges.columns)[2:])
 
     # only keep connected network
     return G.clusters().giant()
 
-def add_igraph_generalised_costs_roads(G,vehicle_numbers,tonnage):
+def add_igraph_generalised_costs_roads(G, vehicle_numbers, tonnage):
     # G.es['max_cost'] = list(cost_param*(np.array(G.es['length'])/np.array(G.es['max_speed'])))
     # G.es['min_cost'] = list(cost_param*(np.array(G.es['length'])/np.array(G.es['min_speed'])))
     # print (G.es['max_time'])
@@ -643,14 +643,14 @@ def add_igraph_generalised_costs_roads(G,vehicle_numbers,tonnage):
     return G
 
 def add_igraph_generalised_costs_province_roads():
-    # called from failure.{adapt_results_process,adaptation_options_multi,failure_estimation_provinces_multi,failure_projections-multi,failure_scenario_generation}
+    # called from failure.{adapt_results_process, adaptation_options_multi, failure_estimation_provinces_multi, failure_projections-multi, failure_scenario_generation}
     raise NotImplementedError()
 
 def add_igraph_time_costs_province_roads():
-    # called from analysis.province_flow_mapping.{commune_poi_analysis,province_crop_flows}
+    # called from analysis.province_flow_mapping.{commune_poi_analysis, province_crop_flows}
     raise NotImplementedError()
 
-def add_igraph_generalised_costs_network(G,vehicle_numbers,tonnage,operating_factor_min,operating_factor_max):
+def add_igraph_generalised_costs_network(G, vehicle_numbers, tonnage, operating_factor_min, operating_factor_max):
     # G.es['max_cost'] = list(cost_param*(np.array(G.es['length'])/np.array(G.es['max_speed'])))
     # G.es['min_cost'] = list(cost_param*(np.array(G.es['length'])/np.array(G.es['min_speed'])))
     # print (G.es['max_time'])
@@ -659,7 +659,7 @@ def add_igraph_generalised_costs_network(G,vehicle_numbers,tonnage,operating_fac
 
     return G
 
-def add_generalised_costs_network_dataframe(network_dataframe,vehicle_numbers,tonnage,operating_factor_min,operating_factor_max):
+def add_generalised_costs_network_dataframe(network_dataframe, vehicle_numbers, tonnage, operating_factor_min, operating_factor_max):
     # G.es['max_cost'] = list(cost_param*(np.array(G.es['length'])/np.array(G.es['max_speed'])))
     # G.es['min_cost'] = list(cost_param*(np.array(G.es['length'])/np.array(G.es['min_speed'])))
     # print (G.es['max_time'])
@@ -668,7 +668,7 @@ def add_generalised_costs_network_dataframe(network_dataframe,vehicle_numbers,to
 
     return network_dataframe
 
-def assign_minmax_time_costs_networks_apply(x,cost_dataframe):
+def assign_minmax_time_costs_networks_apply(x, cost_dataframe):
     '''
     '''
     cost_list = list(cost_dataframe.itertuples(index=False))
@@ -679,7 +679,7 @@ def assign_minmax_time_costs_networks_apply(x,cost_dataframe):
 
     return min_time_cost, max_time_cost
 
-def assign_minmax_tariff_costs_networks_apply(x,cost_dataframe):
+def assign_minmax_tariff_costs_networks_apply(x, cost_dataframe):
     cost_list = list(cost_dataframe.itertuples(index=False))
     for cost_param in cost_list:
         min_tariff_cost = 1.0*cost_param.tariff_min_usd*x.length
@@ -687,7 +687,7 @@ def assign_minmax_tariff_costs_networks_apply(x,cost_dataframe):
 
     return min_tariff_cost, max_tariff_cost
 
-def network_shapefile_to_dataframe(edges_in,mode_properties_file,mode_name,speed_min,speed_max):
+def network_shapefile_to_dataframe(edges_in, mode_properties_file, mode_name, speed_min, speed_max):
     """
     input parameters:
         edges_in : string of path to edges file/network file.
@@ -713,35 +713,35 @@ def network_shapefile_to_dataframe(edges_in,mode_properties_file,mode_name,speed
     edges['max_time'] = edges['length']/edges['min_speed']
 
 
-    cost_values_df = pd.read_excel(mode_properties_file,sheet_name=mode_name)
+    cost_values_df = pd.read_excel(mode_properties_file, sheet_name=mode_name)
 
     # assign minimum and maximum cost of time in USD to the network
     # the costs of time  = (unit cost of time in USD/hr)*(travel time in hr)
-    edges['time_cost'] = edges.apply(lambda x: assign_minmax_time_costs_networks_apply(x,cost_values_df),axis = 1)
+    edges['time_cost'] = edges.apply(lambda x: assign_minmax_time_costs_networks_apply(x, cost_values_df), axis = 1)
     edges[['min_time_cost', 'max_time_cost']] = edges['time_cost'].apply(pd.Series)
-    edges.drop('time_cost',axis=1,inplace=True)
+    edges.drop('time_cost', axis=1, inplace=True)
 
     # assign minimum and maximum cost of tonnage in USD/ton to the network
     # the costs of time  = (unit cost of tariff in USD/ton-km)*(length in km)
-    edges['tariff_cost'] = edges.apply(lambda x: assign_minmax_tariff_costs_networks_apply(x,cost_values_df),axis = 1)
+    edges['tariff_cost'] = edges.apply(lambda x: assign_minmax_tariff_costs_networks_apply(x, cost_values_df), axis = 1)
     edges[['min_tariff_cost', 'max_tariff_cost']] = edges['tariff_cost'].apply(pd.Series)
-    edges.drop('tariff_cost',axis=1,inplace=True)
+    edges.drop('tariff_cost', axis=1, inplace=True)
 
     # make sure that From and To node are the first two columns of the dataframe
     # to make sure the conversion from dataframe to igraph network goes smooth
-    edges = edges.reindex(list(edges.columns)[2:]+list(edges.columns)[:2],axis=1)
+    edges = edges.reindex(list(edges.columns)[2:]+list(edges.columns)[:2], axis=1)
 
     return edges
 
-def network_shapefile_to_network(edges_in,mode_properties_file,mode_name,speed_min,speed_max):
+def network_shapefile_to_network(edges_in, mode_properties_file, mode_name, speed_min, speed_max):
     # create network from edge file
-    edges = network_shapefile_to_dataframe(edges_in,mode_properties_file,mode_name,speed_min,speed_max)
+    edges = network_shapefile_to_dataframe(edges_in, mode_properties_file, mode_name, speed_min, speed_max)
     G = ig.Graph.TupleList(edges.itertuples(index=False), edge_attrs=list(edges.columns)[2:])
 
     # only keep connected network
     return G.clusters().giant()
 
-def assign_minmax_tariff_costs_multi_modal_apply(x,cost_dataframe):
+def assign_minmax_tariff_costs_multi_modal_apply(x, cost_dataframe):
     min_tariff_cost = 0
     max_tariff_cost = 0
     cost_list = list(cost_dataframe.itertuples(index=False))
@@ -765,7 +765,7 @@ def assign_minmax_tariff_costs_multi_modal_apply(x,cost_dataframe):
 
     return min_tariff_cost, max_tariff_cost
 
-def multi_modal_shapefile_to_dataframe(edges_in,mode_properties_file,mode_name,length_threshold):
+def multi_modal_shapefile_to_dataframe(edges_in, mode_properties_file, mode_name, length_threshold):
     """
     input parameters:
         edges_in : string of path to edges file/network file.
@@ -783,13 +783,13 @@ def multi_modal_shapefile_to_dataframe(edges_in,mode_properties_file,mode_name,l
     edges['length'] = edges.geometry.apply(line_length)
 
 
-    cost_values_df = pd.read_excel(mode_properties_file,sheet_name=mode_name)
+    cost_values_df = pd.read_excel(mode_properties_file, sheet_name=mode_name)
 
     # assign minimum and maximum cost of tonnage in USD/ton to the network
     # the costs of time  = (unit cost of tariff in USD/ton)
-    edges['tariff_cost'] = edges.apply(lambda x: assign_minmax_tariff_costs_multi_modal_apply(x,cost_values_df),axis = 1)
+    edges['tariff_cost'] = edges.apply(lambda x: assign_minmax_tariff_costs_multi_modal_apply(x, cost_values_df), axis = 1)
     edges[['min_tariff_cost', 'max_tariff_cost']] = edges['tariff_cost'].apply(pd.Series)
-    edges.drop('tariff_cost',axis=1,inplace=True)
+    edges.drop('tariff_cost', axis=1, inplace=True)
 
     edges['min_time'] = 0
     edges['max_time'] = 0
@@ -798,14 +798,14 @@ def multi_modal_shapefile_to_dataframe(edges_in,mode_properties_file,mode_name,l
 
     # make sure that From and To node are the first two columns of the dataframe
     # to make sure the conversion from dataframe to igraph network goes smooth
-    edges = edges.reindex(list(edges.columns)[2:]+list(edges.columns)[:2],axis=1)
+    edges = edges.reindex(list(edges.columns)[2:]+list(edges.columns)[:2], axis=1)
     edges = edges[edges['length'] < length_threshold]
 
     return edges
 
-def multi_modal_shapefile_to_network(edges_in,mode_properties_file,mode_name,length_threshold):
+def multi_modal_shapefile_to_network(edges_in, mode_properties_file, mode_name, length_threshold):
     # create network from edge file
-    edges = multi_modal_shapefile_to_dataframe(edges_in,mode_properties_file,mode_name,length_threshold)
+    edges = multi_modal_shapefile_to_dataframe(edges_in, mode_properties_file, mode_name, length_threshold)
     G = ig.Graph.TupleList(edges.itertuples(index=False), edge_attrs=list(edges.columns)[2:])
 
     # only keep connected network
@@ -815,12 +815,12 @@ def multi_modal_shapefile_to_network(edges_in,mode_properties_file,mode_name,len
 Functions we are not using at present for provincial analysis. Will clean them later
 '''
 
-def assign_minmax_travel_speeds_province_roads(asset_code,asset_level,asset_terrain):
+def assign_minmax_travel_speeds_province_roads(asset_code, asset_level, asset_terrain):
     '''
     Assign travel speeds to roads assets in Vietnam
     The speeds are assigned based on our understanding of:
     1. The types of assets
-    2. The levels of classification of assets: 0-National,1-Provincial,2-Local,3-Other
+    2. The levels of classification of assets: 0-National, 1-Provincial, 2-Local, 3-Other
     3. The terrain where the assets are located: Flat or Mountain or No information
 
     Inputs are:
@@ -835,25 +835,25 @@ def assign_minmax_travel_speeds_province_roads(asset_code,asset_level,asset_terr
 
     if (not asset_terrain) or (asset_terrain == 'flat'):
         if asset_code == 17: # This is an expressway
-            return 100,120
-        elif asset_code in (15,4): # This is a residential road or a mountain pass
-            return 40,60
+            return 100, 120
+        elif asset_code in (15, 4): # This is a residential road or a mountain pass
+            return 40, 60
         elif asset_level == 0: # This is any other national network asset
-            return 80,100
+            return 80, 100
         elif asset_level == 1:# This is any other provincial network asset
-            return 60,80
+            return 60, 80
         elif asset_level == 2: # This is any other local network asset
-            return 40,60
+            return 40, 60
         else:            # Anything else not included above
-            return 20,40
+            return 20, 40
 
     else:
         if asset_level < 3:
             return 40, 60
         else:
-            return 20,40
+            return 20, 40
 
-def shapefile_to_network(edges_in,path_width_table):
+def shapefile_to_network(edges_in, path_width_table):
     """
     input parameters:
         edges_in : string of path to edges file/network file.
@@ -865,21 +865,21 @@ def shapefile_to_network(edges_in,path_width_table):
     edges = gpd.read_file(edges_in)
 
     # assign minimum and maximum speed to network
-    edges['SPEED'] = edges.apply(assign_minmax_travel_speeds_roads_apply,axis=1)
+    edges['SPEED'] = edges.apply(assign_minmax_travel_speeds_roads_apply, axis=1)
     edges[['MIN_SPEED', 'MAX_SPEED']] = edges['SPEED'].apply(pd.Series)
-    edges.drop('SPEED',axis=1,inplace=True)
+    edges.drop('SPEED', axis=1, inplace=True)
 
     # get the right linelength
     edges['LENGTH'] = edges.geometry.apply(line_length)
 
     # get the width of edges
-    width_range_list = [tuple(x) for x in pd.read_excel(path_width_table,sheet_name ='widths').values]
+    width_range_list = [tuple(x) for x in pd.read_excel(path_width_table, sheet_name ='widths').values]
 
-    edges['width'] = edges.width.apply(lambda x: assign_assumed_width_to_roads(x,width_range_list))
+    edges['width'] = edges.width.apply(lambda x: assign_assumed_width_to_roads(x, width_range_list))
 
     # make sure that From and To node are the first two columns of the dataframe
     # to make sure the conversion from dataframe to igraph network goes smooth
-    edges = edges.reindex(list(edges.columns)[2:]+list(edges.columns)[:2],axis=1)
+    edges = edges.reindex(list(edges.columns)[2:]+list(edges.columns)[:2], axis=1)
 
     # create network from edge file
     G = ig.Graph.TupleList(edges.itertuples(index=False), edge_attrs=list(edges.columns)[2:])
@@ -887,7 +887,7 @@ def shapefile_to_network(edges_in,path_width_table):
     # only keep connected network
     return G.clusters().giant()
 
-def assign_travel_times_and_variability(speed_attributes,variability_attributes,mode_type,variability_location,mode_attribute,distance):
+def assign_travel_times_and_variability(speed_attributes, variability_attributes, mode_type, variability_location, mode_attribute, distance):
     travel_time = 0
     variability_time = 0
 
@@ -900,7 +900,7 @@ def assign_travel_times_and_variability(speed_attributes,variability_attributes,
 
     return travel_time, variability_time
 
-def assign_network_dictionary(network_dictionary,edge,from_node,to_node,distance,speed):
+def assign_network_dictionary(network_dictionary, edge, from_node, to_node, distance, speed):
 
     network_dictionary['edge'].append(edge)
     network_dictionary['from_node'].append(from_node)
@@ -911,7 +911,7 @@ def assign_network_dictionary(network_dictionary,edge,from_node,to_node,distance
 
     return network_dictionary
 
-def create_network_dictionary(network_dictionary,layer_name, edge_id, from_node_id, to_node_id,edge_speed_attribute,edge_geom_attribute,cursor,connection):
+def create_network_dictionary(network_dictionary, layer_name, edge_id, from_node_id, to_node_id, edge_speed_attribute, edge_geom_attribute, cursor, connection):
     '''
     input parameters:
     layer_name: sql layer name to extraxt information from
@@ -927,7 +927,7 @@ def create_network_dictionary(network_dictionary,layer_name, edge_id, from_node_
 
     '''
     sql_query = '''select {0}, {1}, {2}, {3}, st_length({4}::geography)/1000 from {5}
-                '''.format(edge_id,from_node_id,to_node_id,edge_speed_attribute,edge_geom_attribute,layer_name)
+                '''.format(edge_id, from_node_id, to_node_id, edge_speed_attribute, edge_geom_attribute, layer_name)
 
     cursor.execute(sql_query)
     read_layer = cursor.fetchall()
@@ -951,11 +951,11 @@ def create_network_dictionary(network_dictionary,layer_name, edge_id, from_node_
         lgth = float(row[4])
 
 
-        network_dictionary = assign_network_dictionary(network_dictionary,e_id,fn_id,tn_id,lgth,sp)
+        network_dictionary = assign_network_dictionary(network_dictionary, e_id, fn_id, tn_id, lgth, sp)
 
     return network_dictionary
 
-def create_networkx_topology(network_dictionary,tonnage,teus):
+def create_networkx_topology(network_dictionary, tonnage, teus):
     # all_net_dict = {'edge':[],'from_node':[],'to_node':[],'waiting_cost':[],'travel_cost':[],'transport_price_ton':[],
     #             'transport_price_teu':[],'variability_cost':[]}
 
@@ -971,7 +971,7 @@ def create_networkx_topology(network_dictionary,tonnage,teus):
 
     for e in range(len(edges)):
         generalised_cost = wait_costs[e] + travel_costs[e] + tonnage*price_tons[e] + teus*price_teus[e] + variable_costs[e]
-        G.add_edge(from_nodes[e],to_nodes[e], edge = edges[e], cost = generalised_cost)
+        G.add_edge(from_nodes[e], to_nodes[e], edge = edges[e], cost = generalised_cost)
 
     return G
 
@@ -995,7 +995,7 @@ def create_igraph_topology(network_dictionary):
         ig_fn = igraph_ids[unique_nodes.index(fn)]
         ig_tn = igraph_ids[unique_nodes.index(tn)]
 
-        edge_list.append((ig_fn,ig_tn))
+        edge_list.append((ig_fn, ig_tn))
 
     G.add_edges(edge_list)
 
@@ -1009,7 +1009,7 @@ def create_igraph_topology(network_dictionary):
 
     return G
 
-def add_igraph_costs(G,tonnage,teus):
+def add_igraph_costs(G, tonnage, teus):
     # all_net_dict = {'edge':[],'from_node':[],'to_node':[],'waiting_cost':[],'travel_cost':[],'transport_price_ton':[],
     #             'transport_price_teu':[],'variability_cost':[]}
 
@@ -1023,15 +1023,15 @@ def add_igraph_costs(G,tonnage,teus):
 
     return G
 
-def get_networkx_edges(G, node_path,data_cond):
-    node_tup = zip(node_path[:-1],node_path[1:])
+def get_networkx_edges(G, node_path, data_cond):
+    node_tup = zip(node_path[:-1], node_path[1:])
     t_list = []
     for tup in node_tup:
-        t = [d for (u,v,d) in G.edges(data = data_cond) if (u,v) == tup or (v,u) == tup]
+        t = [d for (u, v, d) in G.edges(data = data_cond) if (u, v) == tup or (v, u) == tup]
         if len(t) > 0:
             t_list.append(t[0])
     return t_list
 
-def get_igraph_edges(G,edge_path,data_cond):
+def get_igraph_edges(G, edge_path, data_cond):
     t_list = [G.es[n][data_cond] for n in edge_path]
     return (t_list)

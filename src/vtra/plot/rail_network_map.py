@@ -50,13 +50,13 @@ def main():
             ys.append(y)
             name = record.attributes['NAME']
 
-    ax.scatter(xs, ys,transform=proj_lat_lon, facecolor='#000000', s=4, zorder=5, label = 'Rail station')
+    ax.scatter(xs, ys, transform=proj_lat_lon, facecolor='#000000', s=4, zorder=5, label = 'Rail station')
     # Legend
     legend_handles = [
         mpatches.Patch(color=color, label=line)
         for line, color in color_by_type.items()
 ]
-    plt.legend(handles=legend_handles,loc = 'lower left')
+    plt.legend(handles=legend_handles, loc = 'lower left')
     save_fig(output_file)
 
 if __name__ == '__main__':

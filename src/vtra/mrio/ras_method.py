@@ -11,7 +11,7 @@ the Generalized RAS (GRAS) approach
 Usage
 -----
 
-X = gras(X0,u,v) OR [X,r,s] = gras(X0,u,v) with or without eps
+X = gras(X0, u, v) OR [X, r, s] = gras(X0, u, v) with or without eps
 included as the fourth argument, where
 
 Input
@@ -60,7 +60,7 @@ def invd(x):
 def ras_method(X0, u, v, eps=1e-5):
 
     m, n = np.shape(X0)
-    N = np.zeros((m,n))
+    N = np.zeros((m, n))
     N[X0<0] = -X0[X0<0]
     P = X0+N
 
@@ -68,21 +68,21 @@ def ras_method(X0, u, v, eps=1e-5):
     r = np.ones((m))
     pr = np.dot(P.T, r)
     nr = N.T.dot(invd(r)).dot(np.ones((m)))
-    s1 = np.dot(invd(2*pr),(v+np.sqrt((np.square(v)+4*(pr.dot(nr))))))
+    s1 = np.dot(invd(2*pr), (v+np.sqrt((np.square(v)+4*(pr.dot(nr))))))
     ss = -invd(v).dot(nr)
     s1[pr==0] = ss[pr==0]
 
     ps = np.dot(P, s1)
     ns = N.dot(invd(s1)).dot(np.ones((n)))
-    r = np.dot(invd(2*ps),(u+np.sqrt((np.square(u)+4*(ps.dot(ns))))))
+    r = np.dot(invd(2*ps), (u+np.sqrt((np.square(u)+4*(ps.dot(ns))))))
     rr = - invd(u).dot(ns)
     r[ps==0] = rr[ps==0]
 
-    pr = np.dot(P.T,r)
+    pr = np.dot(P.T, r)
     nr = N.T.dot(invd(r)).dot(np.ones((m)))
 
     #%second step s
-    s2 = np.dot(invd(2*pr),v+np.sqrt((np.square(v)+4*(pr.dot(nr)))))
+    s2 = np.dot(invd(2*pr), v+np.sqrt((np.square(v)+4*(pr.dot(nr)))))
     ss = -invd(v).dot(nr)
     s2[pr==0] = ss[pr==0]
     dif = s2-s1
@@ -94,12 +94,12 @@ def ras_method(X0, u, v, eps=1e-5):
         s1 = s2
         ps = P.dot(s1)
         ns = N.dot(invd(s1)).dot(np.ones((n)))
-        r = np.dot(invd(2*ps),(u+np.sqrt((np.square(u)+4*(ps.dot(ns))))))
+        r = np.dot(invd(2*ps), (u+np.sqrt((np.square(u)+4*(ps.dot(ns))))))
         rr = -invd(u).dot(ns)
         r[ps==0] = rr[ps==0]
         pr = P.T.dot(r)
         nr = N.T.dot(invd(r)).dot(np.ones((m)))
-        s2 = np.dot(invd(2*pr),v+np.sqrt((np.square(v)+4*(pr.dot(nr)))))
+        s2 = np.dot(invd(2*pr), v+np.sqrt((np.square(v)+4*(pr.dot(nr)))))
         ss = -invd(v).dot(nr)
         s2[pr==0] = ss[pr==0]
         dif = s2-s1
@@ -112,7 +112,7 @@ def ras_method(X0, u, v, eps=1e-5):
     s = s2
     ps = P.dot(s)
     ns = N.dot(invd(s)).dot(np.ones((n)))
-    r = np.dot(invd(2*ps),(u+np.sqrt((np.square(u)+4*(ps.dot(ns))))))
+    r = np.dot(invd(2*ps), (u+np.sqrt((np.square(u)+4*(ps.dot(ns))))))
     rr = -invd(u).dot(ns)
     r[ps==0] = rr[ps==0]
     return np.diag(r).dot(P).dot(np.diag(s))-invd(r).dot(N).dot(invd(s))      #%updated matrix

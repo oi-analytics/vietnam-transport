@@ -26,7 +26,7 @@ def main(mode):
     # plot_sets = [
     #     {
     #         'file_tag': 'reroute',
-    #         'no_access': [-1,0],
+    #         'no_access': [-1, 0],
     #         'legend_label': "(million USD/day)",
     #         'divisor': 1000000,
     #         'columns': ['min_tr_los','max_tr_los'],
@@ -34,7 +34,7 @@ def main(mode):
     #     },
     #     {
     #         'file_tag': 'total',
-    #         'no_access':[0,1],
+    #         'no_access':[0, 1],
     #         'legend_label': "(million USD/day)",
     #         'divisor': 1000000,
     #         'columns': ['min_loss','max_loss'],
@@ -45,7 +45,7 @@ def main(mode):
     plot_sets = [
         {
             'file_tag': 'reroute',
-            'no_access': [-1,0],
+            'no_access': [-1, 0],
             'legend_label': "(million USD/day)",
             'divisor': 1000000,
             'columns': ['min_tr_los','max_tr_los'],
@@ -289,7 +289,7 @@ def main(mode):
 
 if __name__ == '__main__':
     ok_values = ('road', 'rail')
-    ok_values = ('road',)
+    ok_values = ('road', )
     # if len(sys.argv) != 2 or sys.argv[1] not in ok_values:
     #     print("Usage: ")
     #     print("    {} <mode>".format(os.path.basename(__file__)))

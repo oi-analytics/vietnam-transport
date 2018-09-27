@@ -21,7 +21,7 @@ def main():
     plot_sets = [
         {
             'file_tag': 'commodities',
-            'no_access':[-1,1],
+            'no_access':[-1, 1],
             'legend_label': "AADF (tons/day)",
             'divisor': 1,
             'columns': ['min_tons','max_tons'],

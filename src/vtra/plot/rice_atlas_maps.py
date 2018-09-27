@@ -40,22 +40,22 @@ def main():
             if region_val:
                 if region_val > 0 and region_val <= 20:
                     color = '#ffffcc' # TODO
-                    ax.add_geometries([geom], crs=proj, edgecolor='#ffffff', facecolor=color,label = '0 to 20')
+                    ax.add_geometries([geom], crs=proj, edgecolor='#ffffff', facecolor=color, label = '0 to 20')
                 elif region_val > 20 and region_val <= 40:
                     color = '#c2e699' # TODO
-                    ax.add_geometries([geom], crs=proj, edgecolor='#ffffff', facecolor=color,label = '20 to 40')
+                    ax.add_geometries([geom], crs=proj, edgecolor='#ffffff', facecolor=color, label = '20 to 40')
                 if region_val > 40 and region_val <= 60:
                     color = '#78c679' # TODO
-                    ax.add_geometries([geom], crs=proj, edgecolor='#ffffff', facecolor=color,label = '40 to 60')
+                    ax.add_geometries([geom], crs=proj, edgecolor='#ffffff', facecolor=color, label = '40 to 60')
                 elif region_val > 60 and region_val <= 80:
                     color = '#31a354' # TODO
-                    ax.add_geometries([geom], crs=proj, edgecolor='#ffffff', facecolor=color,label = '60 to 80')
+                    ax.add_geometries([geom], crs=proj, edgecolor='#ffffff', facecolor=color, label = '60 to 80')
                 elif region_val > 80 and region_val <= 100:
                     color = '#31a354' # TODO
-                    ax.add_geometries([geom], crs=proj, edgecolor='#ffffff', facecolor=color,label = '80 to 100')
+                    ax.add_geometries([geom], crs=proj, edgecolor='#ffffff', facecolor=color, label = '80 to 100')
 
             else:
-                ax.add_geometries([geom], crs=proj, edgecolor='#ffffff', facecolor='#ffffcc',label = '0 to 20')
+                ax.add_geometries([geom], crs=proj, edgecolor='#ffffff', facecolor='#ffffcc', label = '0 to 20')
 
 
         colors = ['#ffffcc','#c2e699','#78c679','#31a354','#31a354']

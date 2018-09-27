@@ -29,7 +29,7 @@ def main():
 
     for c in range(len(columns)):
         ax = get_axes()
-        plot_basemap(ax, config['paths']['data'],highlight_region = [])
+        plot_basemap(ax, config['paths']['data'], highlight_region = [])
         scale_bar(ax, location=(0.8, 0.05))
         plot_basemap_labels(ax, config['paths']['data'])
         proj_lat_lon = ccrs.PlateCarree()

@@ -530,7 +530,7 @@ def line_length(line, ellipsoid='WGS-84'):
         for a, b in pairwise(line.coords)
     )
 
-def gdf_geom_clip(gdf_in,clip_geom):
+def gdf_geom_clip(gdf_in, clip_geom):
     """
     Inputs are:
         gdf_in -- geopandas dataframe to be clipped in
@@ -539,7 +539,7 @@ def gdf_geom_clip(gdf_in,clip_geom):
     """
     return gdf_in.loc[gdf_in['geometry'].apply(lambda x: x.within(clip_geom))].reset_index(drop=True)
 
-def gdf_clip(shape_in,clip_geom):
+def gdf_clip(shape_in, clip_geom):
     """
     Inputs are:
         shape_in -- path string to shapefile to be clipped
@@ -551,7 +551,7 @@ def gdf_clip(shape_in,clip_geom):
     return gdf.loc[gdf['geometry'].apply(lambda x: x.within(clip_geom))].reset_index(drop=True)
 
 
-def get_nearest_node(x,sindex_input_nodes,input_nodes,id_column):
+def get_nearest_node(x, sindex_input_nodes, input_nodes, id_column):
     """
     Inputs are:
         x -- row of dataframe
@@ -563,7 +563,7 @@ def get_nearest_node(x,sindex_input_nodes,input_nodes,id_column):
     """
     return input_nodes.loc[list(sindex_input_nodes.nearest(x.bounds[:2]))][id_column].values[0]
 
-def get_nearest_node_within_region(x,input_nodes,id_column,region_id):
+def get_nearest_node_within_region(x, input_nodes, id_column, region_id):
     select_nodes = input_nodes.loc[input_nodes[region_id] == x[region_id]]
     # print (input_nodes)
     if len(select_nodes.index) > 0:
@@ -574,7 +574,7 @@ def get_nearest_node_within_region(x,input_nodes,id_column,region_id):
         return ''
 
 
-def count_points_in_polygon(x,points_sindex):
+def count_points_in_polygon(x, points_sindex):
     """Count points in a polygon
 
     Inputs are:
@@ -585,7 +585,7 @@ def count_points_in_polygon(x,points_sindex):
     """
     return len(list(points_sindex.intersection(x.bounds)))
 
-def extract_value_from_gdf(x,gdf_sindex,gdf,column_name):
+def extract_value_from_gdf(x, gdf_sindex, gdf, column_name):
     """
     Inputs are:
         x -- row of dataframe
@@ -598,7 +598,7 @@ def extract_value_from_gdf(x,gdf_sindex,gdf,column_name):
     """
     return gdf.loc[list(gdf_sindex.intersection(x.bounds[:2]))][column_name].values[0]
 
-def assign_value_in_area_proportions(poly_1_gpd,poly_2_gpd,poly_attribute):
+def assign_value_in_area_proportions(poly_1_gpd, poly_2_gpd, poly_attribute):
     poly_1_sindex = poly_1_gpd.sindex
     for p_2_index, polys_2 in poly_2_gpd.iterrows():
         poly2_attr= 0
@@ -607,11 +607,11 @@ def assign_value_in_area_proportions(poly_1_gpd,poly_2_gpd,poly_attribute):
             if (polys_2['geometry'].intersects(polys_1['geometry']) is True) and (polys_1.geometry.is_valid is True) and (polys_2.geometry.is_valid is True):
                 poly2_attr += polys_1[poly_attribute]*polys_2['geometry'].intersection(polys_1['geometry']).area/polys_1['geometry'].area
 
-        poly_2_gpd.loc[p_2_index,poly_attribute] = poly2_attr
+        poly_2_gpd.loc[p_2_index, poly_attribute] = poly2_attr
 
     return poly_2_gpd
 
-def assign_value_in_area_proportions_within_common_region(poly_1_gpd,poly_2_gpd,poly_attribute,common_region_id):
+def assign_value_in_area_proportions_within_common_region(poly_1_gpd, poly_2_gpd, poly_attribute, common_region_id):
     poly_1_sindex = poly_1_gpd.sindex
     for p_2_index, polys_2 in poly_2_gpd.iterrows():
         poly2_attr= 0
@@ -621,7 +621,7 @@ def assign_value_in_area_proportions_within_common_region(poly_1_gpd,poly_2_gpd,
             if  (polys_1[common_region_id] == poly2_id) and (polys_2['geometry'].intersects(polys_1['geometry']) is True) and (polys_1.geometry.is_valid is True) and (polys_2.geometry.is_valid is True):
                 poly2_attr += polys_1[poly_attribute]*polys_2['geometry'].intersection(polys_1['geometry']).area/polys_1['geometry'].area
 
-        poly_2_gpd.loc[p_2_index,poly_attribute] = poly2_attr
+        poly_2_gpd.loc[p_2_index, poly_attribute] = poly2_attr
 
     return poly_2_gpd
 
@@ -701,7 +701,7 @@ def voronoi_finite_polygons_2d(vor, radius=None):
         # sort region counterclockwise
         vs = np.asarray([new_vertices[v] for v in new_region])
         c = vs.mean(axis=0)
-        angles = np.arctan2(vs[:,1] - c[1], vs[:,0] - c[0])
+        angles = np.arctan2(vs[:, 1] - c[1], vs[:, 0] - c[0])
         new_region = np.array(new_region)[np.argsort(angles)]
 
         # finish
@@ -709,12 +709,12 @@ def voronoi_finite_polygons_2d(vor, radius=None):
 
     return new_regions, np.asarray(new_vertices)
 
-def extract_nodes_within_gdf(x,input_nodes,column_name):
+def extract_nodes_within_gdf(x, input_nodes, column_name):
     return input_nodes.loc[list(input_nodes.geometry.within(x.geometry))][column_name].values[0]
 
-def extract_gdf_values_containing_nodes(x,sindex_input_gdf,input_gdf,column_name):
+def extract_gdf_values_containing_nodes(x, sindex_input_gdf, input_gdf, column_name):
     a = input_gdf.loc[list(input_gdf.geometry.contains(x.geometry))]
     if len(a.index) > 0:
         return input_gdf.loc[list(input_gdf.geometry.contains(x.geometry))][column_name].values[0]
     else:
-        return get_nearest_node(x.geometry,sindex_input_gdf,input_gdf,column_name)
+        return get_nearest_node(x.geometry, sindex_input_gdf, input_gdf, column_name)

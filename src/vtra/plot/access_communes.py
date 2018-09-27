@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 import matplotlib.patches as mpatches
 
-from vtra.utils import plot_basemap,plot_basemap_labels,scale_bar,set_ax_bg
+from vtra.utils import plot_basemap, plot_basemap_labels, scale_bar, set_ax_bg
 
 
 mpl.style.use('ggplot')
@@ -65,45 +65,45 @@ def main():
 
     for rp in rps:
         # create map of affected communes in province
-        map_distance_per_commune(rp,communes_affected,figure_path,rp_names,data_path)
+        map_distance_per_commune(rp, communes_affected, figure_path, rp_names, data_path)
 
         if rp != 'no_flood':
 
             # create pie chart of affected firms and employees in affected communes in province
-            create_pie_plots(rp,communes_affected,sectors,sectors_eng,rp_names,figure_path)
+            create_pie_plots(rp, communes_affected, sectors, sectors_eng, rp_names, figure_path)
 
             # create bar plot of affected firms and employees in province
-            create_bar_plots(rp,communes_affected,sectors,sectors_eng,rp_names,figure_path)
+            create_bar_plots(rp, communes_affected, sectors, sectors_eng, rp_names, figure_path)
 
 
-def map_distance_per_commune(rp,communes_affected,figure_path,rp_names,data_path):
+def map_distance_per_commune(rp, communes_affected, figure_path, rp_names, data_path):
 
     # create bin set
-    bins = [-1, 1, 5, 10, 25, 50,75,np.float('inf')]
+    bins = [-1, 1, 5, 10, 25, 50, 75, np.float('inf')]
 
     # bin the data for easier plotting with colorscales
-    communes_affected['binned_{}'.format(rp)] = pd.cut(communes_affected[rp], bins=bins, labels=[0,1,2,3,4,5,6])
+    communes_affected['binned_{}'.format(rp)] = pd.cut(communes_affected[rp], bins=bins, labels=[0, 1, 2, 3, 4, 5, 6])
     communes_affected.loc[communes_affected.geometry.area.idxmin(),'binned_no_flood'] = 6
 
     # create figure
-    fig, ax = plt.subplots(nrows=1, ncols=1,figsize=(8,6))
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(8, 6))
 
     # set projection
     proj_lat_lon = cartopy.crs.PlateCarree()
-    ax = plt.axes([0.0,0.0,1.0, 1.0] ,facecolor='#D0E3F4', projection=proj_lat_lon)
+    ax = plt.axes([0.0, 0.0, 1.0, 1.0] , facecolor='#D0E3F4', projection=proj_lat_lon)
 
     # set bounds and extent
     tot_bounds = list(communes_affected.total_bounds)
-    ax.set_extent([tot_bounds[0]-0.1,tot_bounds[2]+0.1,tot_bounds[1]-0.1,tot_bounds[3]+0.1] , crs=proj_lat_lon)
+    ax.set_extent([tot_bounds[0]-0.1, tot_bounds[2]+0.1, tot_bounds[1]-0.1, tot_bounds[3]+0.1] , crs=proj_lat_lon)
 
     # load background
 #    world = gpd.read_file(os.path.join(data_path,'Vietnam_boundaries','who_boundaries','who_provinces.shp'))
-#    world.plot(ax=ax,color='#FEF9E0',lw=0.3,edgecolor='k')
+#    world.plot(ax=ax, color='#FEF9E0', lw=0.3, edgecolor='k')
     set_ax_bg(ax)
 
-    plot_basemap(ax, data_path,country_border=None)
+    plot_basemap(ax, data_path, country_border=None)
 #    scale_bar(ax, location=(0.8, 0.05))
-    plot_basemap_labels(ax, data_path,province_zoom=True)
+    plot_basemap_labels(ax, data_path, province_zoom=True)
 
     # create cmap
     cmap = cm.get_cmap('Reds', len(bins)) # Colour map (there are many others)
@@ -111,7 +111,7 @@ def map_distance_per_commune(rp,communes_affected,figure_path,rp_names,data_path
     cmap = cmap.from_list('Custom cmap', cmaplist, len(cmaplist))
 
     # plot figure
-    communes_affected.plot(ax=ax,column='binned_{}'.format(rp),cmap=cmap,zorder=2)
+    communes_affected.plot(ax=ax, column='binned_{}'.format(rp), cmap=cmap, zorder=2)
 
 
     # create legend
@@ -122,22 +122,22 @@ def map_distance_per_commune(rp,communes_affected,figure_path,rp_names,data_path
         handles.append(mpatches.Patch(color=color, label=lnames[l]))
         l += 1
 
-    ax.legend(handles=handles,loc=3, prop={'size': 13})
+    ax.legend(handles=handles, loc=3, prop={'size': 13})
 
     # set figure title
-    plt.title('Distance to major towns in Thanh Hoa for %s' % rp_names[rp],fontweight='bold',fontsize=16)
+    plt.title('Distance to major towns in Thanh Hoa for %s' % rp_names[rp], fontweight='bold', fontsize=16)
 
     # save figure
     figure_out= os.path.join(figure_path,'Dist_Major_Towns_Thanh_Hoa_%s.png' % rp)
-    plt.savefig(figure_out,dpi=600,bbox_inches='tight')
+    plt.savefig(figure_out, dpi=600, bbox_inches='tight')
 
 
-def create_pie_plots(rp,communes_affected,sectors,sectors_eng,rp_names,figure_path):
+def create_pie_plots(rp, communes_affected, sectors, sectors_eng, rp_names, figure_path):
 
     # estimate some summary statistics for final plotting. Amount of firms per sector in this case
     only_communes_affected = communes_affected.loc[communes_affected['no_flood'] != communes_affected[rp]]
     only_communes_affected = only_communes_affected.copy()
-    only_communes_affected[sectors] = only_communes_affected[sectors].multiply(only_communes_affected['nfirm'],axis='index')
+    only_communes_affected[sectors] = only_communes_affected[sectors].multiply(only_communes_affected['nfirm'], axis='index')
 
     firms_affected = only_communes_affected[sectors].sum()
 
@@ -147,7 +147,7 @@ def create_pie_plots(rp,communes_affected,sectors,sectors_eng,rp_names,figure_pa
     # =============================================================================
     #         # create figure for total number of firms affected
     # =============================================================================
-    fig2,ax2 = plt.subplots(nrows=1, ncols=1,figsize=(6,6))
+    fig2, ax2 = plt.subplots(nrows=1, ncols=1, figsize=(6, 6))
 
     # create cmap
     cmap = cm.get_cmap('Reds') # Colour map (there are many others)
@@ -155,17 +155,17 @@ def create_pie_plots(rp,communes_affected,sectors,sectors_eng,rp_names,figure_pa
     cmap = cmap.from_list('Custom cmap', cmaplist, len(cmaplist))
 
     # plot figure
-    firms_affected.plot(kind='pie',ax=ax2, fontsize=12,cmap=cmap,startangle=90, pctdistance=0.85)
+    firms_affected.plot(kind='pie', ax=ax2, fontsize=12, cmap=cmap, startangle=90, pctdistance=0.85)
 
     ax2.axis('equal')
     plt.axis('off')
 
     # set figure title
-    plt.title('Relative distribution of industries affected in \n affected communes Thanh Hoa for %s' % rp_names[rp],fontweight='bold',fontsize=17)
+    plt.title('Relative distribution of industries affected in \n affected communes Thanh Hoa for %s' % rp_names[rp], fontweight='bold', fontsize=17)
 
     # save figure
     figure_out= os.path.join(figure_path,'Share_industries_affected_communes_Thanh_Hoa_%s.png' % rp)
-    plt.savefig(figure_out,dpi=600,bbox_inches='tight')
+    plt.savefig(figure_out, dpi=600, bbox_inches='tight')
 
 
     # =============================================================================
@@ -173,28 +173,28 @@ def create_pie_plots(rp,communes_affected,sectors,sectors_eng,rp_names,figure_pa
     # =============================================================================
 
     # estimate employees per sector, furthe rmultiplcation of number of firms per sector
-    only_communes_affected[sectors] = only_communes_affected[sectors].multiply(only_communes_affected['labor'],axis='index')
+    only_communes_affected[sectors] = only_communes_affected[sectors].multiply(only_communes_affected['labor'], axis='index')
     firms_affected = only_communes_affected[sectors].sum()
     firms_affected.index = sectors_eng
 
     # set figure and axis
-    fig2,ax2 = plt.subplots(nrows=1, ncols=1,figsize=(6,6))
+    fig2, ax2 = plt.subplots(nrows=1, ncols=1, figsize=(6, 6))
 
     # plot figure
-    firms_affected.plot(kind='pie',ax=ax2, fontsize=12,cmap=cmap,startangle=90, pctdistance=0.85)
+    firms_affected.plot(kind='pie', ax=ax2, fontsize=12, cmap=cmap, startangle=90, pctdistance=0.85)
 
     ax2.axis('equal')
     plt.axis('off')
 
     # set figure title
-    plt.title('Relative distribution of employees affected in \n affected communes Thanh Hoa for %s' % rp_names[rp],fontweight='bold',fontsize=17)
+    plt.title('Relative distribution of employees affected in \n affected communes Thanh Hoa for %s' % rp_names[rp], fontweight='bold', fontsize=17)
 
     # save figure
     figure_out= os.path.join(figure_path,'Share_employees_affected_communes_Thanh_Hoa_%s.png' % rp)
-    plt.savefig(figure_out,dpi=600,bbox_inches='tight')
+    plt.savefig(figure_out, dpi=600, bbox_inches='tight')
 
 
-def create_bar_plots(rp,communes_affected,sectors,sectors_eng,rp_names,figure_path):
+def create_bar_plots(rp, communes_affected, sectors, sectors_eng, rp_names, figure_path):
 
     # =============================================================================
     #         # create figure relative impact industries for Thanh Hao
@@ -202,32 +202,32 @@ def create_bar_plots(rp,communes_affected,sectors,sectors_eng,rp_names,figure_pa
 
     # create summary statistics for relative stats for total province
     only_communes_affected = communes_affected.loc[communes_affected['no_flood'] != communes_affected[rp]]
-    firms_affected = only_communes_affected[sectors].multiply(only_communes_affected['nfirm'],axis='index').sum()
+    firms_affected = only_communes_affected[sectors].multiply(only_communes_affected['nfirm'], axis='index').sum()
 
 
-    firms_affected_TH = communes_affected[sectors].multiply(communes_affected['nfirm'],axis='index').sum()
+    firms_affected_TH = communes_affected[sectors].multiply(communes_affected['nfirm'], axis='index').sum()
     firms_affected_TH = (firms_affected/firms_affected_TH)*100
 
     firms_affected_TH.index = sectors_eng
 
     # set figure and axis
-    fig3,ax3 = plt.subplots(nrows=1, ncols=1,figsize=(6,6))
+    fig3, ax3 = plt.subplots(nrows=1, ncols=1, figsize=(6, 6))
 
     # set colormap
     cmaplist = ['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628','#f781bf','#999999']
 
     # plot figure
-    firms_affected_TH.plot(kind='bar',ax=ax3, fontsize=12,color=cmaplist)
+    firms_affected_TH.plot(kind='bar', ax=ax3, fontsize=12, color=cmaplist)
 
     # set titles
-    ax3.set_ylabel("Percentage affected", fontweight='bold',fontsize=15)
-    ax3.set_xlabel("Industrial sector", fontweight='bold',fontsize=15)
+    ax3.set_ylabel("Percentage affected", fontweight='bold', fontsize=15)
+    ax3.set_xlabel("Industrial sector", fontweight='bold', fontsize=15)
 
-    plt.title('Relative share of firms affected \n in Thanh Hoa for %s' % rp_names[rp],fontweight='bold',fontsize=17)
+    plt.title('Relative share of firms affected \n in Thanh Hoa for %s' % rp_names[rp], fontweight='bold', fontsize=17)
 
     # save figure
     figure_out= os.path.join(figure_path,'Share_firms_affected_Thanh_Hoa_%s.png' % rp)
-    plt.savefig(figure_out,dpi=600,bbox_inches='tight')
+    plt.savefig(figure_out, dpi=600, bbox_inches='tight')
 
 
 

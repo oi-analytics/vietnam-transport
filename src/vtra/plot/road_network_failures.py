@@ -21,7 +21,7 @@ def main():
     # plot_sets = [
     #     {
     #         'file_tag': 'reroute',
-    #         'no_access': [-1,0],
+    #         'no_access': [-1, 0],
     #         'legend_label': "(million USD/day)",
     #         'divisor': 1000000,
     #         'columns': ['min_tr_los','max_tr_los'],
@@ -29,7 +29,7 @@ def main():
     #     },
     #     {
     #         'file_tag': 'commodities',
-    #         'no_access':[-1,1],
+    #         'no_access':[-1, 1],
     #         'legend_label': "AADF (tons/day)",
     #         'divisor': 1,
     #         'columns': ['min_tons','max_tons'],
@@ -37,7 +37,7 @@ def main():
     #     },
     #     {
     #         'file_tag': 'economic',
-    #         'no_access':[-1,1],
+    #         'no_access':[-1, 1],
     #         'legend_label': "(million USD/day)",
     #         'divisor': 1000000,
     #         'columns': ['min_econ_l','max_econ_l'],
@@ -45,7 +45,7 @@ def main():
     #     },
     #     {
     #         'file_tag': 'total',
-    #         'no_access':[0,1],
+    #         'no_access':[0, 1],
     #         'legend_label': "(million USD/day)",
     #         'divisor': 1000000,
     #         'columns': ['min_loss','max_loss'],
@@ -53,7 +53,7 @@ def main():
     #     },
     #     {
     #         'file_tag': 'adapt',
-    #         'no_access':[0,1],
+    #         'no_access':[0, 1],
     #         'legend_label': "NPV (million USD)",
     #         'divisor': 1000000,
     #         'columns': ['min_adapt_','max_adapt_'],
@@ -61,7 +61,7 @@ def main():
     #     },
     #     {
     #         'file_tag': 'bcr',
-    #         'no_access':[0,1],
+    #         'no_access':[0, 1],
     #         'legend_label': "BCR",
     #         'divisor': 1,
     #         'columns': ['min_bc_rat','max_bc_rat'],
@@ -72,7 +72,7 @@ def main():
     plot_sets = [
         {
             'file_tag': 'adapt',
-            'no_access':[0,1],
+            'no_access':[0, 1],
             'legend_label': "NPV (million USD)",
             'divisor': 1000000,
             'columns': ['min_adapt_','max_adapt_'],
@@ -80,7 +80,7 @@ def main():
         },
         {
             'file_tag': 'bcr',
-            'no_access':[0,1],
+            'no_access':[0, 1],
             'legend_label': "BCR",
             'divisor': 1,
             'columns': ['min_bc_rat','max_bc_rat'],

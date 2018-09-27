@@ -16,7 +16,7 @@ from shutil import copyfile
 from vtra.utils import load_config
 
 
-def load_db_SUT(table_in,RoW=None):
+def load_db_SUT(table_in, RoW=None):
 
     data_path = load_config()['paths']['data']
 
@@ -29,12 +29,12 @@ def load_db_SUT(table_in,RoW=None):
     db = ws.add_database()
 
     #set regions
-    reg = db.add_set("reg",1,"Regions")
+    reg = db.add_set("reg", 1, "Regions")
     for r in (table_in.countries):
         reg.add_record(r)
 
     #set rowcol
-    rowcol = db.add_set("rowcol",1,"All rows and columns")
+    rowcol = db.add_set("rowcol", 1, "All rows and columns")
     industries = list(table_in.sectors)
     products = list(table_in.products)
     final_demand = ['FinalD']
@@ -48,19 +48,19 @@ def load_db_SUT(table_in,RoW=None):
         rowcol.add_record(r)
 
     #set row
-    row = db.add_set("row",1,"All rows")
+    row = db.add_set("row", 1, "All rows")
     row_input = products + VA_lab + Import_lab
     for r in (row_input):
         row.add_record(r)
 
     #set col
-    col = db.add_set("col",1,"All columns")
+    col = db.add_set("col", 1, "All columns")
     col_input = industries + final_demand
     for r in (col_input):
         col.add_record(r)
 
     #set industries
-    industries_ = db.add_set("ind",1,"Industries")
+    industries_ = db.add_set("ind", 1, "Industries")
     for r in  industries:
         industries_.add_record(r)
 
@@ -90,10 +90,10 @@ def load_db_SUT(table_in,RoW=None):
         val.add_record(k).value = v
 
     # And save to GDX file
-    db.export(os.path.join(data_path,"gams_runs","{}.gdx".format(table_in.name)))
+    db.export(os.path.join(data_path, "gams_runs", "{}.gdx".format(table_in.name)))
 
 
-def load_db_IO(table_in,EORA=False,RoW=None):
+def load_db_IO(table_in, EORA=False, RoW=None):
 
     data_path = load_config()['paths']['data']
 
@@ -107,7 +107,7 @@ def load_db_IO(table_in,EORA=False,RoW=None):
     db = ws.add_database()
 
     #set regions
-    reg = db.add_set("reg",1,"Regions")
+    reg = db.add_set("reg", 1, "Regions")
     if EORA is True:
         for r in (table_in.countries+['ROW']):
             reg.add_record(r)
@@ -116,7 +116,7 @@ def load_db_IO(table_in,EORA=False,RoW=None):
             reg.add_record(r)
 
     #set rowcol
-    rowcol = db.add_set("rowcol",1,"All rows and columns")
+    rowcol = db.add_set("rowcol", 1, "All rows and columns")
     if EORA is True:
         industries = list(table_in.sectors)  + ['Total']
         final_demand = list(table_in.FD_labels['FD'].unique())
@@ -134,24 +134,24 @@ def load_db_IO(table_in,EORA=False,RoW=None):
         rowcol.add_record(r)
 
     #set row
-    row = db.add_set("row",1,"All rows")
+    row = db.add_set("row", 1, "All rows")
     row_input = industries + VA_lab + Import_lab
     for r in (row_input):
         row.add_record(r)
 
     #set col
-    col = db.add_set("col",1,"All columns")
+    col = db.add_set("col", 1, "All columns")
     col_input = industries + final_demand
     for r in (col_input):
         col.add_record(r)
 
     #set industries
-    industries_ = db.add_set("S",1,"Industries")
+    industries_ = db.add_set("S", 1, "Industries")
     for r in  industries:
         industries_.add_record(r)
 
     #set FinalD
-    fd_ = GamsParameter(db,"FinDem_ini", 4, "FinDem")
+    fd_ = GamsParameter(db, "FinDem_ini", 4, "FinDem")
     for k, v in table_in.FinalD.items():
         fd_.add_record(k).value = v
 
@@ -177,9 +177,9 @@ def load_db_IO(table_in,EORA=False,RoW=None):
         val.add_record(k).value = v
 
     # And save to GDX file
-    db.export(os.path.join(data_path,"gams_runs","{}.gdx".format(table_in.name)))
+    db.export(os.path.join(data_path, "gams_runs", "{}.gdx".format(table_in.name)))
 
-def ratmarg_SUT(table_in,EORA=False):
+def ratmarg_SUT(table_in, EORA=False):
 
     data_path = load_config()['paths']['data']
 
@@ -194,8 +194,8 @@ def ratmarg_SUT(table_in,EORA=False):
     ws = GamsWorkspace(setdir)
     ws.get_working_directory()
 
-    gamsfile_in =  os.path.join(setdir,"obtain_marg_value_SUT.gms")
-    gamsfile = os.path.join(setdir,"obtain_marg_value_SUT_{}.gms".format(table_in.name))
+    gamsfile_in =  os.path.join(setdir, "obtain_marg_value_SUT.gms")
+    gamsfile = os.path.join(setdir, "obtain_marg_value_SUT_{}.gms".format(table_in.name))
     copyfile(gamsfile_in, gamsfile)
     str_ctry = ','.join(table_in.countries)
     str_fd = 'FinalD' #','.join(list(table_in.FD_labels['FD'].unique()))
@@ -226,7 +226,7 @@ def ratmarg_SUT(table_in,EORA=False):
     Ratmarg = []
     index_ = []
     for rec in t1.out_db["Ratmarg"]:
-        index_.append((rec.keys[0],rec.keys[1]))
+        index_.append((rec.keys[0], rec.keys[1]))
         Ratmarg.append(rec.get_value())
 
     index_ = pd.MultiIndex.from_tuples(index_, names=('CNTRY', 'IND'))
@@ -237,14 +237,14 @@ def ratmarg_SUT(table_in,EORA=False):
 
     return Ratmarginal
 
-def ratmarg_IO(table_in,EORA=False):
+def ratmarg_IO(table_in, EORA=False):
 
     data_path = load_config()['paths']['data']
 
     table_in.prep_data()
 
     if EORA is True:
-        load_db_IO(table_in,EORA=True)
+        load_db_IO(table_in, EORA=True)
     else:
         load_db_IO(table_in)
 
@@ -256,15 +256,15 @@ def ratmarg_IO(table_in,EORA=False):
     ws.get_working_directory()
 
     if EORA is False:
-        gamsfile_in =  os.path.join(data_path,"gams_runs","obtain_marg_value.gms")
-        gamsfile = os.path.join(data_path,"gams_runs","obtain_marg_value_{}.gms".format(table_in.name))
+        gamsfile_in =  os.path.join(data_path, "gams_runs", "obtain_marg_value.gms")
+        gamsfile = os.path.join(data_path, "gams_runs", "obtain_marg_value_{}.gms".format(table_in.name))
         copyfile(gamsfile_in, gamsfile)
         str_ctry = ','.join(table_in.countries)
         str_fd = ','.join(list(table_in.FD_labels['tfd'].unique()))
 
     else:
-        gamsfile_in =  os.path.join(data_path,"gams_runs","obtain_marg_value_EORA.gms")
-        gamsfile = os.path.join(data_path,"gams_runs","obtain_marg_value_{}.gms".format(table_in.name))
+        gamsfile_in =  os.path.join(data_path, "gams_runs", "obtain_marg_value_EORA.gms")
+        gamsfile = os.path.join(data_path, "gams_runs", "obtain_marg_value_{}.gms".format(table_in.name))
         copyfile(gamsfile_in, gamsfile)
         str_ctry = ','.join(table_in.countries+['ROW'])
         str_fd = ','.join(list(table_in.FD_labels['FD'].unique()))
@@ -296,7 +296,7 @@ def ratmarg_IO(table_in,EORA=False):
     Ratmarg = []
     index_ = []
     for rec in t1.out_db["Ratmarg"]:
-        index_.append((rec.keys[0],rec.keys[1]))
+        index_.append((rec.keys[0], rec.keys[1]))
         Ratmarg.append(rec.get_value())
 
     index_ = pd.MultiIndex.from_tuples(index_, names=('CNTRY', 'IND'))

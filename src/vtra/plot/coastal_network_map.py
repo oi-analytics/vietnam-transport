@@ -60,15 +60,15 @@ def main():
             xs_international.append(x)
             ys_international.append(y)
 
-    ax.scatter(xs_domestic, ys_domestic,transform=proj_lat_lon, facecolor='#d95f0e', s=12, zorder=5)
-    ax.scatter(xs_international, ys_international,transform=proj_lat_lon, facecolor='#d90e23', s=12, zorder=5)
+    ax.scatter(xs_domestic, ys_domestic, transform=proj_lat_lon, facecolor='#d95f0e', s=12, zorder=5)
+    ax.scatter(xs_international, ys_international, transform=proj_lat_lon, facecolor='#d90e23', s=12, zorder=5)
 
     # Legend
     legend_handles = [
         mpatches.Patch(color=color, label=line)
         for line, color in color_by_type.items()
 ]
-    plt.legend(handles=legend_handles,loc = 'lower left')
+    plt.legend(handles=legend_handles, loc = 'lower left')
     save_fig(output_file)
 
 if __name__ == '__main__':

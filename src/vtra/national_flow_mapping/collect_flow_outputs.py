@@ -35,7 +35,7 @@ import numpy as np
 from vtra.utils import load_config
 import vtra.transport_network_creation as tnc
 
-def get_node_edge_path_flows(pd_dataframe,regional_id_list,industry,path_index,path_list,path_key_list,path_dict,val_threshold):
+def get_node_edge_path_flows(pd_dataframe, regional_id_list, industry, path_index, path_list, path_key_list, path_dict, val_threshold):
     for index, row in pd_dataframe.iterrows():
         npath = ast.literal_eval(row[0])
         epath = ast.literal_eval(row[1])
@@ -55,18 +55,18 @@ def get_node_edge_path_flows(pd_dataframe,regional_id_list,industry,path_index,p
 
                 path_dict[path_key].update({'node_path': npath})
                 path_dict[path_key].update({'edge_path': epath})
-                path_dict[path_key].update({industry:[(orgn,dest,val)]})
+                path_dict[path_key].update({industry:[(orgn, dest, val)]})
 
             else:
                 pindex = path_list.index(epath)
                 path_key = path_key_list[pindex]
                 if industry not in path_dict[path_key].keys():
-                    path_dict[path_key].update({industry:[(orgn,dest,val)]})
+                    path_dict[path_key].update({industry:[(orgn, dest, val)]})
                 else:
-                    path_dict[path_key][industry].append(((orgn,dest,val)))
+                    path_dict[path_key][industry].append(((orgn, dest, val)))
 
 
-    return(path_index,path_list,path_key_list,path_dict)
+    return(path_index, path_list, path_key_list, path_dict)
 
 def main():
     '''
@@ -98,11 +98,11 @@ def main():
     commodities = ind_cols + crop_cols
 
     province_id_list = []
-    sql_query = "select od_id,name_eng from province_level_stats"
+    sql_query = "select od_id, name_eng from province_level_stats"
     curs.execute(sql_query)
     read_layer = curs.fetchall()
     for row in read_layer:
-        province_id_list.append((row[0],row[1]))
+        province_id_list.append((row[0], row[1]))
 
     pth_dict = {}
     pth_idx = 0
@@ -116,11 +116,11 @@ def main():
             od_flows = od_flows[od_flows['Tonnage'] > 0.5]
             if od_flows.empty is False:
                 flow_node_edge = od_flows.groupby(['node_path', 'edge_path', 'Origin_region', 'Destination_region'])['Tonnage'].sum().reset_index()
-                pth_idx,pth_list,pth_k_list,pth_dict = get_node_edge_path_flows(flow_node_edge,province_id_list,com,pth_idx,pth_list,pth_k_list,pth_dict,0.5)
+                pth_idx, pth_list, pth_k_list, pth_dict = get_node_edge_path_flows(flow_node_edge, province_id_list, com, pth_idx, pth_list, pth_k_list, pth_dict, 0.5)
 
                 del od_flows
 
-            print ('Done with',ifile)
+            print ('Done with', ifile)
 
     pth_tuple_list = []
     for key, values in pth_dict.items():
@@ -138,7 +138,7 @@ def main():
 
     excel_writer = pd.ExcelWriter('vnm_path_flows.xlsx')
     df = pd.DataFrame(pth_tuple_list, columns = ['path_index','node_path','edge_path'] + commodities)
-    df.to_excel(excel_writer,'path_flows',index = False)
+    df.to_excel(excel_writer,'path_flows', index = False)
     excel_writer.save()
 
 if __name__ == '__main__':

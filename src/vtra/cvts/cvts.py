@@ -40,7 +40,7 @@ def reduse_dataset(source_dir, dest_dir):
 
     # MIN_SAMPLE:
     #   0.01: is a good setting for national road analysis
-    #         reduces dataset to 69,261 items, totalling 246.2 MB
+    #         reduces dataset to 69, 261 items, totalling 246.2 MB
     MIN_LAT_SAMPLE = 0.01
     MIN_LON_SAMPLE = 0.01
 

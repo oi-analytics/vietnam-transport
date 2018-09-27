@@ -108,7 +108,7 @@ def main():
     ]
 
     # for region in regions:
-    for re in range(0,1):
+    for re in range(0, 1):
         region = regions[re]
 
         region_file = os.path.join(config['paths']['data'], 'Results', 'Failure_shapefiles', 'weighted_edges_commune_center_failures_' + region.lower().replace(' ', '') + '_5_tons.shp')
@@ -149,7 +149,7 @@ def main():
 
             max_weight = max(weights)
             if column in ('min_bc_rat','max_bc_rat') and region == 'Lao Cai':
-                width_by_range = generate_weight_bins_with_colour_gradient(weights,n_steps = 6,width_step=0.001)
+                width_by_range = generate_weight_bins_with_colour_gradient(weights, n_steps = 6, width_step=0.001)
             else:
                 width_by_range = generate_weight_bins_with_colour_gradient(weights, width_step=0.001)
 
