@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thu Sep 21 13:52:00 2017
 
-@author: cenv0574
+
+
 """
 
 # Import

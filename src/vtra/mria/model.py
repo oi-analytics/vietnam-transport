@@ -2,9 +2,9 @@
 """
 This script builds the MRIA model
 
-@author: Elco Koks
 
-@date: Nov, 2017
+
+
 
 """
 

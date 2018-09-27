@@ -2,9 +2,9 @@
 """
 Create output file for gams and run a quick gams module to estimate marginal values of rationing demand
 
-@author: Elco Koks
 
-@date: Nov, 2017
+
+
 """
 import os
 import sys

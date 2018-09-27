@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 """
 Python script to intersect hazards and network line geometries
-Created on Wed Jul 18 2018
 
-@author: Raghav Pant
+
+
 
 Create tables of all failure scenarios with the follwing attributes
 Edge_id Hazard_type year climate_scenario hazard_band band_name min_depth max_depth affect_length commune_id commune_name district_id district_name province_id province_name

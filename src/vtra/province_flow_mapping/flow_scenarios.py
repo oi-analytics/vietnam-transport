@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sat Jul 14 15:41:39 2018
 
-@author: elcok
+
+
 """
 
 import geopandas as gpd

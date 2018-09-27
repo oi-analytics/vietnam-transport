@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
 Python script to assign commodity flows on the road network
-Created on Wed March 06 2018
 
-@author: Raghav Pant
+
+
 DONT THINK THIS SCRIPT IS NEEDED
 """
 

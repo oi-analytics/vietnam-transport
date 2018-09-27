@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue May  1 11:03:17 2018
 
-@author: cenv0574
+
+
 """
 import sys
 import os

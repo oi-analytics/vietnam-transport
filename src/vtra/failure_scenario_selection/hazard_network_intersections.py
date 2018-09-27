@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 """
 Python script to intersect hazards and network line geometries
-Created on Wed Jul 18 2018
 
-@author: Raghav Pant
+
+
 """
 
 import os

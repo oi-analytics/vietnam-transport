@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
 Python script to create transport networks in Vietnam
-Created on Wed June 27 2018
 
-@author: Raghav Pant, Elco Koks
+
+
 """
 
 import pandas as pd
