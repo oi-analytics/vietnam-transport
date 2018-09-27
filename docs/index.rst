@@ -3,11 +3,6 @@ Vietnam Transport Risk Analysis
 ===============================
 
 
-.. mdinclude:: ../README.md
-   :start-line: 2
-   :end-line: 8
-
-
 Contents
 ========
 
