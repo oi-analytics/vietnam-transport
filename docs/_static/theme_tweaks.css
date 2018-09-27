@@ -22,6 +22,10 @@ div.highlight {
     /* reset highlight blocks to pygments background */
     background: #2f1e2e;
 }
+div.viewcode-block:target {
+    /* reset source block background */
+    background: #34273C;
+}
 div.highlight pre {
     /* fix code block padding, let pygments background show */
     background: transparent;
