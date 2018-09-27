@@ -12,7 +12,7 @@ Contents
 ========
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
     Data Assembly <data>
     Networks <networks>
@@ -21,17 +21,9 @@ Contents
     Hazard Exposure <exposure>
     Economic Impact Assessment <economic>
     Adaption Options <adaptation>
-
-.. toctree::
-   :maxdepth: 3
-
-   API Reference <api/modules>
-
-.. toctree::
-   :maxdepth: 1
-
-   License <license>
-   Authors <authors>
+    API Reference <api/vtra>
+    License <license>
+    Authors <authors>
 
 
 Indexes and tables
