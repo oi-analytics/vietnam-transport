@@ -1,15 +1,17 @@
 # Vietnam Transport World Bank project
 
-Data processing, modelling, analyis and visualisation for a Vietnam Transport Risk Analysis.
+Data processing, modelling, analysis and visualisation for a Vietnam Transport Risk Analysis.
+
+[![vtra on github](https://img.shields.io/badge/github-oi--analytics%2Fvietnam--transport-brightgreen.svg)](https://github.com/oi-analytics/vietnam-transport/)
+
+[![Documentation Status](https://readthedocs.org/projects/vietnam-transport-risk-analysis/badge/?version=latest)](https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/?badge=latest)
+
+
+Documentation is available at
+[ReadTheDocs](https://vietnam-transport-risk-analysis.readthedocs.io)
 
 
 ## Requirements
-
-
-### Data
-
-Data prerequisites and formats will be documented and linked to here. (TODO)
-
 
 ### Python and libraries
 

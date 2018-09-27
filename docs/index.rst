@@ -3,9 +3,9 @@ Vietnam Transport Risk Analysis
 ===============================
 
 
-.. image:: https://img.shields.io/badge/github-oi--analytics%2Fvietnam--transport-brightgreen.svg
-   :target: https://github.com/oi-analytics/vietnam-transport/
-   :alt: vtra on github
+.. mdinclude:: ../README.md
+   :start-line: 2
+   :end-line: 8
 
 
 Contents
@@ -14,6 +14,7 @@ Contents
 .. toctree::
    :maxdepth: 3
 
+    Installation <requirements>
     Data Assembly <data>
     Networks <networks>
     Origin-Destination Points <od>
