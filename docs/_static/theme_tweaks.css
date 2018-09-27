@@ -42,11 +42,19 @@ div.figure {
 .caption {
     margin: 0 auto 0.75em;
 }
-div.sphinxsidebar {
-    position: fixed;
-    float: none;
-    margin-left: 0;
-    top: 2em;
-    bottom: 0;
-    overflow: auto;
+/* sticky sidebar at non-mobile screen size */
+@media screen and (min-width: 876px) {
+    div.sphinxsidebar {
+        position: fixed;
+        float: none;
+        margin-left: 0;
+        top: 2em;
+        bottom: 0;
+        overflow: auto;
+    }
+}
+div.document,
+div.footer {
+    width: auto;
+    max-width: 940px;
 }
