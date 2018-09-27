@@ -49,18 +49,27 @@ def assign_assumed_width_to_province_roads_from_file(asset_width,width_range_lis
 	return assumed_width
 
 def assign_assumed_width_to_province_roads(x):
-	'''
-	Assign widths to roads assets in Vietnam
+	"""Assign widths to roads assets in Vietnam
+
 	The widths are assigned based on our understanding of:
+
 	1. The reported width in the data which is not reliable
-	2. A design specification based understanding of the assumed width based on ranges of values
+	2. A design specification based understanding of the assumed width based on ranges of
+	   values
 
-	Inputs are:
-	asset_width - Numeric value for width of asset
+	Parameters
+	----------
 
-	Outputs are:
-	modified_width - assigned width of the road asset based on design specifications
-	'''
+	x : int
+		Numeric value for width of asset
+
+	Returns
+	-------
+
+	modified_width : int
+		Assigned width of the road asset based on design specifications
+
+	"""
 	if 0 <= x.width < 4.25:
 		return 3.5
 	elif 4.25 <= x.width < 6.0:
