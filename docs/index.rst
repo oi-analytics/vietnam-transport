@@ -33,3 +33,7 @@ Indexes and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+
+.. mdinclude:: ../README.md
+   :start-line: 70
