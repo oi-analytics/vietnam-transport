@@ -6,10 +6,10 @@
         "figures": "./figures"
     },
     "database": {
-    	"user": "username",
-    	"database": "database_name",
-    	"password": "password",
-    	"host": "localhost",
-    	"port": 5432
+        "user": "username",
+        "database": "database_name",
+        "password": "password",
+        "host": "localhost",
+        "port": 5432
     }
 }
