@@ -14,9 +14,9 @@ import os
 
 
 from vtra.utils import load_config
-from vtra.analysis.mria.table import io_basic
-from vtra.analysis.mria.model import MRIA_IO as MRIA
-from vtra.analysis.mria.disruption import create_disruption
+from vtra.mria.table import io_basic
+from vtra.mria.model import MRIA_IO as MRIA
+from vtra.mria.disruption import create_disruption
 
 from pathos.multiprocessing import Pool,cpu_count
 

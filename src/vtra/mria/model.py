@@ -12,7 +12,7 @@ from pyomo.environ import ConcreteModel,Set,SetOf,Param,Var,Constraint,Objective
 import pandas as pd
 import numpy as np
 from pyomo.opt import SolverFactory
-from vtra.analysis.mria.ratmarg import ratmarg_IO,ratmarg_SUT
+from vtra.mria.ratmarg import ratmarg_IO,ratmarg_SUT
 import os
 import sys
 

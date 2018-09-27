@@ -10,8 +10,8 @@ import pandas as pd
 
 import subprocess
 
-from vtra.analysis.mrio.functions import load_config,load_provincial_stats,estimate_gva,create_proxies,load_output
-from vtra.analysis.mrio.ras_method import ras_method
+from vtra.mrio.functions import load_config,load_provincial_stats,estimate_gva,create_proxies,load_output
+from vtra.mrio.ras_method import ras_method
 
 def run_mrio_disaggregate(notrade=False,min_rice = True,own_production_ratio=0.9):
 
