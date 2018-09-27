@@ -612,6 +612,9 @@ def national_road_shapefile_to_dataframe(edges_in,road_properties_file):
 
 	return edges
 
+def national_shapefile_to_dataframe():
+	# called from analysis.national_flow_mapping.national_industry_flows
+	raise NotImplementedError()
 
 def national_road_shapefile_to_network(edges_in,road_properties_file):
 	# create network from edge file
@@ -629,6 +632,14 @@ def add_igraph_generalised_costs_roads(G,vehicle_numbers,tonnage):
 	G.es['min_gcost'] = list(vehicle_numbers*(np.array(G.es['min_time_cost'])) + tonnage*(np.array(G.es['min_tariff_cost'])))
 
 	return G
+
+def add_igraph_generalised_costs_province_roads():
+	# called from failure.{adapt_results_process,adaptation_options_multi,failure_estimation_provinces_multi,failure_projections-multi,failure_scenario_generation}
+	raise NotImplementedError()
+
+def add_igraph_time_costs_province_roads():
+	# called from analysis.province_flow_mapping.{commune_poi_analysis,province_crop_flows}
+	raise NotImplementedError()
 
 def add_igraph_generalised_costs_network(G,vehicle_numbers,tonnage,operating_factor_min,operating_factor_max):
 	# G.es['max_cost'] = list(cost_param*(np.array(G.es['length'])/np.array(G.es['max_speed'])))
