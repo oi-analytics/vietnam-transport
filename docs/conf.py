@@ -61,6 +61,7 @@ mock_modules = [
     'colour',
     'fiona',
     'fiona.crs',
+    'gams',
     'geoalchemy2',
     'geopandas',
     'geopy.distance',
@@ -79,6 +80,7 @@ mock_modules = [
     'shapely',
     'shapely.geometry',
     'shapely.ops',
+    'sqlalchemy',
 ]
 sys.modules.update((mod_name, Mock()) for mod_name in mock_modules)
 
