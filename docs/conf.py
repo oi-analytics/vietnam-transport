@@ -28,7 +28,7 @@
 import inspect
 import os
 import sys
-from unittest.mock import Mock
+from unittest.mock import MagicMock
 from sphinx import apidoc
 
 # add these directories to sys.path here. If the directory is relative to the
@@ -45,9 +45,43 @@ __location__ = os.path.join(os.getcwd(), os.path.dirname(
 sys.path.insert(0, os.path.join(__location__, '../src'))
 
 # mock modules which we can avoid installing for docs-building
-mock_modules = ['igraph']
-for mod_name in mock_modules:
-    sys.modules[mod_name] = Mock()
+from unittest.mock import MagicMock
+
+class Mock(MagicMock):
+    @classmethod
+    def __getattr__(cls, name):
+        return MagicMock()
+
+mock_modules = [
+    'igraph',
+    'boltons.iterutils',
+    'cartopy',
+    'cartopy.crs',
+    'cartopy.io.shapereader',
+    'colour',
+    'fiona',
+    'fiona.crs',
+    'geoalchemy2',
+    'geopandas',
+    'geopy.distance',
+    'haversine',
+    'networkx',
+    'openpyxl',
+    'osgeo',
+    'osgeo.ogr',
+    'pathos.multiprocessing',
+    'psycopg2',
+    'pyomo.environ',
+    'pyomo.opt',
+    'rasterio',
+    'rasterstats',
+    'rtree',
+    'shapely',
+    'shapely.geometry',
+    'shapely.ops',
+]
+sys.modules.update((mod_name, Mock()) for mod_name in mock_modules)
+
 
 output_dir = os.path.join(__location__, "api")
 module_dir = os.path.join(__location__, "../src/vtra")

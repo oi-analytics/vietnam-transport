@@ -1,0 +1,6 @@
+Sphinx==1.8.1
+matplotlib
+numpy
+pandas
+requests
+scipy
