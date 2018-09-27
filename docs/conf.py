@@ -159,7 +159,7 @@ exclude_patterns = ['_build', '../tests/**']
 
 # If true, the current module name will be prepended to all description
 # unit titles (such as .. function::).
-# add_module_names = True
+add_module_names = False
 
 # If true, sectionauthor and moduleauthor directives will be shown in the
 # output. They are ignored by default.
@@ -169,7 +169,7 @@ exclude_patterns = ['_build', '../tests/**']
 pygments_style = 'paraiso-dark'
 
 # A list of ignored prefixes for module index sorting.
-# modindex_common_prefix = []
+modindex_common_prefix = ['vtra.']
 
 # If true, keep warnings as "system message" paragraphs in the built documents.
 # keep_warnings = False
@@ -292,7 +292,10 @@ latex_documents = [
 # latex_show_pagerefs = False
 
 # If true, show URL addresses after external links.
-# latex_show_urls = False
+latex_show_urls = True
+
+# If true, allow linebreaks inside inline literals
+inlineliteralwraps = True
 
 # Documents to append as an appendix to all manuals.
 # latex_appendices = []
