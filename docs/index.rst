@@ -28,5 +28,12 @@ Indexes and tables
 * :ref:`search`
 
 
-.. mdinclude:: ../README.md
-   :start-line: 70
+Acknowledgements
+================
+
+This project has been developed by Oxford Infrastructure Analytics as part of a project funded
+by the World Bank.
+
+All code is copyright Oxford Infrastructure Analytics, licensed MIT (see the license for
+details) and is available on GitHub at
+`oi-analytics/vietnam-transport <https://github.com/oi-analytics/vietnam-transport>`_.
