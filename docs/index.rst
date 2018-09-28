@@ -11,11 +11,9 @@ Contents
 
     Installation <requirements>
     Data Assembly <data>
-    Networks <networks>
-    Origin-Destination Points <od>
     Mapping Flows <flows>
     Hazard Exposure <exposure>
-    Economic Impact Assessment <economic>
+    Economic Impact <economic>
     Adaption Options <adaptation>
     API Reference <api/vtra>
     License <license>

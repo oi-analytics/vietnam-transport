@@ -28,7 +28,9 @@
 import inspect
 import os
 import sys
+# mock modules which we can avoid installing for docs-building
 from unittest.mock import MagicMock
+
 from sphinx import apidoc
 
 # add these directories to sys.path here. If the directory is relative to the
@@ -44,8 +46,6 @@ __location__ = os.path.join(os.getcwd(), os.path.dirname(
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.join(__location__, '../src'))
 
-# mock modules which we can avoid installing for docs-building
-from unittest.mock import MagicMock
 
 class Mock(MagicMock):
     @classmethod
@@ -259,6 +259,9 @@ html_show_sphinx = False
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'vietnam-transport-doc'
 
+# Show todos if True
+todo_include_todos = True
+
 
 # -- Options for LaTeX output --------------------------------------------------
 
@@ -292,7 +295,7 @@ latex_documents = [
 # latex_show_pagerefs = False
 
 # If true, show URL addresses after external links.
-latex_show_urls = True
+latex_show_urls = 'footnote'
 
 # If true, allow linebreaks inside inline literals
 inlineliteralwraps = True
