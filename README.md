@@ -42,12 +42,6 @@ its python API. GAMS provide [installation and
 licensing](https://www.gams.com/latest/docs/UG_MAIN.htm) instructions.
 
 
-### Postgres and PostGIS
-
-Much of the data processing requires access to a [PostgreSQL](https://www.postgresql.org/)
-database with the [PostGIS](http://postgis.net/) extension installed and enabled.
-
-
 ## Configuration
 
 The location of data and output files are configured by a `config.json` file.  Copy
