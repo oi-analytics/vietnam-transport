@@ -94,13 +94,15 @@ def network_od_paths_assembly_changing_tonnages(points_dataframe, node_dict, gra
     """
     Assign net revenue to roads assets in Vietnam
 
-    Inputs are:
+    Parameters
+    ---------
     start_points - GeoDataFrame of start points for shortest path analysis.
     end_points - GeoDataFrame of potential end points for shorest path analysis.
     G - iGraph network of the province.
     save_edges -
 
-    Outputs are:
+    Outputs
+    -------
     Shapefile with all edges and the total net reveneu transferred along each edge
     GeoDataFrame of total net revenue transferred along each edge
     """
@@ -201,13 +203,15 @@ def network_od_paths_assembly(points_dataframe, node_dict, graph, vehicle_wt, tr
     """
     Assign net revenue to roads assets in Vietnam
 
-    Inputs are:
+    Parameters
+    ---------
     start_points - GeoDataFrame of start points for shortest path analysis.
     end_points - GeoDataFrame of potential end points for shorest path analysis.
     G - iGraph network of the province.
     save_edges -
 
-    Outputs are:
+    Outputs
+    -------
     Shapefile with all edges and the total net reveneu transferred along each edge
     GeoDataFrame of total net revenue transferred along each edge
     """

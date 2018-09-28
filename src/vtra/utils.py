@@ -542,21 +542,35 @@ def line_length(line, ellipsoid='WGS-84'):
 
 
 def gdf_geom_clip(gdf_in, clip_geom):
-    """
-    Inputs are:
-        gdf_in -- geopandas dataframe to be clipped in
-    Outputs are:
-        province_geom -- shapely geometry of province for what we do the calculation
+    """Filter a dataframe to contain only features within a clipping geometry
+
+    Parameters
+    ---------
+    gdf_in
+        geopandas dataframe to be clipped in
+    province_geom
+        shapely geometry of province for what we do the calculation
+
+    Outputs
+    -------
+    filtered dataframe
     """
     return gdf_in.loc[gdf_in['geometry'].apply(lambda x: x.within(clip_geom))].reset_index(drop=True)
 
 
 def gdf_clip(shape_in, clip_geom):
-    """
-    Inputs are:
-        shape_in -- path string to shapefile to be clipped
-    Outputs are:
-        province_geom -- shapely geometry of province for what we do the calculation
+    """Filter a file to contain only features within a clipping geometry
+
+    Parameters
+    ----------
+    shape_in
+        path string to shapefile to be clipped
+    province_geom
+        shapely geometry of province for what we do the calculation
+
+    Outputs
+    -------
+    filtered dataframe
     """
     gdf = gpd.read_file(shape_in)
     gdf = gdf.to_crs({'init': 'epsg:4326'})
@@ -564,14 +578,22 @@ def gdf_clip(shape_in, clip_geom):
 
 
 def get_nearest_node(x, sindex_input_nodes, input_nodes, id_column):
-    """
-    Inputs are:
-        x -- row of dataframe
-        sindex_nodes -- spatial index of dataframe of nodes in the network
-        nodes -- dataframe of nodes in the network
-        id_column -- name of column of id of closest node
-    Outputs are:
-        Nearest node to geometry of row
+    """Get nearest node in a dataframe
+
+    Parameters
+    ----------
+    x
+        row of dataframe
+    sindex_nodes
+        spatial index of dataframe of nodes in the network
+    nodes
+        dataframe of nodes in the network
+    id_column
+        name of column of id of closest node
+
+    Outputs
+    -------
+    Nearest node to geometry of row
     """
     return input_nodes.loc[list(sindex_input_nodes.nearest(x.bounds[:2]))][id_column].values[0]
 
@@ -590,25 +612,37 @@ def get_nearest_node_within_region(x, input_nodes, id_column, region_id):
 def count_points_in_polygon(x, points_sindex):
     """Count points in a polygon
 
-    Inputs are:
-        x -- row of dataframe
-        points_sindex -- spatial index of dataframe with points in the region to consider
-    Outputs are:
-        Amount of points in polygon
+    Parameters
+    ----------
+    x
+        row of dataframe
+    points_sindex
+        spatial index of dataframe with points in the region to consider
+
+    Outputs
+    -------
+    Amount of points in polygon
     """
     return len(list(points_sindex.intersection(x.bounds)))
 
 
 def extract_value_from_gdf(x, gdf_sindex, gdf, column_name):
-    """
-    Inputs are:
-        x -- row of dataframe
-        gdf_sindex -- spatial index of dataframe of which we want to extract the value
-        gdf -- GeoDataFrame of which we want to extract the value
-        column_name -- column that contains the value we want to extract
+    """Access value
 
-    Outputs are:
-        extracted value from other gdf
+    Parameters
+    ----------
+    x
+        row of dataframe
+    gdf_sindex
+        spatial index of dataframe of which we want to extract the value
+    gdf
+        GeoDataFrame of which we want to extract the value
+    column_name
+        column that contains the value we want to extract
+
+    Outputs
+    -------
+    extracted value from other gdf
     """
     return gdf.loc[list(gdf_sindex.intersection(x.bounds[:2]))][column_name].values[0]
 
@@ -647,11 +681,9 @@ def assign_value_in_area_proportions_within_common_region(poly_1_gpd, poly_2_gpd
 
 
 def voronoi_finite_polygons_2d(vor, radius=None):
-    """
-    Source: https://stackoverflow.com/questions/36063533/clipping-a-voronoi-diagram-python
+    """Reconstruct infinite voronoi regions in a 2D diagram to finite regions.
 
-    Reconstruct infinite voronoi regions in a 2D diagram to finite
-    regions.
+    Source: https://stackoverflow.com/questions/36063533/clipping-a-voronoi-diagram-python
 
     Parameters
     ----------

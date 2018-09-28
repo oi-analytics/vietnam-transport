@@ -26,18 +26,21 @@ def assign_province_road_conditions(x):
 
 
 def assign_assumed_width_to_province_roads_from_file(asset_width, width_range_list):
-    """
-    Assign widths to roads assets in Vietnam
+    """Assign widths to roads assets in Vietnam
+
     The widths are assigned based on our understanding of:
+
     1. The reported width in the data which is not reliable
     2. A design specification based understanding of the assumed width based on ranges of
        values
 
-    Inputs are:
+    Parameters
+    ----------
     asset_width - Numeric value for width of asset
     width_range_list - List of tuples containing (from_width, to_width, assumed_width)
 
-    Outputs are:
+    Outputs
+    -------
     assumed_width - assigned width of the raod asset based on design specifications
     """
 
@@ -96,10 +99,12 @@ def assign_asset_type_to_province_roads_from_file(asset_code, asset_type_list):
     The types are assigned based on our understanding of:
     1. The reported asset code in the data
 
-    Inputs are:
+    Parameters
+    ---------
     asset code - Numeric value for code of asset
 
-    Outputs are:
+    Outputs
+    -------
     asset type - Which is either of (Bridge, Dam, Culvert, Tunnel, Spillway, Road)
     """
     asset_type = 'road'
@@ -117,10 +122,12 @@ def assign_asset_type_to_province_roads(x):
     The types are assigned based on our understanding of:
     1. The reported asset code in the data
 
-    Inputs are:
+    Parameters
+    ---------
     asset code - Numeric value for code of asset
 
-    Outputs are:
+    Outputs
+    -------
     asset type - Which is either of (Bridge, Dam, Culvert, Tunnel, Spillway, Road)
     """
     if x.code in (12, 25):
@@ -145,12 +152,14 @@ def assign_minmax_travel_speeds_province_roads_apply(x):
     2. The levels of classification of assets: 0-National, 1-Provinical, 2-Local, 3-Other
     3. The terrain where the assets are located: Flat or Mountain or No information
 
-    Inputs are:
+    Parameters
+    ---------
     asset_code - Numeric code for type of asset
     asset_level - Numeric code for level of asset
     asset_terrain - String value of the terrain of asset
 
-    Outputs are:
+    Outputs
+    -------
     speed_min - Minimum assigned speed in km/hr
     speed_max - Maximum assigned speed in km/hr
     """
@@ -216,12 +225,14 @@ def assign_minmax_tariff_costs_province_roads_apply(x, cost_dataframe):
     2. The levels of classification of assets: 0-National, 1-Provinical, 2-Local, 3-Other
     3. The terrain where the assets are located: Flat or Mountain or No information
 
-    Inputs are:
+    Parameters
+    ---------
     asset_code - Numeric code for type of asset
     asset_level - Numeric code for level of asset
     asset_terrain - String value of the terrain of asset
 
-    Outputs are:
+    Outputs
+    -------
     speed_min - Minimum assigned speed in km/hr
     speed_max - Maximum assigned speed in km/hr
     tariff_min_usd    tariff_max_usd
@@ -415,11 +426,13 @@ def assign_assumed_width_to_national_roads_from_file(x, flat_width_range_list, m
     2. The number of lanes
     3. The terrain of the road
 
-    Inputs are:
+    Parameters
+    ---------
     x - dataframe row
     flat_width_range_list - List of tuples containing (from_width, to_width, assumed_width)
 
-    Outputs are:
+    Outputs
+    -------
     assumed_width - assigned width of the raod asset based on design specifications
     """
 
@@ -465,12 +478,14 @@ def assign_min_max_speeds_to_national_roads_from_file(x, flat_width_range_list,
     2. The estimated speed from the CVTS data
     3. The terrain of the road
 
-    Inputs are:
+    Parameters
+    ---------
     x - dataframe row
     flat_width_range_list - List of tuples containing flat road properties
     mountain_width_range_list - List of tuples containing mountain road properties
 
-    Outputs are:
+    Outputs
+    -------
     min and max speeds - assigned speeds of the road asset based on estimated speeds and
     design specifications
     """
@@ -551,12 +566,14 @@ def assign_minmax_tariff_costs_national_roads_apply(x, cost_dataframe):
     2. The levels of classification of assets: 0-National, 1-Provinical, 2-Local, 3-Other
     3. The terrain where the assets are located: Flat or Mountain or No information
 
-    Inputs are:
+    Parameters
+    ---------
     asset_code - Numeric code for type of asset
     asset_level - Numeric code for level of asset
     asset_terrain - String value of the terrain of asset
 
-    Outputs are:
+    Outputs
+    -------
     speed_min - Minimum assigned speed in km/hr
     speed_max - Maximum assigned speed in km/hr
     tariff_min_usd    tariff_max_usd
@@ -905,12 +922,14 @@ def assign_minmax_travel_speeds_province_roads(asset_code, asset_level, asset_te
     2. The levels of classification of assets: 0-National, 1-Provincial, 2-Local, 3-Other
     3. The terrain where the assets are located: Flat or Mountain or No information
 
-    Inputs are:
+    Parameters
+    ---------
     asset_code - Numeric code for type of asset
     asset_level - Numeric code for level of asset
     asset_terrain - String value of the terrain of asset
 
-    Outputs are:
+    Outputs
+    -------
     speed_min - Minimum assigned speed in km/hr
     speed_max - Maximum assigned speed in km/hr
     """
