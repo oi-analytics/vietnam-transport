@@ -1,35 +1,31 @@
 """Shared plotting functions
 """
-import json
-import os
-
-from collections import namedtuple, OrderedDict
-
-import cartopy.crs as ccrs
-import cartopy.io.shapereader as shpreader
-import matplotlib.patches as mpatches
-import matplotlib.pyplot as plt
-from osgeo import gdal
-import numpy as np
-from colour import Color
-
-from geopy.distance import vincenty
-from boltons.iterutils import pairwise
-import geopandas as gpd
-
 import configparser
 import csv
 import glob
+import json
+import os
+from collections import OrderedDict, namedtuple
+from math import floor, log10
 
+import cartopy.crs as ccrs
+import cartopy.io.shapereader as shpreader
 import fiona
 import fiona.crs
+import geopandas as gpd
+import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
+import numpy as np
 import rasterio
-
-from scipy.spatial import Voronoi
 import shapely.geometry
 import shapely.ops
+from boltons.iterutils import pairwise
+from colour import Color
+from geopy.distance import vincenty
+from osgeo import gdal
+from scipy.spatial import Voronoi
 from shapely.geometry import Polygon, shape
-from math import log10, floor
+
 
 def load_config():
     """Read config.json
@@ -130,10 +126,12 @@ def plot_basemap(ax, data_path, focus='VNM', neighbours=['VNM', 'CHN', 'LAO', 'K
     if plot_regions:
         for record in shpreader.Reader(provinces_filename).records():
             if record.attributes['NAME_ENG'] in highlight_region:
-                ax.add_geometries([record.geometry], crs=proj, edgecolor='#ffffff', facecolor='#7c7c7c')
+                ax.add_geometries([record.geometry], crs=proj,
+                                  edgecolor='#ffffff', facecolor='#7c7c7c')
                 highlight_region_geom = record.geometry
             else:
-                ax.add_geometries([record.geometry], crs=proj, edgecolor='#ffffff', facecolor='#d2d2d2')
+                ax.add_geometries([record.geometry], crs=proj,
+                                  edgecolor='#ffffff', facecolor='#d2d2d2')
 
     # Districts
     if plot_districts:
@@ -160,6 +158,7 @@ def plot_basemap(ax, data_path, focus='VNM', neighbours=['VNM', 'CHN', 'LAO', 'K
             facecolor='#c6e0ff',
             zorder=1)
 
+
 def plot_basemap_labels_large_region(ax, data_path):
 
     labels = [
@@ -175,6 +174,7 @@ def plot_basemap_labels_large_region(ax, data_path):
         ('South China Sea', 108.17, 17.37, 7)
     ]
     plot_basemap_labels(ax, data_path, labels, province_zoom=False, plot_regions=False)
+
 
 def plot_district_labels(ax, data_path, highlight_region=None):
     provinces_filename = os.path.join(
@@ -209,10 +209,12 @@ def plot_district_labels(ax, data_path, highlight_region=None):
             district_labels.append(get_district_label(record))
     plot_basemap_labels(ax, None, district_labels)
 
+
 def get_district_label(record):
     district_name = record.attributes['NAME_ENG']
     centroid = shape(record.geometry).centroid
     return (district_name, centroid.x, centroid.y, 9)
+
 
 def plot_basemap_labels(ax, data_path, labels=None, province_zoom=False, plot_regions=True):
     """Plot countries and regions background
@@ -311,6 +313,7 @@ def plot_basemap_labels(ax, data_path, labels=None, province_zoom=False, plot_re
                 zorder=10,
                 transform=proj)
 
+
 def get_region_plot_settings(region):
     """Common definition of region plot settings
     """
@@ -364,6 +367,7 @@ def get_region_plot_settings(region):
             return region_plot_settings
 
     raise Exception('Region plot settings not defined for this region')
+
 
 def within_extent(x, y, extent):
     xmin, xmax, ymin, ymax = extent
@@ -428,6 +432,7 @@ def generate_weight_bins(weights, n_steps=9, width_step=0.01):
 
     return width_by_range
 
+
 def generate_weight_bins_with_colour_gradient(weights, n_steps=9, width_step=0.01, colours=['orange', 'red']):
     """Given a list of weight values, generate <n_steps> bins with a width
     value to use for plotting e.g. weighted network flow maps.
@@ -453,12 +458,14 @@ def generate_weight_bins_with_colour_gradient(weights, n_steps=9, width_step=0.0
 
     return width_by_range
 
+
 Style = namedtuple('Style', ['color', 'zindex', 'label'])
 Style.__doc__ += """: class to hold an element's styles
 
 Used to generate legend entries, apply uniform style to groups of map elements
 (See network_map.py for example.)
 """
+
 
 def legend_from_style_spec(ax, styles, loc='lower left'):
     """Plot legend
@@ -472,6 +479,7 @@ def legend_from_style_spec(ax, styles, loc='lower left'):
         loc=loc
     )
 
+
 def round_sf(x, places=1):
     """Round number to significant figures
     """
@@ -483,6 +491,7 @@ def round_sf(x, places=1):
     shift = 10 ** (exp - places)
     rounded = round(x / shift) * shift
     return rounded * sign
+
 
 def get_data(filename):
     """Read in data (as array) and extent of each raster
@@ -509,6 +518,7 @@ def get_data(filename):
 
     return data, lat_lon_extent
 
+
 def line_length(line, ellipsoid='WGS-84'):
     """Length of a line in meters, given in geographic coordinates.
 
@@ -530,6 +540,7 @@ def line_length(line, ellipsoid='WGS-84'):
         for a, b in pairwise(line.coords)
     )
 
+
 def gdf_geom_clip(gdf_in, clip_geom):
     """
     Inputs are:
@@ -538,6 +549,7 @@ def gdf_geom_clip(gdf_in, clip_geom):
         province_geom -- shapely geometry of province for what we do the calculation
     """
     return gdf_in.loc[gdf_in['geometry'].apply(lambda x: x.within(clip_geom))].reset_index(drop=True)
+
 
 def gdf_clip(shape_in, clip_geom):
     """
@@ -563,6 +575,7 @@ def get_nearest_node(x, sindex_input_nodes, input_nodes, id_column):
     """
     return input_nodes.loc[list(sindex_input_nodes.nearest(x.bounds[:2]))][id_column].values[0]
 
+
 def get_nearest_node_within_region(x, input_nodes, id_column, region_id):
     select_nodes = input_nodes.loc[input_nodes[region_id] == x[region_id]]
     # print (input_nodes)
@@ -585,6 +598,7 @@ def count_points_in_polygon(x, points_sindex):
     """
     return len(list(points_sindex.intersection(x.bounds)))
 
+
 def extract_value_from_gdf(x, gdf_sindex, gdf, column_name):
     """
     Inputs are:
@@ -598,32 +612,39 @@ def extract_value_from_gdf(x, gdf_sindex, gdf, column_name):
     """
     return gdf.loc[list(gdf_sindex.intersection(x.bounds[:2]))][column_name].values[0]
 
+
 def assign_value_in_area_proportions(poly_1_gpd, poly_2_gpd, poly_attribute):
     poly_1_sindex = poly_1_gpd.sindex
     for p_2_index, polys_2 in poly_2_gpd.iterrows():
-        poly2_attr= 0
-        intersected_polys = poly_1_gpd.iloc[list(poly_1_sindex.intersection(polys_2.geometry.bounds))]
+        poly2_attr = 0
+        intersected_polys = poly_1_gpd.iloc[list(
+            poly_1_sindex.intersection(polys_2.geometry.bounds))]
         for p_1_index, polys_1 in intersected_polys.iterrows():
             if (polys_2['geometry'].intersects(polys_1['geometry']) is True) and (polys_1.geometry.is_valid is True) and (polys_2.geometry.is_valid is True):
-                poly2_attr += polys_1[poly_attribute]*polys_2['geometry'].intersection(polys_1['geometry']).area/polys_1['geometry'].area
+                poly2_attr += polys_1[poly_attribute]*polys_2['geometry'].intersection(
+                    polys_1['geometry']).area/polys_1['geometry'].area
 
         poly_2_gpd.loc[p_2_index, poly_attribute] = poly2_attr
 
     return poly_2_gpd
+
 
 def assign_value_in_area_proportions_within_common_region(poly_1_gpd, poly_2_gpd, poly_attribute, common_region_id):
     poly_1_sindex = poly_1_gpd.sindex
     for p_2_index, polys_2 in poly_2_gpd.iterrows():
-        poly2_attr= 0
+        poly2_attr = 0
         poly2_id = polys_2[common_region_id]
-        intersected_polys = poly_1_gpd.iloc[list(poly_1_sindex.intersection(polys_2.geometry.bounds))]
+        intersected_polys = poly_1_gpd.iloc[list(
+            poly_1_sindex.intersection(polys_2.geometry.bounds))]
         for p_1_index, polys_1 in intersected_polys.iterrows():
-            if  (polys_1[common_region_id] == poly2_id) and (polys_2['geometry'].intersects(polys_1['geometry']) is True) and (polys_1.geometry.is_valid is True) and (polys_2.geometry.is_valid is True):
-                poly2_attr += polys_1[poly_attribute]*polys_2['geometry'].intersection(polys_1['geometry']).area/polys_1['geometry'].area
+            if (polys_1[common_region_id] == poly2_id) and (polys_2['geometry'].intersects(polys_1['geometry']) is True) and (polys_1.geometry.is_valid is True) and (polys_2.geometry.is_valid is True):
+                poly2_attr += polys_1[poly_attribute]*polys_2['geometry'].intersection(
+                    polys_1['geometry']).area/polys_1['geometry'].area
 
         poly_2_gpd.loc[p_2_index, poly_attribute] = poly2_attr
 
     return poly_2_gpd
+
 
 def voronoi_finite_polygons_2d(vor, radius=None):
     """
@@ -687,7 +708,7 @@ def voronoi_finite_polygons_2d(vor, radius=None):
 
             # Compute the missing endpoint of an infinite ridge
 
-            t = vor.points[p2] - vor.points[p1] # tangent
+            t = vor.points[p2] - vor.points[p1]  # tangent
             t /= np.linalg.norm(t)
             n = np.array([-t[1], t[0]])  # normal
 
@@ -709,8 +730,10 @@ def voronoi_finite_polygons_2d(vor, radius=None):
 
     return new_regions, np.asarray(new_vertices)
 
+
 def extract_nodes_within_gdf(x, input_nodes, column_name):
     return input_nodes.loc[list(input_nodes.geometry.within(x.geometry))][column_name].values[0]
+
 
 def extract_gdf_values_containing_nodes(x, sindex_input_gdf, input_gdf, column_name):
     a = input_gdf.loc[list(input_gdf.geometry.contains(x.geometry))]

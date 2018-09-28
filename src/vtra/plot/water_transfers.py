@@ -2,7 +2,6 @@
 """
 import os
 import sys
-
 from collections import OrderedDict
 
 import cartopy.crs as ccrs
@@ -10,13 +9,14 @@ import cartopy.io.shapereader as shpreader
 import matplotlib.pyplot as plt
 import numpy as np
 from shapely.geometry import LineString
-
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from vtra.utils import *
+
 
 def main():
     config = load_config()
-    coastal_edge_file = os.path.join(config['paths']['data'], 'Results', 'Failure_shapefiles', 'weighted_edges_failures_national_water_transfer_from_road_10_shift.shp')
+    coastal_edge_file = os.path.join(
+        config['paths']['data'], 'Results', 'Failure_shapefiles',
+        'weighted_edges_failures_national_water_transfer_from_road_10_shift.shp')
 
     color = '#045a8d'
     color_by_type = {'Coastal Line': color}
@@ -25,11 +25,11 @@ def main():
     column_label_divisors = {c: 1 for c in columns}
 
     legend_label = "AADF (tons/day)"
-    title_cols = ['Total tonnage (min)','Total tonnage (max)']
+    title_cols = ['Total tonnage (min)', 'Total tonnage (max)']
 
     for c in range(len(columns)):
         ax = get_axes()
-        plot_basemap(ax, config['paths']['data'], highlight_region = [])
+        plot_basemap(ax, config['paths']['data'], highlight_region=[])
         scale_bar(ax, location=(0.8, 0.05))
         plot_basemap_labels(ax, config['paths']['data'])
         proj_lat_lon = ccrs.PlateCarree()
@@ -51,7 +51,7 @@ def main():
             val = record.attributes[column]
             geom = record.geometry
 
-            if val > 0: #only add edges that carry this commodity
+            if val > 0:  # only add edges that carry this commodity
                 for nmin, nmax in geoms_by_range:
                     if nmin <= val and val < nmax:
                         geoms_by_range[(nmin, nmax)].append(geom)
@@ -103,10 +103,13 @@ def main():
                 transform=proj_lat_lon,
                 size=10)
 
-        plt.title(title_cols[c], fontsize = 14)
-        output_file = os.path.join(config['paths']['figures'], 'water_flow-map-transfer-road-10-shift-{}.png'.format(column))
+        plt.title(title_cols[c], fontsize=14)
+        output_file = os.path.join(
+            config['paths']['figures'],
+            'water_flow-map-transfer-road-10-shift-{}.png'.format(column))
         save_fig(output_file)
         plt.close()
+
 
 if __name__ == '__main__':
     main()

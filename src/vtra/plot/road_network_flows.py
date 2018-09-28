@@ -2,20 +2,20 @@
 """
 import os
 import sys
-
 from collections import OrderedDict
 
 import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
 import matplotlib.pyplot as plt
 from shapely.geometry import LineString
-
-
 from vtra.utils import *
+
 
 def main():
     config = load_config()
-    flows_file = os.path.join(config['paths']['data'], 'Results', 'Flow_shapefiles', 'weighted_edges_flows_national_road.shp')
+    flows_file = os.path.join(
+        config['paths']['data'], 'Results', 'Flow_shapefiles',
+        'weighted_edges_flows_national_road.shp')
 
     plot_sets = [
         {
@@ -29,16 +29,16 @@ def main():
             'file_tag': 'commodities',
             'legend_label': "AADF ('000 tons/day)",
             'divisor': 1000,
-            'columns': ['max_rice','max_cash','max_cass','max_teas','max_maiz',
-                        'max_rubb','max_swpo','max_acof','max_rcof','max_pepp',
-                        'max_sugar','max_wood','max_steel','max_constr','max_cement',
-                        'max_fertil','max_coal','max_petrol','max_manufa','max_fisher',
+            'columns': ['max_rice', 'max_cash', 'max_cass', 'max_teas', 'max_maiz',
+                        'max_rubb', 'max_swpo', 'max_acof', 'max_rcof', 'max_pepp',
+                        'max_sugar', 'max_wood', 'max_steel', 'max_constr', 'max_cement',
+                        'max_fertil', 'max_coal', 'max_petrol', 'max_manufa', 'max_fisher',
                         'max_meat', 'max_tons'],
-            'title_cols': ['Rice','Cashew','Cassava','Teas','Maize','Rubber',
-                           'Sweet Potatoes','Coffee Arabica','Coffee Robusta',
-                           'Pepper','Sugar','Wood','Steel','Construction materials',
-                           'Cement','Fertilizer','Coal','Petroleum','Manufacturing',
-                           'Fishery','Meat','Total tonnage']
+            'title_cols': ['Rice', 'Cashew', 'Cassava', 'Teas', 'Maize', 'Rubber',
+                           'Sweet Potatoes', 'Coffee Arabica', 'Coffee Robusta',
+                           'Pepper', 'Sugar', 'Wood', 'Steel', 'Construction materials',
+                           'Cement', 'Fertilizer', 'Coal', 'Petroleum', 'Manufacturing',
+                           'Fishery', 'Meat', 'Total tonnage']
         },
     ]
 
@@ -87,16 +87,16 @@ def main():
                     print("Feature was outside range to plot", record.attributes)
 
             styles = OrderedDict([
-                ('1',  Style(color='#000004', zindex=9, label='Class 1')), #red
-                ('2', Style(color='#2c115f', zindex=8, label='Class 2')), #orange
-                ('3', Style(color='#721f81', zindex=7, label='Class 3')), #blue
-                ('4',  Style(color='#b73779', zindex=6, label='Class 4')), #green
-                ('5', Style(color='#f1605d', zindex=5, label='Class 5')), #black
-                ('6', Style(color='#feb078', zindex=4, label='Class 6')), #grey
+                ('1',  Style(color='#000004', zindex=9, label='Class 1')),  # red
+                ('2', Style(color='#2c115f', zindex=8, label='Class 2')),  # orange
+                ('3', Style(color='#721f81', zindex=7, label='Class 3')),  # blue
+                ('4',  Style(color='#b73779', zindex=6, label='Class 4')),  # green
+                ('5', Style(color='#f1605d', zindex=5, label='Class 5')),  # black
+                ('6', Style(color='#feb078', zindex=4, label='Class 6')),  # grey
             ])
 
             for cat, geoms in road_geoms_by_category.items():
-                cat_style =styles[cat]
+                cat_style = styles[cat]
                 ax.add_geometries(
                     geoms,
                     crs=proj_lat_lon,
@@ -144,12 +144,13 @@ def main():
                     transform=proj_lat_lon,
                     size=10)
 
-            plt.title(plot_set['title_cols'][c], fontsize = 14)
+            plt.title(plot_set['title_cols'][c], fontsize=14)
             legend_from_style_spec(ax, styles)
-            output_file = os.path.join(config['paths']['figures'], 'road_flow-map-{}-{}.png'.format(plot_set['file_tag'], column))
+            output_file = os.path.join(
+                config['paths']['figures'], 'road_flow-map-{}-{}.png'.format(
+                    plot_set['file_tag'], column))
             save_fig(output_file)
             plt.close()
-
 
 
 if __name__ == '__main__':

@@ -2,7 +2,6 @@
 """
 import os
 import sys
-
 from collections import OrderedDict
 
 import cartopy.crs as ccrs
@@ -10,27 +9,29 @@ import cartopy.io.shapereader as shpreader
 import matplotlib.pyplot as plt
 import numpy as np
 from shapely.geometry import LineString
-
-
 from vtra.utils import *
+
 
 def main():
     config = load_config()
-    coastal_edge_file = os.path.join(config['paths']['data'], 'Results', 'Flow_shapefiles', 'weighted_edges_flows_national_coastal.shp')
+    coastal_edge_file = os.path.join(
+        config['paths']['data'], 'Results', 'Flow_shapefiles', 'weighted_edges_flows_national_coastal.shp')
 
     color = '#045a8d'
     color_by_type = {'Coastal Line': color}
 
-    crop_cols = ['max_rice','max_cash','max_cass','max_teas','max_maiz','max_rubb','max_swpo','max_acof','max_rcof','max_pepp']
-    ind_cols = ['max_sugar','max_wood','max_steel','max_constr','max_cement','max_fertil','max_coal','max_petrol','max_manufa','max_fisher','max_meat', 'max_tons']
+    crop_cols = ['max_rice', 'max_cash', 'max_cass', 'max_teas', 'max_maiz',
+                 'max_rubb', 'max_swpo', 'max_acof', 'max_rcof', 'max_pepp']
+    ind_cols = ['max_sugar', 'max_wood', 'max_steel', 'max_constr', 'max_cement', 'max_fertil',
+                'max_coal', 'max_petrol', 'max_manufa', 'max_fisher', 'max_meat', 'max_tons']
 
     columns = crop_cols + ind_cols
     column_label_divisors = {c: 1 for c in columns}
 
     legend_label = "AADF (tons/day)"
-    title_cols = ['Rice','Cashew','Cassava','Teas','Maize','Rubber','Sweet Potatoes','Coffee Arabica','Coffee Robusta','Pepper',
-                'Sugar','Wood','Steel','Construction materials','Cement','Fertilizer','Coal','Petroleum',
-                'Manufacturing','Fishery','Meat','Total tonnage']
+    title_cols = ['Rice', 'Cashew', 'Cassava', 'Teas', 'Maize', 'Rubber', 'Sweet Potatoes', 'Coffee Arabica', 'Coffee Robusta', 'Pepper',
+                  'Sugar', 'Wood', 'Steel', 'Construction materials', 'Cement', 'Fertilizer', 'Coal', 'Petroleum',
+                  'Manufacturing', 'Fishery', 'Meat', 'Total tonnage']
 
     for c in range(len(columns)):
         ax = get_axes()
@@ -56,7 +57,7 @@ def main():
             val = record.attributes[column]
             geom = record.geometry
 
-            if val > 0: #only add edges that carry this commodity
+            if val > 0:  # only add edges that carry this commodity
                 for nmin, nmax in geoms_by_range:
                     if nmin <= val and val < nmax:
                         geoms_by_range[(nmin, nmax)].append(geom)
@@ -108,10 +109,12 @@ def main():
                 transform=proj_lat_lon,
                 size=10)
 
-        plt.title(title_cols[c], fontsize = 14)
-        output_file = os.path.join(config['paths']['figures'], 'coastal_flow-map-{}.png'.format(column))
+        plt.title(title_cols[c], fontsize=14)
+        output_file = os.path.join(config['paths']['figures'],
+                                   'coastal_flow-map-{}.png'.format(column))
         save_fig(output_file)
         plt.close()
+
 
 if __name__ == '__main__':
     main()

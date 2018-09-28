@@ -2,21 +2,20 @@
 """
 import os
 import sys
-
 from collections import OrderedDict
 
 import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
 import matplotlib.pyplot as plt
 from shapely.geometry import LineString
-
-
 from vtra.utils import *
+
 
 def main():
     config = load_config()
-    flows_file = os.path.join(config['paths']['data'], 'Results', 'Failure_shapefiles', 'weighted_edges_failures_national_road_2.shp')
-
+    flows_file = os.path.join(
+        config['paths']['data'], 'Results', 'Failure_shapefiles',
+        'weighted_edges_failures_national_road_2.shp')
 
     # plot_sets = [
     #     {
@@ -72,26 +71,26 @@ def main():
     plot_sets = [
         {
             'file_tag': 'adapt',
-            'no_access':[0, 1],
+            'no_access': [0, 1],
             'legend_label': "NPV (million USD)",
             'divisor': 1000000,
-            'columns': ['min_adapt_','max_adapt_'],
-            'title_cols': ['NPV of adaptation over time (min)','NPV of adaptation over time (max)']
+            'columns': ['min_adapt_', 'max_adapt_'],
+            'title_cols': ['NPV of adaptation over time (min)', 'NPV of adaptation over time (max)']
         },
         {
             'file_tag': 'bcr',
-            'no_access':[0, 1],
+            'no_access': [0, 1],
             'legend_label': "BCR",
             'divisor': 1,
-            'columns': ['min_bc_rat','max_bc_rat'],
-            'title_cols': ['BCR of adaptation over time (min)','BCR of adaptation over time (max)']
+            'columns': ['min_bc_rat', 'max_bc_rat'],
+            'title_cols': ['BCR of adaptation over time (min)', 'BCR of adaptation over time (max)']
         }
     ]
 
     for plot_set in plot_sets:
         for c in range(len(plot_set['columns'])):
             ax = get_axes()
-            plot_basemap(ax, config['paths']['data'], highlight_region = [])
+            plot_basemap(ax, config['paths']['data'], highlight_region=[])
             scale_bar(ax, location=(0.8, 0.05))
             plot_basemap_labels(ax, config['paths']['data'])
             proj_lat_lon = ccrs.PlateCarree()
@@ -119,7 +118,6 @@ def main():
                     for record in shpreader.Reader(flows_file).records()
                     if int(record.attributes['no_access']) in plot_set['no_access']
                 ]
-
 
             max_weight = max(weights)
             width_by_range = generate_weight_bins(weights)
@@ -175,16 +173,16 @@ def main():
                     print("Feature was outside range to plot", record.attributes)
 
             styles = OrderedDict([
-                ('1',  Style(color='#000004', zindex=9, label='Class 1')), #red
-                ('2', Style(color='#2c115f', zindex=8, label='Class 2')), #orange
-                ('3', Style(color='#721f81', zindex=7, label='Class 3')), #blue
-                ('4',  Style(color='#b73779', zindex=6, label='Class 4')), #green
-                ('5', Style(color='#f1605d', zindex=5, label='Class 5')), #black
-                ('6', Style(color='#feb078', zindex=4, label='Class 6')), #grey
+                ('1',  Style(color='#000004', zindex=9, label='Class 1')),  # red
+                ('2', Style(color='#2c115f', zindex=8, label='Class 2')),  # orange
+                ('3', Style(color='#721f81', zindex=7, label='Class 3')),  # blue
+                ('4',  Style(color='#b73779', zindex=6, label='Class 4')),  # green
+                ('5', Style(color='#f1605d', zindex=5, label='Class 5')),  # black
+                ('6', Style(color='#feb078', zindex=4, label='Class 6')),  # grey
             ])
 
             for cat, geoms in road_geoms_by_category.items():
-                cat_style =styles[cat]
+                cat_style = styles[cat]
                 ax.add_geometries(
                     geoms,
                     crs=proj_lat_lon,
@@ -232,12 +230,12 @@ def main():
                     transform=proj_lat_lon,
                     size=10)
 
-            plt.title(plot_set['title_cols'][c], fontsize = 14)
+            plt.title(plot_set['title_cols'][c], fontsize=14)
             legend_from_style_spec(ax, styles)
-            output_file = os.path.join(config['paths']['figures'], 'road_failure-map-{}-{}.png'.format(plot_set['file_tag'], column))
+            output_file = os.path.join(
+                config['paths']['figures'], 'road_failure-map-{}-{}.png'.format(plot_set['file_tag'], column))
             save_fig(output_file)
             plt.close()
-
 
 
 if __name__ == '__main__':

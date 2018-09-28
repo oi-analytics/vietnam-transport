@@ -2,23 +2,23 @@
 """
 import os
 import sys
-
 from collections import OrderedDict
 
 import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
 import matplotlib.pyplot as plt
-
-
 from vtra.utils import *
+
 
 def main():
     config = load_config()
     output_file = os.path.join(config['paths']['figures'], 'air-map.png')
-    air_edge_file = os.path.join(config['paths']['data'], 'Results', 'Flow_shapefiles', 'airport_edges_flows.shp')
-    air_node_file = os.path.join(config['paths']['data'], 'Airports', 'airnetwork', 'airportnodes.shp')
+    air_edge_file = os.path.join(
+        config['paths']['data'], 'Results', 'Flow_shapefiles', 'airport_edges_flows.shp')
+    air_node_file = os.path.join(config['paths']['data'],
+                                 'Airports', 'airnetwork', 'airportnodes.shp')
 
-    color_by_type = {'Air route': '#252525','Airport': '#d95f0e'}
+    color_by_type = {'Air route': '#252525', 'Airport': '#d95f0e'}
     ax = get_axes()
     plot_basemap(ax, config['paths']['data'])
     scale_bar(ax, location=(0.8, 0.05))
@@ -53,9 +53,10 @@ def main():
     legend_handles = [
         mpatches.Patch(color=color, label=line)
         for line, color in color_by_type.items()
-]
-    plt.legend(handles=legend_handles, loc = 'lower left')
+    ]
+    plt.legend(handles=legend_handles, loc='lower left')
     save_fig(output_file)
+
 
 if __name__ == '__main__':
     main()

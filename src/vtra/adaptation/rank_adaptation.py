@@ -1,23 +1,16 @@
 # -*- coding: utf-8 -*-
 """
-
-
-
 """
 import os
 import sys
 
-import pandas as pd
-import numpy as np
-
 import matplotlib as mpl
-import matplotlib.pyplot as plt
-from matplotlib import cm
 import matplotlib.patches as mpatches
-
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from matplotlib import cm
 from vtra.utils import *
-
 
 
 def main():
@@ -81,9 +74,9 @@ def main():
 
         edge_df = pd.DataFrame(edge_list, columns = ['edge_id','commune_name','district_name','province_name'])
 
-        '''
+        """
         Box plots for the hazard losses
-        '''
+        """
         # for g in range(len(growth_scenarios)):
         for g in range(1, 2):
             grth = growth_scenarios[g]

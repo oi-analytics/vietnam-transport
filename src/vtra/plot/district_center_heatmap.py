@@ -2,16 +2,14 @@
 """
 import os
 import sys
-
 from collections import OrderedDict
 
 import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
 import matplotlib.pyplot as plt
 from shapely.geometry import LineString
-
-
 from vtra.utils import *
+
 
 def main():
     config = load_config()
@@ -50,7 +48,8 @@ def main():
 
     for region in regions:
 
-        region_file = os.path.join(config['paths']['data'], 'Results', 'Flow_shapefiles', 'weighted_edges_commune_center_flows_' + region.lower().replace(' ', '') + '_5_tons.shp')
+        region_file = os.path.join(config['paths']['data'], 'Results', 'Flow_shapefiles',
+                                   'weighted_edges_commune_center_flows_' + region.lower().replace(' ', '') + '_5_tons.shp')
         plot_settings = get_region_plot_settings(region)
 
         for c in range(len(plot_set)):
@@ -73,7 +72,8 @@ def main():
                 for record in shpreader.Reader(region_file).records()
             ]
             max_weight = max(weights)
-            width_by_range = generate_weight_bins_with_colour_gradient(weights, width_step=0.001)
+            width_by_range = generate_weight_bins_with_colour_gradient(
+                weights, width_step=0.001)
 
             road_geoms_by_category = {
                 region: []
@@ -138,10 +138,13 @@ def main():
                 significance_ndigits = plot_set[c]['significance']
                 if nmin == max_weight:
                     value_template = '>{:.' + str(significance_ndigits) + 'f}'
-                    label = value_template.format(round(max_weight/divisor, significance_ndigits))
+                    label = value_template.format(
+                        round(max_weight/divisor, significance_ndigits))
                 else:
-                    value_template = '{:.' + str(significance_ndigits) + 'f}-{:.' + str(significance_ndigits) + 'f}'
-                    label = value_template.format(round(nmin/divisor, significance_ndigits), round(nmax/divisor, significance_ndigits))
+                    value_template = '{:.' + str(significance_ndigits) + \
+                        'f}-{:.' + str(significance_ndigits) + 'f}'
+                    label = value_template.format(
+                        round(nmin/divisor, significance_ndigits), round(nmax/divisor, significance_ndigits))
                 ax.text(
                     x_r + x_text_nudge,
                     y - y_text_nudge,
@@ -156,12 +159,14 @@ def main():
             # plot
             title = '{} ({})'.format(region, plot_set[c]['title'])
             print(" * Plotting", title)
-            plt.title(title, fontsize = 14)
+            plt.title(title, fontsize=14)
 
             # output
-            output_file = os.path.join(config['paths']['figures'], 'commune_center-{}-{}.png'.format(region.lower().replace(' ', ''), column))
+            output_file = os.path.join(
+                config['paths']['figures'], 'commune_center-{}-{}.png'.format(region.lower().replace(' ', ''), column))
             save_fig(output_file)
             plt.close()
+
 
 if __name__ == '__main__':
     main()

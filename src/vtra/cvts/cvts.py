@@ -1,31 +1,59 @@
+"""Process CVTS (Commercial Vehicle Tracking System) GPS traces to estimate freight flows
+"""
+import csv
 import os
 import sys
-
-import csv
-from pathlib import Path
 import time
-import fiona
 from collections import OrderedDict, defaultdict
+from pathlib import Path
 
+import fiona
 from rtree import index
-from shapely.geometry import mapping, shape, Point, LineString, MultiLineString
-
-
-
+from shapely.geometry import LineString, MultiLineString, Point, mapping, shape
 from vtra.utils import load_config
 
-# C Incoming data/20170801.zip -> data/raw/cvts/20170801
-# D Work Processes/Vietnam/data/Roads/ -> data/raw/cvts/Roads
 
-data_root = load_config()['paths']['data']
+def main():
+    # C Incoming data/20170801.zip -> data/raw/cvts/20170801
+    # D Work Processes/Vietnam/data/Roads/ -> data/raw/cvts/Roads
 
-dir_raw_cvts = os.path.join(data_root, 'Cvts', 'raw', '20170801')
-dir_raw_roads = os.path.join(data_root, 'Roads', 'national_roads')
-dir_inter_reduse = os.path.join(data_root, 'Cvts', 'intermediate', 'reduse')
-dir_inter_clip = os.path.join(data_root, 'Cvts', 'intermediate', 'clip')
-dir_results_routes = os.path.join(data_root, 'Cvts', 'results', 'routes')
-dir_results_routes_collected = os.path.join(data_root, 'Cvts', 'results', 'routes_collected')
-dir_results_traffic_count = os.path.join(data_root, 'Cvts', 'results', 'traffic_count')
+    data_root = load_config()['paths']['data']
+
+    dir_raw_cvts = os.path.join(data_root, 'Cvts', 'raw', '20170801')
+    dir_raw_roads = os.path.join(data_root, 'Roads', 'national_roads')
+    dir_inter_reduse = os.path.join(data_root, 'Cvts', 'intermediate', 'reduse')
+    dir_inter_clip = os.path.join(data_root, 'Cvts', 'intermediate', 'clip')
+    dir_results_routes = os.path.join(data_root, 'Cvts', 'results', 'routes')
+    dir_results_routes_collected = os.path.join(
+        data_root, 'Cvts', 'results', 'routes_collected')
+    dir_results_traffic_count = os.path.join(data_root, 'Cvts', 'results', 'traffic_count')
+
+    # Reduse dataset with 70 percent (processing 4s/100mb)
+    print('Reduce dataset size')
+    reduse_dataset(dir_raw_cvts, dir_inter_reduse)
+
+    # # Read road network in memory
+    print('Read road network')
+    geojson_road_network = read_shapefile(dir_raw_roads, 'national_network_edges.shp')
+
+    # # Remove points that are not covered by the road network
+    # print('Clip gps points')
+    # clip_gps_points(geojson_road_network, dir_inter_reduse, dir_inter_clip)
+
+    # Generate routes by mapping gps points on the road network
+    print('Generate routes')
+    find_routes(geojson_road_network, dir_inter_reduse, dir_results_routes)
+
+    # add traffic attribute to route network (count id's in routes)
+    print('Add traffic count attribute to road network')
+    geojson_road_network = add_traffic_count_to_road_network(
+        geojson_road_network, dir_results_routes, dir_results_traffic_count)
+
+    write_shapefile(geojson_road_network, dir_results_traffic_count, 'road_network.shp')
+
+    # add routes to single file
+    create_single_route_file(dir_results_routes, dir_results_routes_collected)
+
 
 def reduse_dataset(source_dir, dest_dir):
     # Reduce the size of the dataset to speed up further processing
@@ -75,8 +103,10 @@ def reduse_dataset(source_dir, dest_dir):
                                     data_moving.append(current)
                                 # Only sample if interval is large enough
                                 else:
-                                    sample_lat_mov = abs(float(data_moving[-1][0]) - float(current[0]))
-                                    sample_lon_mov = abs(float(data_moving[-1][1]) - float(current[1]))
+                                    sample_lat_mov = abs(
+                                        float(data_moving[-1][0]) - float(current[0]))
+                                    sample_lon_mov = abs(
+                                        float(data_moving[-1][1]) - float(current[1]))
 
                                     if sample_lat_mov >= MIN_LAT_SAMPLE or sample_lon_mov >= MIN_LON_SAMPLE:
                                         data_moving.append(current)
@@ -84,6 +114,7 @@ def reduse_dataset(source_dir, dest_dir):
                         # Write clean dataset to file
                         wr = csv.writer(sink, delimiter=',')
                         [wr.writerow(row) for row in data_moving]
+
 
 def process_gps_trace_into_points(source_dir):
     # Generate geojson format dictionaries from a gps point folder
@@ -114,10 +145,12 @@ def process_gps_trace_into_points(source_dir):
                         print('File ' + root + file + ' was not processed because of an issue')
     return geojson
 
+
 def clip_gps_points(road_network, source_dir, dest_dir):
 
     # Build a polygon (convex hull) that represents data in the road network
-    road_network_area = MultiLineString([shape(road['geometry']) for road in road_network]).convex_hull
+    road_network_area = MultiLineString([shape(road['geometry'])
+                                         for road in road_network]).convex_hull
 
     # Filter gps points that are not in this area
     # Mirror the data that is used in the source folder
@@ -134,11 +167,13 @@ def clip_gps_points(road_network, source_dir, dest_dir):
                         reader = csv.reader(source, quoting=csv.QUOTE_NONNUMERIC)
 
                         # Remove rows that are not covered by the road network
-                        data = [row for row in reader if Point(row[0], row[1]).within(road_network_area)]
+                        data = [row for row in reader if Point(
+                            row[0], row[1]).within(road_network_area)]
 
                         # Write clean dataset to file
                         wr = csv.writer(sink, delimiter=',')
                         [wr.writerow(row) for row in data]
+
 
 def find_routes(road_network, gps_points_folder, routes_folder):
     # Process gps points by comparing the route network agains the route
@@ -157,7 +192,8 @@ def find_routes(road_network, gps_points_folder, routes_folder):
     rtree = index.Index()
     road_network_lut = {}
     for road in road_network:
-        rtree.insert(int(road['properties']['G_ID']), shape(road['geometry']).bounds, obj=shape(road['geometry']))
+        rtree.insert(int(road['properties']['G_ID']), shape(
+            road['geometry']).bounds, obj=shape(road['geometry']))
         road_network_lut[int(road['properties']['G_ID'])] = shape(road['geometry'])
 
     # Process gps points per file
@@ -167,7 +203,8 @@ def find_routes(road_network, gps_points_folder, routes_folder):
                 rel_path = os.path.relpath(root, gps_points_folder)
                 with open(os.path.join(root, file), 'rt') as source:
                     target = os.path.join(routes_folder, rel_path)
-                    Path(os.path.join(routes_folder, rel_path)).mkdir(parents=True, exist_ok=True)
+                    Path(os.path.join(routes_folder, rel_path)).mkdir(
+                        parents=True, exist_ok=True)
 
                     with open(os.path.join(target, file), 'wt') as sink:
                         reader = csv.reader(source, quoting=csv.QUOTE_NONNUMERIC)
@@ -195,7 +232,7 @@ def find_routes(road_network, gps_points_folder, routes_folder):
 
                                     # Keep short edges if
                                     elif road_network_lut[edge_id].length < route_segment.length \
-                                        and road_network_lut[edge_id].intersection(route_segment_buf).length > road_network_lut[edge_id].length * 0.7:
+                                            and road_network_lut[edge_id].intersection(route_segment_buf).length > road_network_lut[edge_id].length * 0.7:
                                         add_route_id = True
 
                                     # Only add route id, if it doesnt exist in last x route points
@@ -221,7 +258,7 @@ def add_traffic_count_to_road_network(road_network, routes_folder, results_folde
         # del road_network_lut[int(road['properties']['G_ID'])]['properties']['NAME']
         # del road_network_lut[int(road['properties']['G_ID'])]['properties']['NAMEBASE']
         # del road_network_lut[int(road['properties']['G_ID'])]['properties']['PARENTGUID']
-        #----
+        # ----
 
     # Add vehicle count attribute to road network
     for root, dirs, files in os.walk(routes_folder):
@@ -232,10 +269,11 @@ def add_traffic_count_to_road_network(road_network, routes_folder, results_folde
                     reader = csv.reader(source, quoting=csv.QUOTE_NONNUMERIC)
 
                     for route_edge in reader:
-                        road_network_lut[int(route_edge[0])]['properties']['vehicle_count'] += 1
-
+                        road_network_lut[int(route_edge[0])
+                                         ]['properties']['vehicle_count'] += 1
 
     return [road[1] for road in road_network_lut.items()]
+
 
 def create_single_route_file(routes_folder, routes_collected_folder):
     # The routes folder shows results in the same folder structure as the
@@ -272,12 +310,14 @@ def read_shapefile(path, file):
     with fiona.open(os.path.join(path, file), 'r') as source:
         return [entry for entry in source]
 
+
 def write_shapefile(data, folder, filename):
 
     # Translate props to Fiona sink schema
     prop_schema = []
     for name, value in data[0]['properties'].items():
-        fiona_prop_type = next((fiona_type for fiona_type, python_type in fiona.FIELD_TYPES_MAP.items() if python_type == type(value)), None)
+        fiona_prop_type = next((fiona_type for fiona_type, python_type in fiona.FIELD_TYPES_MAP.items(
+        ) if python_type == type(value)), None)
         prop_schema.append((name, fiona_prop_type))
 
     new_prop_schema = []
@@ -304,34 +344,9 @@ def write_shapefile(data, folder, filename):
     with fiona.open(os.path.join(directory, filename), 'w', driver=sink_driver, crs=sink_crs, schema=sink_schema) as sink:
         [sink.write(feature) for feature in data]
 
+
 if __name__ == "__main__":
-
     start = time.time()
-
-    # Reduse dataset with 70 percent (processing 4s/100mb)
-    print('Reduce dataset size')
-    reduse_dataset(dir_raw_cvts, dir_inter_reduse)
-
-    # # Read road network in memory
-    print('Read road network')
-    geojson_road_network = read_shapefile(dir_raw_roads, 'national_network_edges.shp')
-
-    # # Remove points that are not covered by the road network
-    # print('Clip gps points')
-    # clip_gps_points(geojson_road_network, dir_inter_reduse, dir_inter_clip)
-
-    # Generate routes by mapping gps points on the road network
-    print('Generate routes')
-    find_routes(geojson_road_network, dir_inter_reduse, dir_results_routes)
-
-    # add traffic attribute to route network (count id's in routes)
-    print('Add traffic count attribute to road network')
-    geojson_road_network = add_traffic_count_to_road_network(geojson_road_network, dir_results_routes, dir_results_traffic_count)
-
-    write_shapefile(geojson_road_network, dir_results_traffic_count, 'road_network.shp')
-
-    # add routes to single file
-    create_single_route_file(dir_results_routes, dir_results_routes_collected)
-
+    main()
     end = time.time()
     print('Script completed in: ' + str(round((end - start), 2)) + ' seconds.')

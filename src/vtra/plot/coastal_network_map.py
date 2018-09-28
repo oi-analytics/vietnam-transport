@@ -2,23 +2,24 @@
 """
 import os
 import sys
-
 from collections import OrderedDict
 
 import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
 import matplotlib.pyplot as plt
-
-
 from vtra.utils import *
+
 
 def main():
     config = load_config()
     output_file = os.path.join(config['paths']['figures'], 'coastal-map.png')
-    coastal_edge_file = os.path.join(config['paths']['data'], 'Results', 'Flow_shapefiles', 'weighted_edges_flows_national_coastal.shp')
-    coastal_node_file = os.path.join(config['paths']['data'], 'Waterways', 'waterways', 'ports_nodes.shp')
+    coastal_edge_file = os.path.join(
+        config['paths']['data'], 'Results', 'Flow_shapefiles', 'weighted_edges_flows_national_coastal.shp')
+    coastal_node_file = os.path.join(
+        config['paths']['data'], 'Waterways', 'waterways', 'ports_nodes.shp')
 
-    color_by_type = {'Coastal route': '#045a8d','Domestic hub': '#d95f0e','International hub': '#d90e23'}
+    color_by_type = {'Coastal route': '#045a8d',
+                     'Domestic hub': '#d95f0e', 'International hub': '#d90e23'}
     ax = get_axes()
     plot_basemap(ax, config['paths']['data'])
     scale_bar(ax, location=(0.8, 0.05))
@@ -60,16 +61,19 @@ def main():
             xs_international.append(x)
             ys_international.append(y)
 
-    ax.scatter(xs_domestic, ys_domestic, transform=proj_lat_lon, facecolor='#d95f0e', s=12, zorder=5)
-    ax.scatter(xs_international, ys_international, transform=proj_lat_lon, facecolor='#d90e23', s=12, zorder=5)
+    ax.scatter(xs_domestic, ys_domestic, transform=proj_lat_lon,
+               facecolor='#d95f0e', s=12, zorder=5)
+    ax.scatter(xs_international, ys_international, transform=proj_lat_lon,
+               facecolor='#d90e23', s=12, zorder=5)
 
     # Legend
     legend_handles = [
         mpatches.Patch(color=color, label=line)
         for line, color in color_by_type.items()
-]
-    plt.legend(handles=legend_handles, loc = 'lower left')
+    ]
+    plt.legend(handles=legend_handles, loc='lower left')
     save_fig(output_file)
+
 
 if __name__ == '__main__':
     main()

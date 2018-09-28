@@ -2,7 +2,6 @@
 """
 import os
 import sys
-
 from collections import OrderedDict
 
 import cartopy.crs as ccrs
@@ -10,27 +9,31 @@ import cartopy.io.shapereader as shpreader
 import matplotlib.pyplot as plt
 import numpy as np
 from shapely.geometry import LineString
-
-
 from vtra.utils import *
+
 
 def main():
     config = load_config()
-    water_edge_file = os.path.join(config['paths']['data'], 'Results', 'Flow_shapefiles', 'wateredges_flows.shp')
+    water_edge_file = os.path.join(
+        config['paths']['data'], 'Results', 'Flow_shapefiles', 'wateredges_flows.shp')
 
     color = '#045a8d'
     color_by_type = {'Waterway route': color}
 
-    crop_cols = ['rice','cash','cass','teas','maiz','rubb','swpo','acof','rcof','pepp']
-    ind_cols = ['sugar','wood','steel','constructi','cement','fertilizer','coal','petroluem','manufactur','fishery','meat']
+    crop_cols = ['rice', 'cash', 'cass', 'teas',
+                 'maiz', 'rubb', 'swpo', 'acof', 'rcof', 'pepp']
+    ind_cols = ['sugar', 'wood', 'steel', 'constructi', 'cement',
+                'fertilizer', 'coal', 'petroluem', 'manufactur', 'fishery', 'meat']
 
     columns = crop_cols + ind_cols + ['total_flow']
     column_label_divisors = {c: 1000 for c in columns}
 
     legend_label = "AADF ('000 tons/day)"
-    title_cols = ['Rice','Cashew','Cassava','Teas','Maize','Rubber','Sweet Potatoes','Coffee Arabica','Coffee Robusta','Pepper',
-                'Sugar','Wood','Steel','Construction materials','Cement','Fertilizer','Coal','Petroleum',
-                'Manufacturing','Fishery','Meat','Total tonnage']
+    title_cols = [
+        'Rice', 'Cashew', 'Cassava', 'Teas', 'Maize', 'Rubber', 'Sweet Potatoes',
+        'Coffee Arabica', 'Coffee Robusta', 'Pepper', 'Sugar', 'Wood', 'Steel',
+        'Construction materials', 'Cement', 'Fertilizer', 'Coal', 'Petroleum',
+        'Manufacturing', 'Fishery', 'Meat', 'Total tonnage']
 
     for c in range(len(columns)):
         ax = get_axes()
@@ -106,10 +109,12 @@ def main():
                 horizontalalignment='left',
                 transform=proj_lat_lon,
                 size=10)
-        plt.title(title_cols[c], fontsize = 14)
-        output_file = os.path.join(config['paths']['figures'], 'water_flow-map-{}.png'.format(column))
+        plt.title(title_cols[c], fontsize=14)
+        output_file = os.path.join(config['paths']['figures'],
+                                   'water_flow-map-{}.png'.format(column))
         save_fig(output_file)
         plt.close()
+
 
 if __name__ == '__main__':
     main()

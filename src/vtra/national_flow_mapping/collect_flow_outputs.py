@@ -1,39 +1,30 @@
 """Summarise hazard data
 
 Get OD data and process it
-Author: Raghav Pant
-Date: April 20, 2018
 """
+import ast
 import configparser
+import copy
 import csv
 import glob
 import os
+import subprocess as sp
 
 import fiona
 import fiona.crs
-import rasterio
-
-
-from sqlalchemy import create_engine
-import subprocess as sp
-import psycopg2
-import osgeo.ogr as ogr
-
-import pandas as pd
-import copy
-
-
-import ast
-from osgeo import gdal
 import geopandas as gpd
-from shapely.geometry import Point
-from geoalchemy2 import Geometry, WKTElement
-
 import numpy as np
-
-
-from vtra.utils import load_config
+import osgeo.ogr as ogr
+import pandas as pd
+import psycopg2
+import rasterio
 import vtra.transport_network_creation as tnc
+from geoalchemy2 import Geometry, WKTElement
+from osgeo import gdal
+from shapely.geometry import Point
+from sqlalchemy import create_engine
+from vtra.utils import load_config
+
 
 def get_node_edge_path_flows(pd_dataframe, regional_id_list, industry, path_index, path_list, path_key_list, path_dict, val_threshold):
     for index, row in pd_dataframe.iterrows():
@@ -50,35 +41,33 @@ def get_node_edge_path_flows(pd_dataframe, regional_id_list, industry, path_inde
 
                 path_key = 'path_' + str(path_index)
                 path_key_list.append(path_key)
-                path_dict.update({path_key:{}})
-
+                path_dict.update({path_key: {}})
 
                 path_dict[path_key].update({'node_path': npath})
                 path_dict[path_key].update({'edge_path': epath})
-                path_dict[path_key].update({industry:[(orgn, dest, val)]})
+                path_dict[path_key].update({industry: [(orgn, dest, val)]})
 
             else:
                 pindex = path_list.index(epath)
                 path_key = path_key_list[pindex]
                 if industry not in path_dict[path_key].keys():
-                    path_dict[path_key].update({industry:[(orgn, dest, val)]})
+                    path_dict[path_key].update({industry: [(orgn, dest, val)]})
                 else:
                     path_dict[path_key][industry].append(((orgn, dest, val)))
 
-
     return(path_index, path_list, path_key_list, path_dict)
 
+
 def main():
-    '''
+    """
     Create the database connection
-    '''
+    """
     conf = load_config()
 
     try:
         conn = psycopg2.connect(**conf['database'])
     except:
-        print ("I am unable to connect to the database")
-
+        print("I am unable to connect to the database")
 
     curs = conn.cursor()
 
@@ -86,15 +75,17 @@ def main():
         **conf['database']
     }))
 
-    '''
+    """
     Step 2: Create the OD proprotions for the differnet modes
-    '''
-    '''
+    """
+    """
     First get the modal shares
-    '''
-    modes = ['road','rail','air','water']
-    ind_cols = ['sugar','wood','steel','constructi','cement','fertilizer','coal','petroluem','manufactur','fishery','meat']
-    crop_cols = ['rice','cash','cass','teas','maiz','rubb','swpo','acof','rcof','pepp']
+    """
+    modes = ['road', 'rail', 'air', 'water']
+    ind_cols = ['sugar', 'wood', 'steel', 'constructi', 'cement',
+                'fertilizer', 'coal', 'petroluem', 'manufactur', 'fishery', 'meat']
+    crop_cols = ['rice', 'cash', 'cass', 'teas',
+                 'maiz', 'rubb', 'swpo', 'acof', 'rcof', 'pepp']
     commodities = ind_cols + crop_cols
 
     province_id_list = []
@@ -115,12 +106,14 @@ def main():
             od_flows = pd.read_csv(ifile).fillna(0)
             od_flows = od_flows[od_flows['Tonnage'] > 0.5]
             if od_flows.empty is False:
-                flow_node_edge = od_flows.groupby(['node_path', 'edge_path', 'Origin_region', 'Destination_region'])['Tonnage'].sum().reset_index()
-                pth_idx, pth_list, pth_k_list, pth_dict = get_node_edge_path_flows(flow_node_edge, province_id_list, com, pth_idx, pth_list, pth_k_list, pth_dict, 0.5)
+                flow_node_edge = od_flows.groupby(['node_path', 'edge_path', 'Origin_region', 'Destination_region'])[
+                    'Tonnage'].sum().reset_index()
+                pth_idx, pth_list, pth_k_list, pth_dict = get_node_edge_path_flows(
+                    flow_node_edge, province_id_list, com, pth_idx, pth_list, pth_k_list, pth_dict, 0.5)
 
                 del od_flows
 
-            print ('Done with', ifile)
+            print('Done with', ifile)
 
     pth_tuple_list = []
     for key, values in pth_dict.items():
@@ -137,9 +130,11 @@ def main():
         pth_tuple_list.append(tuple(pth_tuple))
 
     excel_writer = pd.ExcelWriter('vnm_path_flows.xlsx')
-    df = pd.DataFrame(pth_tuple_list, columns = ['path_index','node_path','edge_path'] + commodities)
-    df.to_excel(excel_writer,'path_flows', index = False)
+    df = pd.DataFrame(pth_tuple_list, columns=[
+                      'path_index', 'node_path', 'edge_path'] + commodities)
+    df.to_excel(excel_writer, 'path_flows', index=False)
     excel_writer.save()
+
 
 if __name__ == '__main__':
     main()

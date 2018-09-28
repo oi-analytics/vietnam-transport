@@ -2,7 +2,6 @@
 """
 import os
 import sys
-
 from collections import OrderedDict
 
 import cartopy.crs as ccrs
@@ -10,22 +9,23 @@ import cartopy.io.shapereader as shpreader
 import matplotlib.pyplot as plt
 import numpy as np
 from shapely.geometry import LineString
-
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from vtra.utils import *
+
 
 def main():
     config = load_config()
-    flows_file = os.path.join(config['paths']['data'], 'Results', 'Failure_shapefiles', 'weighted_edges_failures_national_rail_transfer_from_road_10_shift.shp')
+    flows_file = os.path.join(
+        config['paths']['data'], 'Results', 'Failure_shapefiles',
+        'weighted_edges_failures_national_rail_transfer_from_road_10_shift.shp')
 
     plot_sets = [
         {
             'file_tag': 'commodities',
-            'no_access':[0, 1],
+            'no_access': [0, 1],
             'legend_label': "AADF (tons/day)",
             'divisor': 1,
-            'columns': ['min_tons','max_tons'],
-            'title_cols': ['Total tonnage (min)','Total tonnage (max)']
+            'columns': ['min_tons', 'max_tons'],
+            'title_cols': ['Total tonnage (min)', 'Total tonnage (max)']
         },
     ]
 
@@ -35,7 +35,7 @@ def main():
     for plot_set in plot_sets:
         for c in range(len(plot_set['columns'])):
             ax = get_axes()
-            plot_basemap(ax, config['paths']['data'], highlight_region = [])
+            plot_basemap(ax, config['paths']['data'], highlight_region=[])
             scale_bar(ax, location=(0.8, 0.05))
             plot_basemap_labels(ax, config['paths']['data'])
             proj_lat_lon = ccrs.PlateCarree()
@@ -107,10 +107,14 @@ def main():
                     transform=proj_lat_lon,
                     size=10)
 
-            plt.title(plot_set['title_cols'][c], fontsize = 14)
-            output_file = os.path.join(config['paths']['figures'], 'rail_failure-map-transfer-road-10-shift-{}-{}.png'.format(plot_set['file_tag'], column))
+            plt.title(plot_set['title_cols'][c], fontsize=14)
+            output_file = os.path.join(
+                config['paths']['figures'],
+                'rail_failure-map-transfer-road-10-shift-{}-{}.png'.format(
+                    plot_set['file_tag'], column))
             save_fig(output_file)
             plt.close()
+
 
 if __name__ == '__main__':
     main()

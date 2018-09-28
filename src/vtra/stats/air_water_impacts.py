@@ -5,23 +5,28 @@ import sys
 
 import geopandas as gpd
 import pandas as pd
-
-
 from vtra.utils import *
+
 
 def main():
     config = load_config()
 
     # Output to Excel
     # sheets: air, inland, coastal
-    flow_output_file = os.path.join(config['paths']['data'], 'Results', 'flow_mapping_paths', 'air-water-node-flows.xlsx')
-    impact_output_file = os.path.join(config['paths']['data'], 'Results', 'Failure_results', 'air-water-node-impacts.xlsx')
-    impact_summary_file = os.path.join(config['paths']['data'], 'Results', 'Failure_results', 'air-water-node-impacts-summary.xlsx')
+    flow_output_file = os.path.join(
+        config['paths']['data'], 'Results', 'flow_mapping_paths', 'air-water-node-flows.xlsx')
+    impact_output_file = os.path.join(
+        config['paths']['data'], 'Results', 'Failure_results', 'air-water-node-impacts.xlsx')
+    impact_summary_file = os.path.join(
+        config['paths']['data'], 'Results', 'Failure_results', 'air-water-node-impacts-summary.xlsx')
 
     # Output to Shapefiles
-    airports_flow_output_file = os.path.join(config['paths']['data'], 'Results', 'Flow_shapefiles', 'airport_nodes_flows.shp')
-    inland_ports_flow_output_file = os.path.join(config['paths']['data'], 'Results', 'Flow_shapefiles', 'inland_ports_nodes_flows.shp')
-    coastal_ports_flow_output_file = os.path.join(config['paths']['data'], 'Results', 'Flow_shapefiles', 'coastal_ports_nodes_flows.shp')
+    airports_flow_output_file = os.path.join(
+        config['paths']['data'], 'Results', 'Flow_shapefiles', 'airport_nodes_flows.shp')
+    inland_ports_flow_output_file = os.path.join(
+        config['paths']['data'], 'Results', 'Flow_shapefiles', 'inland_ports_nodes_flows.shp')
+    coastal_ports_flow_output_file = os.path.join(
+        config['paths']['data'], 'Results', 'Flow_shapefiles', 'coastal_ports_nodes_flows.shp')
 
     # locate data
     airports_file = os.path.join(
@@ -56,9 +61,18 @@ def main():
     coastal_ports_with_flows = aggregate_flows(coastal_ports, water_flows)
 
     # as gdf
-    airports_with_flows_gdf = gpd.GeoDataFrame(airports_with_flows, crs={'init': 'epsg:4326'}, geometry=airports_with_flows.geometry)
-    inland_ports_with_flows_gdf = gpd.GeoDataFrame(inland_ports_with_flows, crs={'init': 'epsg:4326'}, geometry=inland_ports_with_flows.geometry)
-    coastal_ports_with_flows_gdf = gpd.GeoDataFrame(coastal_ports_with_flows, crs={'init': 'epsg:4326'}, geometry=coastal_ports_with_flows.geometry)
+    airports_with_flows_gdf = gpd.GeoDataFrame(
+        airports_with_flows,
+        crs={'init': 'epsg:4326'},
+        geometry=airports_with_flows.geometry)
+    inland_ports_with_flows_gdf = gpd.GeoDataFrame(
+        inland_ports_with_flows,
+        crs={'init': 'epsg:4326'},
+        geometry=inland_ports_with_flows.geometry)
+    coastal_ports_with_flows_gdf = gpd.GeoDataFrame(
+        coastal_ports_with_flows,
+        crs={'init': 'epsg:4326'},
+        geometry=coastal_ports_with_flows.geometry)
 
     # save flows
     airports_with_flows_gdf.to_file(airports_flow_output_file)
@@ -154,7 +168,8 @@ def read_ports(ports_file_with_ids, ports_file_with_names):
 
 def read_hazards(hazard_file):
     data = pd.read_excel(hazard_file, ['air', 'inland', 'coastal'])
-    keep_cols = ['node_id','commune_name','district_name','province_name', 'hazard_type', 'model', 'climate_scenario', 'probability', 'year']
+    keep_cols = ['node_id', 'commune_name', 'district_name', 'province_name',
+                 'hazard_type', 'model', 'climate_scenario', 'probability', 'year']
     air_exposure = data['air'][keep_cols]
     inland_exposure = data['inland'][keep_cols]
     coastal_exposure = data['coastal'][keep_cols]
@@ -206,9 +221,11 @@ def join_hazards(nodes_with_flows_df, hazards_df):
 
 def summarise(nodes_with_hazards_df):
     grouped = nodes_with_hazards_df[
-        ['name','commune_name','district_name','province_name', 'min_tons', 'max_tons', 'hazard_type', 'climate_scenario', 'probability']
+        ['name', 'commune_name', 'district_name', 'province_name', 'min_tons',
+            'max_tons', 'hazard_type', 'climate_scenario', 'probability']
     ].groupby(
-        ['name','commune_name','district_name','province_name', 'min_tons', 'max_tons', 'hazard_type','climate_scenario']
+        ['name', 'commune_name', 'district_name', 'province_name',
+            'min_tons', 'max_tons', 'hazard_type', 'climate_scenario']
     )
 
     min_prob = grouped.min(

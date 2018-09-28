@@ -1,24 +1,18 @@
 # -*- coding: utf-8 -*-
 """
-
-
-
 """
+import os
+import sys
 
-# Import
-import pandas as pd
 import geopandas as gpd
 import numpy as np
-import sys
-import os
-
-
-from vtra.utils import load_config
-from vtra.mria.table import io_basic
-from vtra.mria.model import MRIA_IO as MRIA
-from vtra.mria.disruption import create_disruption
-
+import pandas as pd
 from pathos.multiprocessing import Pool, cpu_count
+from vtra.mria.disruption import create_disruption
+from vtra.mria.model import MRIA_IO as MRIA
+from vtra.mria.table import io_basic
+from vtra.utils import load_config
+
 
 def estimate_losses(input_file):
 
@@ -26,7 +20,7 @@ def estimate_losses(input_file):
 
     data_path = load_config()['paths']['data']
 
-    ''' Set booleans'''
+    """ Set booleans"""
     if 'min' in input_file:
         min_rice = True
     elif 'max' in input_file:
@@ -37,20 +31,20 @@ def estimate_losses(input_file):
     elif 'multiple' in input_file:
         single_point = False
 
-    ''' Specify file path '''
+    """ Specify file path """
     if min_rice == True:
-        filepath =  os.path.join(data_path,'input_data','IO_VIETNAM_MIN.xlsx')
+        filepath = os.path.join(data_path, 'input_data', 'IO_VIETNAM_MIN.xlsx')
     else:
-        filepath =  os.path.join(data_path,'input_data','IO_VIETNAM_MAX.xlsx')
+        filepath = os.path.join(data_path, 'input_data', 'IO_VIETNAM_MAX.xlsx')
 
-    '''Create data input'''
+    """Create data input"""
     DATA = io_basic('Vietnam', filepath, 2010)
     DATA.prep_data()
 
-    '''Run model and create some output'''
+    """Run model and create some output"""
     output = pd.DataFrame()
 
-    '''Specify disruption'''
+    """Specify disruption"""
     output_dir = os.path.join(
         data_path,
         'Results',
@@ -58,11 +52,12 @@ def estimate_losses(input_file):
         os.path.basename(os.path.splitext(input_file)[0])
     )
 
-    '''Create output folders'''
+    """Create output folders"""
     if os.path.exists(output_dir) == False:
         os.mkdir(output_dir)
 
-    event_dict = create_disruption(input_file, output_dir, min_rice=min_rice, single_point=single_point)
+    event_dict = create_disruption(
+        input_file, output_dir, min_rice=min_rice, single_point=single_point)
 
     # print (event_dict.keys())
     collect_outputs = {}
@@ -78,36 +73,36 @@ def estimate_losses(input_file):
             disr_dict_fd = {}
             disr_dict_sup = event_dict[event]
 
-            '''Get direct losses '''
+            """Get direct losses """
             disrupt = pd.DataFrame.from_dict(disr_dict_sup, orient='index')
             disrupt.reset_index(inplace=True)
             disrupt[['region', 'sector']] = disrupt['index'].apply(pd.Series)
 
+            """Create model"""
+            MRIA_RUN = MRIA(DATA.name, DATA.countries, DATA.sectors,
+                            EORA=False, list_fd_cats=['FinDem'])
 
-            '''Create model'''
-            MRIA_RUN = MRIA(DATA.name, DATA.countries, DATA.sectors, EORA=False, list_fd_cats=['FinDem'])
-
-            '''Define sets and alias'''
+            """Define sets and alias"""
             # CREATE SETS
             MRIA_RUN.create_sets()
 
             # CREATE ALIAS
             MRIA_RUN.create_alias()
 
-            ''' Define tables and parameters'''
+            """ Define tables and parameters"""
             MRIA_RUN.baseline_data(DATA, disr_dict_sup, disr_dict_fd)
             MRIA_RUN.impact_data(DATA, disr_dict_sup, disr_dict_fd)
 
-            '''Get base line values'''
+            """Get base line values"""
             output['x_in'] = pd.Series(MRIA_RUN.X.get_values())*43
-            output.index.names = ['region','sector']
+            output.index.names = ['region', 'sector']
 
-            '''Get direct losses '''
+            """Get direct losses """
             disrupt = pd.DataFrame.from_dict(disr_dict_sup, orient='index')
             disrupt.reset_index(inplace=True)
             disrupt[['region', 'sector']] = disrupt['index'].apply(pd.Series)
             disrupt.drop('index', axis=1, inplace=True)
-            disrupt = 1- disrupt.groupby(['region', 'sector']).sum()
+            disrupt = 1 - disrupt.groupby(['region', 'sector']).sum()
             disrupt.columns = ['shock']
 
             output['dir_losses'] = (disrupt['shock']*output['x_in']).fillna(0)*-1
@@ -119,25 +114,25 @@ def estimate_losses(input_file):
 
             output = output/365
 
-            output = output.drop(['x_in','x_out'], axis=1)
+            output = output.drop(['x_in', 'x_out'], axis=1)
 
-            output.to_csv(os.path.join(output_dir,'{}.csv'.format(event)))
+            output.to_csv(os.path.join(output_dir, '{}.csv'.format(event)))
 
             prov_impact = output.groupby(level=0, axis=0).sum()
             collect_outputs[event] = prov_impact
 
         except Exception as e:
-                print('Failed to finish {} because of {}!'.format(event, e))
+            print('Failed to finish {} because of {}!'.format(event, e))
 
     if collect_outputs:
-        '''Specify disruption'''
+        """Specify disruption"""
         output_dir = os.path.join(data_path,
-            'Results',
-            'Economic_failure_results',
-            'provincial'
-        )
+                                  'Results',
+                                  'Economic_failure_results',
+                                  'provincial'
+                                  )
 
-        '''Create output folders'''
+        """Create output folders"""
         if os.path.exists(output_dir) == False:
             os.mkdir(output_dir)
 
@@ -148,7 +143,6 @@ def estimate_losses(input_file):
             'provincial',
             '{}_provincial.csv'.format(os.path.basename(os.path.splitext(input_file)[0]))))
 
-
         get_sums = {}
         for event in collect_outputs:
             get_sums[event] = collect_outputs[event]['total_losses'].sum()
@@ -156,24 +150,25 @@ def estimate_losses(input_file):
         sums = pd.DataFrame.from_dict(get_sums, orient='index')
         sums.columns = ['total_losses']
 
-        '''Specify disruption'''
+        """Specify disruption"""
         output_dir = os.path.join(data_path,
-            'Results',
-            'Economic_failure_results',
-            'summarized'
-        )
+                                  'Results',
+                                  'Economic_failure_results',
+                                  'summarized'
+                                  )
 
-        '''Create output folders'''
+        """Create output folders"""
         if os.path.exists(output_dir) == False:
             os.mkdir(output_dir)
 
         sums.to_csv(os.path.join(data_path,
-            'Results',
-            'Economic_failure_results',
-            'summarized',
-            '{}_summarized.csv'.format(os.path.basename(os.path.splitext(input_file)[0]))))
+                                 'Results',
+                                 'Economic_failure_results',
+                                 'summarized',
+                                 '{}_summarized.csv'.format(os.path.basename(os.path.splitext(input_file)[0]))))
 
         return pd.concat(collect_outputs), sums
+
 
 if __name__ == '__main__':
 
@@ -182,7 +177,8 @@ if __name__ == '__main__':
     # input_file = os.path.join(data_path,'Results','Failure_results','single_edge_failures_totals_national_road_max.csv')
 
     # get_all_input_files = [os.path.join(data_path,'Results','Failure_results', x) for x in os.listdir(os.path.join(data_path,'Results','Failure_results')) if x.endswith(".csv")]
-    get_all_input_files = [os.path.join(data_path,'Results','Failure_results','roads', x) for x in os.listdir(os.path.join(data_path,'Results','Failure_results','roads')) if x.endswith(".csv")]
+    get_all_input_files = [os.path.join(data_path, 'Results', 'Failure_results', 'roads', x) for x in os.listdir(
+        os.path.join(data_path, 'Results', 'Failure_results', 'roads')) if x.endswith(".csv")]
 
     # with Pool(int(cpu_count())-2) as pool:
     #     pool.map(estimate_losses, get_all_input_files, chunksize=1)

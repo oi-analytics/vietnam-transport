@@ -1,24 +1,25 @@
 """Rail network map
 """
+import csv
 import os
 import sys
-
 from collections import OrderedDict, defaultdict
+from pprint import pprint
 
 import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
 import matplotlib.pyplot as plt
-import csv
-from pprint import pprint
-
-
 from vtra.utils import *
+
 
 def main():
     config = load_config()
     output_file = os.path.join(config['paths']['figures'], 'rail-map-routes.png')
-    rails_file = os.path.join(config['paths']['data'], 'Results', 'Flow_shapefiles', 'weighted_edges_flows_national_rail.shp')
-    rail_descriptions = os.path.join(config['paths']['data'], 'Results', 'network_stats', 'national_rail_routes2.csv')
+    rails_file = os.path.join(
+        config['paths']['data'], 'Results',
+        'Flow_shapefiles', 'weighted_edges_flows_national_rail.shp')
+    rail_descriptions = os.path.join(
+        config['paths']['data'], 'Results', 'network_stats', 'national_rail_routes2.csv')
 
     ax = get_axes()
     plot_basemap(ax, config['paths']['data'])
@@ -47,7 +48,7 @@ def main():
             styles.update({row[0]: Style(color=colours[idx], zindex=4, label=row[1])})
 
     for cat, geoms in rail_geoms_by_category.items():
-        cat_style =styles[cat]
+        cat_style = styles[cat]
         ax.add_geometries(
             geoms,
             crs=proj_lat_lon,
@@ -59,6 +60,7 @@ def main():
 
     legend_from_style_spec(ax, styles, loc='center left')
     save_fig(output_file)
+
 
 if __name__ == '__main__':
     main()

@@ -52,43 +52,45 @@ Current e-mail: umed.temurshoev@ec.europa.eu
 
 import numpy as np
 
+
 def invd(x):
     invd = 1./x
-    invd[x==0] = 1
+    invd[x == 0] = 1
     return np.diag(invd)
+
 
 def ras_method(X0, u, v, eps=1e-5):
 
     m, n = np.shape(X0)
     N = np.zeros((m, n))
-    N[X0<0] = -X0[X0<0]
+    N[X0 < 0] = -X0[X0 < 0]
     P = X0+N
 
-    #initial guess for r (suggested by J&O, 2003)
+    # initial guess for r (suggested by J&O, 2003)
     r = np.ones((m))
     pr = np.dot(P.T, r)
     nr = N.T.dot(invd(r)).dot(np.ones((m)))
     s1 = np.dot(invd(2*pr), (v+np.sqrt((np.square(v)+4*(pr.dot(nr))))))
     ss = -invd(v).dot(nr)
-    s1[pr==0] = ss[pr==0]
+    s1[pr == 0] = ss[pr == 0]
 
     ps = np.dot(P, s1)
     ns = N.dot(invd(s1)).dot(np.ones((n)))
     r = np.dot(invd(2*ps), (u+np.sqrt((np.square(u)+4*(ps.dot(ns))))))
     rr = - invd(u).dot(ns)
-    r[ps==0] = rr[ps==0]
+    r[ps == 0] = rr[ps == 0]
 
     pr = np.dot(P.T, r)
     nr = N.T.dot(invd(r)).dot(np.ones((m)))
 
-    #%second step s
+    # %second step s
     s2 = np.dot(invd(2*pr), v+np.sqrt((np.square(v)+4*(pr.dot(nr)))))
     ss = -invd(v).dot(nr)
-    s2[pr==0] = ss[pr==0]
+    s2[pr == 0] = ss[pr == 0]
     dif = s2-s1
 
     M = np.max(abs(dif))
-    i = 1                #first iteration
+    i = 1  # first iteration
     while (M > eps):
         print(M)
         s1 = s2
@@ -96,23 +98,23 @@ def ras_method(X0, u, v, eps=1e-5):
         ns = N.dot(invd(s1)).dot(np.ones((n)))
         r = np.dot(invd(2*ps), (u+np.sqrt((np.square(u)+4*(ps.dot(ns))))))
         rr = -invd(u).dot(ns)
-        r[ps==0] = rr[ps==0]
+        r[ps == 0] = rr[ps == 0]
         pr = P.T.dot(r)
         nr = N.T.dot(invd(r)).dot(np.ones((m)))
         s2 = np.dot(invd(2*pr), v+np.sqrt((np.square(v)+4*(pr.dot(nr)))))
         ss = -invd(v).dot(nr)
-        s2[pr==0] = ss[pr==0]
+        s2[pr == 0] = ss[pr == 0]
         dif = s2-s1
         i = i+1
         M = np.max(abs(dif))
         if i == 10000:
             break
 
-    #%final step s
+    # %final step s
     s = s2
     ps = P.dot(s)
     ns = N.dot(invd(s)).dot(np.ones((n)))
     r = np.dot(invd(2*ps), (u+np.sqrt((np.square(u)+4*(ps.dot(ns))))))
     rr = -invd(u).dot(ns)
-    r[ps==0] = rr[ps==0]
-    return np.diag(r).dot(P).dot(np.diag(s))-invd(r).dot(N).dot(invd(s))      #%updated matrix
+    r[ps == 0] = rr[ps == 0]
+    return np.diag(r).dot(P).dot(np.diag(s))-invd(r).dot(N).dot(invd(s))  # %updated matrix

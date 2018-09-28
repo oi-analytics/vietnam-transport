@@ -2,24 +2,26 @@
 """
 import os
 import sys
-
 from collections import OrderedDict
 
 import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
 import matplotlib.pyplot as plt
 from shapely.geometry import LineString
-
-
 from vtra.utils import *
+
 
 def main(mode):
     config = load_config()
     if mode == 'road':
         # flows_file = os.path.join(config['paths']['data'], 'Results', 'Failure_shapefiles', 'weighted_edges_failures_national_road_multi_modal_options.shp')
-        flows_file = os.path.join(config['paths']['data'], 'Results', 'Failure_shapefiles', 'weighted_edges_failures_national_road_10_percent_shift.shp')
+        flows_file = os.path.join(
+            config['paths']['data'], 'Results', 'Failure_shapefiles',
+            'weighted_edges_failures_national_road_10_percent_shift.shp')
     elif mode == 'rail':
-        flows_file = os.path.join(config['paths']['data'], 'Results', 'Failure_shapefiles', 'weighted_edges_failures_national_rail_multi_modal_options.shp')
+        flows_file = os.path.join(
+            config['paths']['data'], 'Results', 'Failure_shapefiles',
+            'weighted_edges_failures_national_rail_multi_modal_options.shp')
     else:
         raise ValueError("Mode must be road or rail")
 
@@ -48,8 +50,8 @@ def main(mode):
             'no_access': [-1, 0],
             'legend_label': "(million USD/day)",
             'divisor': 1000000,
-            'columns': ['min_tr_los','max_tr_los'],
-            'title_cols': ['Rerouting costs (min)','Rerouting costs (max)']
+            'columns': ['min_tr_los', 'max_tr_los'],
+            'title_cols': ['Rerouting costs (min)', 'Rerouting costs (max)']
         },
     ]
 
@@ -59,7 +61,7 @@ def main(mode):
             print(" * Plotting", plot_set['file_tag'], column)
 
             ax = get_axes()
-            plot_basemap(ax, config['paths']['data'], highlight_region = [])
+            plot_basemap(ax, config['paths']['data'], highlight_region=[])
             scale_bar(ax, location=(0.8, 0.05))
             plot_basemap_labels(ax, config['paths']['data'])
             proj_lat_lon = ccrs.PlateCarree()
@@ -104,7 +106,7 @@ def main(mode):
             max_weight = max(weights)
             abs_max_weight = max([abs(w) for w in weights])
 
-             # generate weight bins
+            # generate weight bins
             width_by_range = OrderedDict()
             colors_by_range = {}
             n_steps = 8
@@ -273,18 +275,19 @@ def main(mode):
                     transform=proj_lat_lon,
                     size=8)
 
-            plt.title(plot_set['title_cols'][c], fontsize = 14)
+            plt.title(plot_set['title_cols'][c], fontsize=14)
             # legend_from_style_spec(ax, styles)
             if mode == 'road':
-                output_file = os.path.join(config['paths']['figures'], 'road_failure-map-{}-{}-multi-modal-options-10-shift.png'.format(plot_set['file_tag'], column))
+                output_file = os.path.join(
+                    config['paths']['figures'], 'road_failure-map-{}-{}-multi-modal-options-10-shift.png'.format(plot_set['file_tag'], column))
             elif mode == 'rail':
-                output_file = os.path.join(config['paths']['figures'], 'rail_failure-map-{}-{}-multi-modal-options.png'.format(plot_set['file_tag'], column))
+                output_file = os.path.join(
+                    config['paths']['figures'], 'rail_failure-map-{}-{}-multi-modal-options.png'.format(plot_set['file_tag'], column))
             else:
                 raise ValueError("Mode must be road or rail")
             save_fig(output_file)
             plt.close()
             print(" >", output_file)
-
 
 
 if __name__ == '__main__':

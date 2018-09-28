@@ -2,16 +2,14 @@
 """
 import os
 import sys
-
 from collections import OrderedDict
 
 import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
 import matplotlib.pyplot as plt
 from shapely.geometry import LineString
-
-
 from vtra.utils import *
+
 
 def main():
     config = load_config()
@@ -27,7 +25,10 @@ def main():
 
     for region in regions:
 
-        region_file = os.path.join(config['paths']['data'], 'Results', 'Flow_shapefiles', 'weighted_edges_commune_center_flows_' + region.lower().replace(' ', '') + '_5_tons.shp')
+        region_file = os.path.join(
+            config['paths']['data'], 'Results', 'Flow_shapefiles',
+            'weighted_edges_commune_center_flows_' + region.lower().replace(' ', '') +
+            '_5_tons.shp')
         plot_settings = get_region_plot_settings(region)
 
         ax = get_axes(plot_settings['bbox'], figsize=plot_settings['figure_size'])
@@ -56,9 +57,8 @@ def main():
 
             road_geoms_by_category[road_geoms_by_category_keys[val]].append(geom)
 
-
         for cat, geoms in road_geoms_by_category.items():
-            cat_style =styles[cat]
+            cat_style = styles[cat]
             ax.add_geometries(
                 geoms,
                 crs=proj_lat_lon,
@@ -71,9 +71,11 @@ def main():
         legend_from_style_spec(ax, styles)
 
         # output
-        output_file = os.path.join(config['paths']['figures'], 'province_roads-{}.png'.format(region.lower().replace(' ', '')))
+        output_file = os.path.join(
+            config['paths']['figures'], 'province_roads-{}.png'.format(region.lower().replace(' ', '')))
         save_fig(output_file)
         plt.close()
+
 
 if __name__ == '__main__':
     main()

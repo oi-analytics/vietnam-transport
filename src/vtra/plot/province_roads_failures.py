@@ -2,16 +2,14 @@
 """
 import os
 import sys
-
 from collections import OrderedDict
 
 import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
 import matplotlib.pyplot as plt
 from shapely.geometry import LineString
-
-
 from vtra.utils import *
+
 
 def main():
     config = load_config()
@@ -111,7 +109,8 @@ def main():
     for re in range(0, 1):
         region = regions[re]
 
-        region_file = os.path.join(config['paths']['data'], 'Results', 'Failure_shapefiles', 'weighted_edges_commune_center_failures_' + region.lower().replace(' ', '') + '_5_tons.shp')
+        region_file = os.path.join(config['paths']['data'], 'Results', 'Failure_shapefiles',
+                                   'weighted_edges_commune_center_failures_' + region.lower().replace(' ', '') + '_5_tons.shp')
         plot_settings = get_region_plot_settings(region)
 
         for c in range(len(plot_set)):
@@ -129,13 +128,13 @@ def main():
 
             # generate weight bins
             column = plot_set[c]['column']
-            if column in ('min_adapt_','max_adapt_'):
+            if column in ('min_adapt_', 'max_adapt_'):
                 weights = [
                     record.attributes[column]
                     for record in shpreader.Reader(region_file).records()
                     if record.attributes[column] > 0 and record.attributes['max_econ_l'] > 0
                 ]
-            elif column in ('min_bc_rat','max_bc_rat'):
+            elif column in ('min_bc_rat', 'max_bc_rat'):
                 weights = [
                     record.attributes[column]
                     for record in shpreader.Reader(region_file).records()
@@ -148,10 +147,12 @@ def main():
                 ]
 
             max_weight = max(weights)
-            if column in ('min_bc_rat','max_bc_rat') and region == 'Lao Cai':
-                width_by_range = generate_weight_bins_with_colour_gradient(weights, n_steps = 6, width_step=0.001)
+            if column in ('min_bc_rat', 'max_bc_rat') and region == 'Lao Cai':
+                width_by_range = generate_weight_bins_with_colour_gradient(
+                    weights, n_steps=6, width_step=0.001)
             else:
-                width_by_range = generate_weight_bins_with_colour_gradient(weights, width_step=0.001)
+                width_by_range = generate_weight_bins_with_colour_gradient(
+                    weights, width_step=0.001)
 
             road_geoms_by_category = {
                 region: []
@@ -161,13 +162,13 @@ def main():
                 (region,  Style(color='#ba0f03', zindex=6, label=region))
             ])
 
-            if column in ('min_adapt_','max_adapt_'):
+            if column in ('min_adapt_', 'max_adapt_'):
                 rec_set = [
                     record
                     for record in shpreader.Reader(region_file).records()
                     if record.attributes[column] > 0 and record.attributes['max_econ_l'] > 0
                 ]
-            elif column in ('min_bc_rat','max_bc_rat'):
+            elif column in ('min_bc_rat', 'max_bc_rat'):
                 rec_set = [
                     record
                     for record in shpreader.Reader(region_file).records()
@@ -234,10 +235,13 @@ def main():
                 significance_ndigits = plot_set[c]['significance']
                 if nmin == max_weight:
                     value_template = '>{:.' + str(significance_ndigits) + 'f}'
-                    label = value_template.format(round(max_weight/divisor, significance_ndigits))
+                    label = value_template.format(
+                        round(max_weight/divisor, significance_ndigits))
                 else:
-                    value_template = '{:.' + str(significance_ndigits) + 'f}-{:.' + str(significance_ndigits) + 'f}'
-                    label = value_template.format(round(nmin/divisor, significance_ndigits), round(nmax/divisor, significance_ndigits))
+                    value_template = '{:.' + str(significance_ndigits) + \
+                        'f}-{:.' + str(significance_ndigits) + 'f}'
+                    label = value_template.format(
+                        round(nmin/divisor, significance_ndigits), round(nmax/divisor, significance_ndigits))
                 ax.text(
                     x_r + x_text_nudge,
                     y - y_text_nudge,
@@ -252,12 +256,14 @@ def main():
             # plot
             title = '{} ({})'.format(region, plot_set[c]['title'])
             print(" * Plotting", title)
-            plt.title(title, fontsize = 14)
+            plt.title(title, fontsize=14)
 
             # output
-            output_file = os.path.join(config['paths']['figures'], 'commune_center-{}-{}-failures_2.png'.format(region.lower().replace(' ', ''), column))
+            output_file = os.path.join(
+                config['paths']['figures'], 'commune_center-{}-{}-failures_2.png'.format(region.lower().replace(' ', ''), column))
             save_fig(output_file)
             plt.close()
+
 
 if __name__ == '__main__':
     main()
