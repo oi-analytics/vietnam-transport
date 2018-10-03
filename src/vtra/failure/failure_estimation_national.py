@@ -1,5 +1,64 @@
-# -*- coding: utf-8 -*-
-"""Assign commodity flows on the road network
+"""Failure analysis of national-scale networks
+For transport modes at national scale:
+    ['road', 'rail']
+
+Input data requirements
+-----------------------
+1. Correct paths to all files and correct input parameters
+2. MINIMUM MANDATORY DATA SPECIFICATION
+    A. Excel file with mode sheets containing network graph structure and attributes
+        Should contain following column names and attributes:
+            edge_id - String/Integer/Float Edge ID
+            from_node - String/Integer/Float node ID that should be present in node_id column
+            to_node - String/Integer/Float node ID that should be present in node_id column
+            length - Float length of edge in km
+            min_time - Float minimum time of travel in hours on edge 
+            max_time - Float maximum time of travel in hours on edge  
+            min_time_cost - Float minimum cost of time in USD on edge   
+            max_time_cost - Float maximum cost of time in USD on edge 
+            min_tariff_cost - Float minimum tariff cost in USD on edge   
+            max_tariff_cost - Float maximum tariff cost in USD on edge
+             
+    B. Edge shapefiles for all national-scale networks
+        Should contain following column names and attributes:
+            edge_id - String/Integer/Float Edge ID
+            geometry - Shapely LineString geometry of edges
+
+    C. Excel file with mode sheets containing node-level OD values
+        Should contain following column names and attributes:
+            origin - String node ID of Origin
+            destination - String node ID of Destination
+            min_tons -  Float values of minimum daily OD in tons
+            max_tons - Float values of maximum daily OD in tons
+        Should also contain names of the industry columns specified in the inputs
+            
+Results
+-------
+1. Excel sheets with results of flow mapping based on MIN-MAX generalised costs estimates:
+        origin - String node ID of Origin
+        destination - String node ID of Destination
+        min_edge_path - List of string of edge ID's for paths with minimum generalised cost flows
+        max_edge_path - List of string of edge ID's for paths with maximum generalised cost flows
+        min_distance - Float values of estimated distance for paths with minimum generalised cost flows
+        max_distance - Float values of estimated distance for paths with maximum generalised cost flows
+        min_time - Float values of estimated time for paths with minimum generalised cost flows
+        max_time - Float values of estimated time for paths with maximum generalised cost flows
+        min_gcost - Float values of estimated generalised cost for paths with minimum generalised cost flows
+        max_gcost - Float values of estimated generalised cost for paths with maximum generalised cost flows
+        min_vehicle_nums - Float values of estimated vehicle numbers for paths with minimum generalised cost flows
+        max_vehicle_nums - Float values of estimated vehicle numbers for paths with maximum generalised cost flows
+        industry_columns - All daily tonnages of industry columns given in the OD matrix data
+2. Shapefiles
+        edge_id - String/Integer/Float Edge ID
+        geometry - Shapely LineString geomtry of edges
+        min_{industry} - Float values of estimated minimum daily industries/commodities/total volumes in tons on edges 
+        max_{industry} - Float values of estimated maximum daily industries/commodities/total volumes in tons on edges
+            For all industry/commodities in the list: 
+            ['cement', 'coal', 'constructi', 'fertilizer', 'fishery', 
+            'manufactur', 'acof', 'cash', 'cass', 'maiz', 'pepp', 'rcof',
+            'rubb', 'swpo', 'teas', 'meat', 'rice', 'petroluem', 'steel', 
+            'sugar', 'wood', 'tons'] 
+
 """
 import ast
 import copy
@@ -19,15 +78,6 @@ import psycopg2
 from sqlalchemy import create_engine
 from vtra.transport_network_creation import *
 from vtra.utils import *
-
-
-def swap_min_max(x, min_col, max_col):
-    """
-    """
-    if abs(x[min_col]) > abs(x[max_col]):
-        return x[max_col], x[min_col]
-    else:
-        return x[min_col], x[max_col]
 
 
 def igraph_scenario_edge_failures_changing_tonnages(network_df_in, edge_failure_set, flow_dataframe, vehicle_wt, utilization_factors, path_criteria, tons_criteria, cost_criteria, time_criteria):
@@ -275,8 +325,42 @@ def network_failure_assembly(edge_failure_dataframe, vehicle_wt, transport_mode,
 
 
 def main():
+    """
+    Specify the paths from where you to read and write:
+    1. Input data
+    2. Intermediate calcuations data
+    3. Output results
+
+    Supply input data and parameters
+    1. Names of the three Provinces
+        List of string types 
+    2. Names of modes
+        List of strings
+    3. Names of output modes
+        List of strings
+    4. Names of hazard bands
+        List of integers
+    5. Names of hazard thresholds
+        List of integers
+    6. Condition 'Yes' or 'No' is the users wants to process
+        Province scale results
+        National scale results 
+
+    Give the paths to the input data files:
+    1. Commune boundary and stats data shapefile
+    2. Hazard datasets description Excel file
+    3. String name of sheet in hazard datasets description Excel file
+    
+    Specify the output files and paths to be created 
+    """
     data_path, calc_path, output_path = load_config()['paths']['data'], load_config()[
         'paths']['calc'], load_config()['paths']['output']
+
+    """Supply input data and parameters
+    """
+    modes = ['road', 'rail']
+    veh_wt = [20, 800]
+    usage_factors = [(0, 0), (0, 0)]
 
     types = ['min', 'max']
     path_types = ['min_edge_path', 'max_edge_path']
@@ -288,33 +372,27 @@ def main():
     rice_type = ['min_rice', 'max_rice']
     ind_crop_cols = ['sugar', 'wood', 'steel', 'constructi', 'cement', 'fertilizer', 'coal', 'petroluem', 'manufactur',
                      'fishery', 'meat', 'cash', 'cass', 'teas', 'maiz', 'rubb', 'swpo', 'acof', 'rcof', 'pepp']
-
-    shp_output_path = os.path.join(output_path, 'failure_shapefiles')
+    percentage = 100.0
+    
+    """Give the paths to the input data files
+    """
+    network_data_path = os.path.join(data_path,'post_processed_networks')
+    network_data_excel = os.path.join(data_path,'post_processed_networks','national_edges.xlsx')
     flow_paths_data = os.path.join(output_path, 'flow_mapping_paths',
-                                   'national_scale_flow_paths_2.xlsx')
+                                   'national_scale_flow_paths.xlsx')
     fail_scenarios_data = os.path.join(
         output_path, 'hazard_scenarios', 'national_scale_hazard_intersections.xlsx')
-
-    cols = ['origin', 'destination', 'min_edge_path', 'max_edge_path', 'min_netrev', 'max_netrev', 'min_croptons', 'max_croptons',
-            'min_distance', 'max_distance', 'min_time', 'max_time', 'min_gcost', 'max_gcost']
-
-    """
-    Get the modal shares
-    """
-    # modes_file_paths = [('Roads','national_roads'), ('Railways','national_rail'), ('Waterways','waterways'), ('Waterways','waterways')]
-    # modes_file_paths = [('Roads','national_roads'), ('Railways','national_rail')]
-    modes_file_paths = [('Roads', 'national_roads')]
-    modes = ['road', 'rail', 'inland', 'coastal']
-    veh_wt = [20, 800, 800, 1200]
-    usage_factors = [(0, 0), (0, 0), (0.2, 0.25), (0.2, 0.25)]
-    speeds = [(0, 0), (40, 60), (9, 20), (9, 20)]
-    mode_cols = ['road', 'rail', 'inland', 'coastal']
-    new_mode_cols = ['o', 'd', 'road', 'rail', 'inland', 'coastal']
 
     md_prop_file = os.path.join(data_path, 'mode_properties', 'mode_costs.xlsx')
     rd_prop_file = os.path.join(data_path, 'mode_properties', 'road_properties.xlsx')
 
-    for m in range(len(modes_file_paths)):
+    """Specify the output files and paths to be created 
+    """
+    shp_output_path = os.path.join(output_path, 'failure_shapefiles')
+    if os.path.exists(shp_output_path) == False:
+        os.mkdir(shp_output_path)
+
+    for m in range(len(modes)):
         mode_data_path = os.path.join(
             data_path, modes_file_paths[m][0], modes_file_paths[m][1])
         for file in os.listdir(mode_data_path):
@@ -330,47 +408,28 @@ def main():
             G_df = network_shapefile_to_dataframe(
                 edges_in, md_prop_file, modes[m], speeds[m][0], speeds[m][1])
 
-        # G = add_igraph_generalised_costs_network(G, 1, veh_wt[m], usage_factors[m][0], usage_factors[m][1])
-        # nodes_name = np.asarray([x['name'] for x in G.vs])
-        # nodes_index = np.asarray([x.index for x in G.vs])
-        # node_dict = dict(zip(nodes_name, nodes_index))
+        """Load mode igraph network and GeoDataFrame
+        """
+        print ('* Loading {} igraph network and GeoDataFrame'.format(modes[m]))
+        G_df = pd.read_excel(network_data_excel,sheet_name = modes[m],encoding='utf-8')
+        gdf_edges = gpd.read_file(os.path.join(network_data_path,'{}_edges.shp'.format(modes[m])),encoding='utf-8')
+        gdf_edges = gdf_edges[['edge_id','geometry']]
 
+        """Load mode igraph network and GeoDataFrame
+        """
         fail_df = pd.read_excel(fail_scenarios_data, sheet_name=modes[m])
         single_ef_list = list(set(fail_df['edge_id'].values.tolist()))
         print('scenarios in national {0} are {1}'.format(modes[m], len(single_ef_list)))
-        """
-        Select individual edge first
-        columns of failure excel are
-        band_name
-        band_num
-        climate_scenario
-        commune_id
-        commune_name
-        district_id
-        district_name
-        edge_id
-        hazard_type
-        max_val
-        min_val
-        probability
-        province_id
-        province_name
-        sector
-        year
-        length
-        """
 
         """
         First do single edge failures
         """
-        perct = 90
         flow_df = pd.read_excel(flow_paths_data, sheet_name=modes[m])
         edge_fail_ranges = []
         for t in range(len(types)):
-            flow_df[tons_types[t]] = 0.01*perct*flow_df[tons_types[t]]
+            flow_df[tons_types[t]] = 0.01*percentage*flow_df[tons_types[t]]
             ef_list = []
             for edge in single_ef_list:
-                # ef_dict = igraph_scenario_edge_failures(G_df, [edge], flow_df, veh_wt[m], usage_factors[m][0], usage_factors[m][1], path_types[t], cost_types[t], time_types[t])
                 ef_dict = igraph_scenario_edge_failures_changing_tonnages(
                     G_df, [edge], flow_df, veh_wt[m], usage_factors[m], path_types[t], tons_types[t], cost_types[t], time_types[t])
                 if ef_dict:
@@ -379,7 +438,6 @@ def main():
                 print('Done with mode {0} edge {1} type {2}'.format(modes[m], edge, types[t]))
 
             df = pd.DataFrame(ef_list)
-            # df.to_csv(os.path.join(output_path,'failure_results','single_edge_failures_all_paths_national_{0}_{1}_2.csv'.format(modes[m], types[t])), index = False)
 
             select_cols = ['origin', 'destination', 'o_region', 'd_region', dist_types[t], time_types[t],
                            cost_types[t], vehicle_types[t]] + ind_crop_cols + [rice_type[t], tons_types[t]]
@@ -393,28 +451,26 @@ def main():
                 flow_df_select[dist_types[t]]
             flow_df_select['time_diff'] = flow_df_select['new_time'] - \
                 flow_df_select[time_types[t]]
-            # flow_df_select['tr_loss'] = (1 - flow_df_select['no_access'])*flow_df_select[vehicle_types[t]]*(flow_df_select['new_cost'] - flow_df_select[cost_types[t]])
             flow_df_select['tr_loss'] = (1 - flow_df_select['no_access']) * \
                 (flow_df_select['new_cost'] - flow_df_select[cost_types[t]])
 
             df_path = os.path.join(output_path, 'failure_results', 'single_edge_failures_all_path_impacts_national_{0}_{1}_{2}_shift.csv'.format(
-                modes[m], types[t], 100-perct))
+                modes[m], types[t], 100-percentage))
             flow_df_select.to_csv(df_path, index=False)
-            # flow_df_select = pd.read_csv(df_path).fillna(0)
             flow_df_select.rename(columns={'transport_loss': 'tr_loss'}, inplace=True)
 
-            # select_cols = ['edge_id','o_region','d_region','no_access'] + ind_crop_cols + [rice_type[t], tons_types[t]]
-            # edge_impact = flow_df_select[select_cols]
-            # edge_impact = edge_impact[edge_impact['no_access'] == 1]
-            # edge_impact = edge_impact.groupby(['edge_id', 'o_region','d_region'])[ind_crop_cols + [rice_type[t], tons_types[t]]].sum().reset_index()
-            # df_path = os.path.join(output_path,'failure_results','single_edge_failures_totals_national_{0}_{1}_2.csv'.format(modes[m], types[t]))
-            # edge_impact.to_csv(df_path, index = False)
-            # edge_fail_ranges.append(edge_impact)
-            # edge_impact = flow_df_select[select_cols+['tr_loss']]
-            # edge_impact = edge_impact[edge_impact['no_access'] == 0]
-            # edge_impact = edge_impact.groupby(['edge_id', 'o_region','d_region'])['tr_loss'].sum().reset_index()
-            # df_path = os.path.join(output_path,'failure_results','single_edge_failures_tr_loss_national_{0}_{1}_2.csv'.format(modes[m], types[t]))
-            # edge_impact.to_csv(df_path, index = False)
+            select_cols = ['edge_id','o_region','d_region','no_access'] + ind_crop_cols + [rice_type[t], tons_types[t]]
+            edge_impact = flow_df_select[select_cols]
+            edge_impact = edge_impact[edge_impact['no_access'] == 1]
+            edge_impact = edge_impact.groupby(['edge_id', 'o_region','d_region'])[ind_crop_cols + [rice_type[t], tons_types[t]]].sum().reset_index()
+            df_path = os.path.join(output_path,'failure_results','single_edge_failures_totals_national_{0}_{1}_2.csv'.format(modes[m], types[t]))
+            edge_impact.to_csv(df_path, index = False)
+            edge_fail_ranges.append(edge_impact)
+            edge_impact = flow_df_select[select_cols+['tr_loss']]
+            edge_impact = edge_impact[edge_impact['no_access'] == 0]
+            edge_impact = edge_impact.groupby(['edge_id', 'o_region','d_region'])['tr_loss'].sum().reset_index()
+            df_path = os.path.join(output_path,'failure_results','single_edge_failures_tr_loss_national_{0}_{1}_2.csv'.format(modes[m], types[t]))
+            edge_impact.to_csv(df_path, index = False)
 
             # select_cols = ['edge_id','no_access','tr_loss'] + ind_crop_cols + [rice_type[t], tons_types[t]]
             select_cols = ['edge_id', 'no_access', 'tr_loss'] + [tons_types[t]]
@@ -431,7 +487,7 @@ def main():
         edge_impact = pd.merge(edge_impact, edge_fail_ranges[1], how='left', on=[
                                'edge_id', 'no_access']).fillna(0)
         df_path = os.path.join(output_path, 'failure_results',
-                               'single_edge_failures_all_losses_national_{0}_{1}_shift.csv'.format(modes[m], 100 - perct))
+                               'single_edge_failures_all_losses_national_{0}_{1}_shift.csv'.format(modes[m], 100 - percentage))
         edge_impact.to_csv(df_path, index=False)
 
         network_failure_assembly(
