@@ -690,7 +690,7 @@ def voronoi_finite_polygons_2d(vor, radius=None):
     vor : Voronoi
         Input diagram
     radius : float, optional
-        Distance to 'points at infinity'.
+        Distance to 'points at infinity'
 
     Returns
     -------
@@ -699,7 +699,7 @@ def voronoi_finite_polygons_2d(vor, radius=None):
     vertices : list of tuples
         Coordinates for revised Voronoi vertices. Same as coordinates
         of input vertices, with 'points at infinity' appended to the
-        end.
+        end
     """
 
     if vor.points.shape[1] != 2:
@@ -773,3 +773,70 @@ def extract_gdf_values_containing_nodes(x, sindex_input_gdf, input_gdf, column_n
         return input_gdf.loc[list(input_gdf.geometry.contains(x.geometry))][column_name].values[0]
     else:
         return get_nearest_node(x.geometry, sindex_input_gdf, input_gdf, column_name)
+
+def get_node_edge_files_in_path(mode_file_path):
+    """
+    Get the paths of edge and node files in folder
+
+    Parameters
+    ----------
+    mode_file_path : Path of mode file
+    
+    Returns
+    -------
+    edges_in : Path of edges shapefile
+    nodes_in: Path of nodes shapefile
+
+    Error Exception
+    ---------------
+    Prints error if node or edge file missing
+
+    """
+    for file in os.listdir(mode_file_path): 
+        try:
+            if file.endswith('.shp') and 'edges' in file.lower().strip():
+                edges_in = os.path.join(mode_file_path, file)
+            if file.endswith('.shp') and 'nodes' in file.lower().strip():
+                nodes_in = os.path.join(mode_file_path, file)
+        except:
+            print('Network nodes and edge files necessary')
+
+    return nodes_in,edges_in
+
+def get_node_edge_files(mode_file_path,file_identification):
+    """
+    Get the paths of edge and node files in folder
+
+    Parameters
+    ----------
+    mode_file_path : Path of mode file
+    file_identification: String name of file
+
+    Returns
+    -------
+    edges_in : Path of edges shapefile
+    nodes_in: Path of nodes shapefile
+
+    Error Exception
+    ---------------
+    Prints error if node or edge file missing
+
+    """
+    for file in os.listdir(mode_file_path): 
+        try:
+            if file.lower().strip() == '{}_edges.shp'.format(file_identification):
+                edges_in = os.path.join(mode_file_path, file)
+            if file.lower().strip() == '{}_nodes.shp'.format(file_identification):
+                nodes_in = os.path.join(mode_file_path, file)
+        except:
+            print('Network nodes and edge files necessary')
+
+    return nodes_in,edges_in
+
+def swap_min_max(x, min_col, max_col):
+    """
+    """
+    if x[min_col] > x[max_col]:
+        return x[max_col], x[min_col]
+    else:
+        return x[min_col], x[max_col]
