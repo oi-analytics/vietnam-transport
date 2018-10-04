@@ -11,10 +11,7 @@ Contents
 
     Installation <requirements>
     Data Assembly <data>
-    Mapping Flows <flows>
-    Hazard Exposure <exposure>
-    Economic Impact <economic>
-    Adaption Options <adaptation>
+    Analysis and Results <results>
     API Reference <api/vtra>
     License <license>
     Authors <authors>
