@@ -7,22 +7,25 @@ For all transport modes at national scale:
 
 Input data requirements
 -----------------------
-1. Correct paths to all files and correct input parameters
-2. MANDATORY DATA SPECIFICATION 
-	Edge and node shapefiles for all Province roads and national-scale networks
-	All Geometries in Edge Shapefiles should be valid LineStrings
-	All Geometries in Node Shapefiles should be valid Points
-		
-		A. Node Shapefiles should contain following column names and attributes
-			node_id - String/Integer/Float node ID
-			geometry - Shapely Point geometry of nodes
-			attributes - Multiple types depending upon sector and context 
 
-		B. Edge Shapefiles should contain following column names and attributes:
-			edge_id - String/Integer/Float Edge ID
-			from_node - String/Integer/Float node ID that should be present in node_id column
-			to_node - String/Integer/Float node ID that should be present in node_id column 
-			geometry - Shapely LineString geometry of edges 
+Correct paths to all files and correct input parameters
+
+Edge and node shapefiles for all Province roads and national-scale networks
+
+All Geometries in Edge Shapefiles should be valid LineStrings
+
+All Geometries in Node Shapefiles should be valid Points
+	
+A. Node Shapefiles should contain following column names and attributes
+	- node_id - String/Integer/Float node ID
+	- geometry - Shapely Point geometry of nodes
+	- attributes - Multiple types depending upon sector and context 
+
+B. Edge Shapefiles should contain following column names and attributes:
+	- edge_id - String/Integer/Float Edge ID
+	- from_node - String/Integer/Float node ID that should be present in node_id column
+	- to_node - String/Integer/Float node ID that should be present in node_id column 
+	- geometry - Shapely LineString geometry of edges 
 
 
 Results
@@ -91,11 +94,11 @@ Results
 References
 ----------
 To understnad how the results are created and what is the data used see:
-	1. Pant, R., Koks, E.E., Russell, T., Schoenmakers, R. & Hall, J.W. (2018). 
-	Analysis and development of model for addressing climate change/disaster risks in multi-modal transport networks in Vietnam. 
-	Final Report, Oxford Infrastructure Analytics Ltd., Oxford, UK.
+1. Pant, R., Koks, E.E., Russell, T., Schoenmakers, R. & Hall, J.W. (2018). 
+Analysis and development of model for addressing climate change/disaster risks in multi-modal transport networks in Vietnam. 
+Final Report, Oxford Infrastructure Analytics Ltd., Oxford, UK.
 
-	2. All input data folders and files referred to in the code below
+2. All input data folders and files referred to in the code below
 		 
 """
 import os
@@ -136,7 +139,7 @@ def main():
     7. Names of commodity/industry columns for which min-max tonnage column names already exist
         List of string types
     8. Percentage of OD flow we want to send along path
-        FLoat type
+        Float type
 
     Give the paths to the input data files:
     1. OD flows Excel file
@@ -154,11 +157,13 @@ def main():
     province_terrian = ['mountain', 'flat', 'flat']
     truck_unit_wt = [5.0]
     modes_file_paths = [('Roads', 'national_roads'), ('Railways', 'national_rail'),
-                        ('Airports', 'airnetwork'), ('Waterways', 'waterways'), ('Waterways', 'waterways')]
-    modes = ['road', 'rail', 'air', 'inland', 'coastal']
+                        ('Airports', 'airnetwork'), ('Waterways', 'waterways'), 
+                        ('Waterways', 'waterways'),('Multi', 'multi_edges')]
+    modes = ['road', 'rail', 'air', 'inland', 'coastal','multi']
     veh_wt = [20, 800, 0, 800, 1200]
-    cost_uncertainty_factors = [(0, 0), (0, 0), (0, 0), (0.2, 0.25), (0.2, 0.25)]
-    speeds = [(0, 0), (40, 60), (700, 800), (9, 20), (9, 20)]
+    cost_uncertainty_factors = [(0, 0), (0, 0), (0, 0), (0.2, 0.25), (0.2, 0.25), (0,0)]
+    speeds = [(0, 0), (40, 60), (700, 800), (9, 20), (9, 20), (0,0)]
+    multi_md_len = 3.0
     province_results = 'Yes'
     national_results = 'Yes'
     
@@ -198,7 +203,7 @@ def main():
             province_path = os.path.join(data_path, 'Roads', '{}_roads'.format(province_name))
             nodes_in,edges_in = get_node_edge_files_in_path(province_path)
             gdf_edges = province_shapefile_to_dataframe(
-                edges_in, province_terrian[prn], rd_prop_file)
+                edges_in, province_terrian[prn], rd_prop_file,(0,0))
             
             gdf_nodes = read_setor_nodes(nodes_in,province_name)
             
@@ -232,10 +237,12 @@ def main():
             """Load mode igraph network and GeoDataFrame
             """
             if modes[m] == 'road':
-                gdf_edges = national_road_shapefile_to_dataframe(edges_in, rd_prop_file)
+                gdf_edges = national_road_shapefile_to_dataframe(edges_in, rd_prop_file,cost_uncertainty_factors[m])
+            elif modes[m] == 'multi':
+                gdf_edges = multi_modal_shapefile_to_dataframe(edges_in, md_prop_file, modes[m], multi_md_len,cost_uncertainty_factors[m])
             else:
                 gdf_edges = network_shapefile_to_dataframe(
-                    edges_in, md_prop_file, modes[m], speeds[m][0], speeds[m][1])
+                    edges_in, md_prop_file, modes[m], speeds[m][0], speeds[m][1],cost_uncertainty_factors[m])
 
             if modes[m] in ['inland','coastal']:
                 port_names = os.path.join(mode_data_path,'ports.shp')

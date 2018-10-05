@@ -72,6 +72,7 @@ import operator
 import os
 import subprocess
 import sys
+import copy
 
 import geopandas as gpd
 import igraph as ig
@@ -129,7 +130,8 @@ def network_od_path_estimations(graph, source, target, cost_criteria, time_crite
     return edge_path_list, path_dist_list, path_time_list, path_gcost_list
 
 
-def network_od_paths_assembly(points_dataframe, graph, vehicle_wt, region_name, excel_writer=''):
+def network_od_paths_assembly(points_dataframe, graph, 
+    vehicle_wt, region_name,excel_writer=''):
     """
     Assemble estimates of OD paths, distances, times, costs and tonnages on networks
 
@@ -274,6 +276,7 @@ if __name__ == '__main__':
     province_list = ['Lao Cai', 'Binh Dinh', 'Thanh Hoa']
     province_terrian = ['mountain', 'flat', 'flat']
     truck_unit_wt = [5.0]
+    percentage = [100.0]
 
     """Give the paths to the input data files
     """
@@ -285,57 +288,63 @@ if __name__ == '__main__':
     
     """Specify the output files and paths to be created 
     """
-    output_dir = os.path.join(output_path, 'flow_mapping_shapefiles')
-    if os.path.exists(output_dir) == False:
-        os.mkdir(output_dir)
+    flow_shp_dir = os.path.join(output_path, 'flow_mapping_shapefiles')
+    if os.path.exists(flow_shp_dir) == False:
+        os.mkdir(flow_shp_dir)
 
-    output_dir = os.path.join(output_path, 'flow_mapping_paths')
-    if os.path.exists(output_dir) == False:
-        os.mkdir(output_dir)
+    flow_paths_dir = os.path.join(output_path, 'flow_mapping_paths')
+    if os.path.exists(flow_paths_dir) == False:
+        os.mkdir(flow_paths_dir)
 
-    flow_output_excel = os.path.join(
-        output_dir, 'province_roads_commune_center_access_flow_paths.xlsx')
-    excl_wrtr = pd.ExcelWriter(flow_output_excel)
-
-    """Start the OD flow mapping process    
-    """
-    for prn in range(len(province_list)):
-        province = province_list[prn]
-        province_name = province.replace(' ', '').lower()
-
-        """Load igraph network and GeoDataFrame
-        """
-        print ('* Loading {} igraph network and GeoDataFrame'.format(province))
-        edges_in = pd.read_excel(network_data_excel,sheet_name = province_name,encoding='utf-8')
-        G = ig.Graph.TupleList(edges_in.itertuples(index=False), edge_attrs=list(edges_in.columns)[2:])
-        del edges_in
-        gdf_edges = gpd.read_file(os.path.join(network_data_path,'{}_roads_edges.shp'.format(province_name)),encoding='utf-8')
-        gdf_edges = gdf_edges[['edge_id','geometry']]
+    for perct in percentage:
+        flow_output_excel = os.path.join(
+            flow_paths_dir, 'province_roads_commune_center_access_flow_paths_{}_percent.xlsx'.format(int(perct)))
+        excl_wrtr = pd.ExcelWriter(flow_output_excel)
         
-        """Load OD nodes pairs and tonnages
+        """Start the OD flow mapping process    
         """
-        print ('* Loading {} OD nodes pairs and tonnages'.format(province))
-        all_ods = pd.read_excel(od_output_excel, sheet_name=province_name)
-        all_ods = all_ods[['origin', 'destination', 'min_croptons',
-                           'max_croptons', 'min_netrev', 'max_netrev']]
-        
-        for tr_wt in truck_unit_wt:
-            """Calculate OD paths
+        for prn in range(len(province_list)):
+            province = province_list[prn]
+            province_name = province.replace(' ', '').lower()
+
+            """Load igraph network and GeoDataFrame
             """
-            print ('* Calculating {} OD paths'.format(province))
-            all_ods['min_vehicle_nums'] = np.maximum(1, np.ceil(all_ods['min_croptons']/tr_wt))
-            all_ods['max_vehicle_nums'] = np.maximum(1, np.ceil(all_ods['max_croptons']/tr_wt))
-            G = add_igraph_generalised_costs_roads(G, 1, tr_wt)
-            all_paths = network_od_paths_assembly(all_ods, G, tr_wt,province_name, excel_writer=excl_wrtr)
+            print ('* Loading {} igraph network and GeoDataFrame'.format(province))
+            edges_in = pd.read_excel(network_data_excel,sheet_name = province_name,encoding='utf-8')
+            G = ig.Graph.TupleList(edges_in.itertuples(index=False), edge_attrs=list(edges_in.columns)[2:])
+            del edges_in
+            gdf_edges = gpd.read_file(os.path.join(network_data_path,'{}_roads_edges.shp'.format(province_name)),encoding='utf-8')
+            gdf_edges = gdf_edges[['edge_id','geometry']]
             
-            """Create network shapefiles with flows
+            """Load OD nodes pairs and tonnages
             """
-            print ('* Creating {} network shapefiles with flows'.format(province))
-            shp_output_path = os.path.join(
-                output_path,'flow_mapping_shapefiles',
-                'weighted_edges_commune_center_access_flows_{0}_{1}_tons.shp'.format(province_name,int(tr_wt)))
+            print ('* Loading {} OD nodes pairs and tonnages'.format(province))
+            ods = pd.read_excel(od_output_excel, sheet_name=province_name)
+            ods = ods[['origin', 'destination', 'min_croptons',
+                               'max_croptons', 'min_netrev', 'max_netrev']]
+            
+            all_ods = copy.deepcopy(ods)
+            all_ods_tons_cols = [col for col in all_ods.columns.values.tolist() if col not in ['origin','destination']] 
+            all_ods[all_ods_tons_cols] = 0.01*perct*all_ods[all_ods_tons_cols]
 
-            write_province_flow_paths_to_network_shapefile(
-                all_paths, gdf_edges, save_edges=True, shape_output_path=shp_output_path)
+            for tr_wt in truck_unit_wt:
+                """Calculate OD paths
+                """
+                print ('* Calculating {} OD paths'.format(province))
+                all_ods['min_vehicle_nums'] = np.maximum(1, np.ceil(all_ods['min_croptons']/tr_wt))
+                all_ods['max_vehicle_nums'] = np.maximum(1, np.ceil(all_ods['max_croptons']/tr_wt))
+                G = add_igraph_generalised_costs_roads(G, 1, tr_wt)
+                all_paths = network_od_paths_assembly(all_ods, G, tr_wt,province_name, excel_writer=excl_wrtr)
+                
+                """Create network shapefiles with flows
+                """
+                print ('* Creating {} network shapefiles with flows'.format(province))
+                shp_output_path = os.path.join(
+                    flow_shp_dir,
+                    'weighted_edges_commune_center_access_flows_{0}_{1}_tons_{2}_percent.shp'.format(province_name,int(tr_wt),int(perct)))
 
+                write_province_flow_paths_to_network_shapefile(
+                    all_paths, gdf_edges, save_edges=True, shape_output_path=shp_output_path)
+
+            del all_ods
 

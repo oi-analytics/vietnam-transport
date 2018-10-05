@@ -257,7 +257,7 @@ def assign_minmax_tariff_costs_province_roads_apply(x, cost_dataframe):
     return min_tariff_cost, max_tariff_cost
 
 
-def province_shapefile_to_dataframe(edges_in, road_terrain, road_properties_file):
+def province_shapefile_to_dataframe(edges_in, road_terrain, road_properties_file,usage_factors):
     """
     input parameters:
         edges_in : string of path to edges file/network file.
@@ -327,6 +327,11 @@ def province_shapefile_to_dataframe(edges_in, road_terrain, road_properties_file
         lambda x: assign_minmax_tariff_costs_province_roads_apply(x, cost_values_df), axis=1)
     edges[['min_tariff_cost', 'max_tariff_cost']] = edges['tariff_cost'].apply(pd.Series)
     edges.drop('tariff_cost', axis=1, inplace=True)
+
+    edges['min_time_cost'] = (1 + usage_factors[0])*edges['min_time_cost']
+    edges['max_time_cost'] = (1 + usage_factors[1])*edges['max_time_cost']
+    edges['min_tariff_cost'] = (1 + usage_factors[0])*edges['min_tariff_cost']
+    edges['max_tariff_cost'] = (1 + usage_factors[1])*edges['max_tariff_cost']
 
     # make sure that From and To node are the first two columns of the dataframe
     # to make sure the conversion from dataframe to igraph network goes smooth
@@ -621,13 +626,15 @@ def assign_minmax_tariff_costs_national_roads_apply(x, cost_dataframe):
     return min_tariff_cost, max_tariff_cost
 
 
-def national_road_shapefile_to_dataframe(edges_in, road_properties_file):
+def national_road_shapefile_to_dataframe(edges_in, road_properties_file,usage_factors):
     """
     input parameters:
         edges_in : string of path to edges file/network file.
 
     output:
         SG: connected graph of the shapefile
+
+        utilization_factors - Tuple of float types for uncertainity in cost function
     """
     add_columns = ['number','name','terrain','level','surface','road_class',
         'road_cond','asset_type','width','length','min_speed','max_speed',
@@ -689,6 +696,11 @@ def national_road_shapefile_to_dataframe(edges_in, road_properties_file):
 
     edges.rename(columns={'ten_duong_':'number','ten_doan__':'name','loai_mat__':'surface'},inplace = True)
 
+    edges['min_time_cost'] = (1 + usage_factors[0])*edges['min_time_cost']
+    edges['max_time_cost'] = (1 + usage_factors[1])*edges['max_time_cost']
+    edges['min_tariff_cost'] = (1 + usage_factors[0])*edges['min_tariff_cost']
+    edges['max_tariff_cost'] = (1 + usage_factors[1])*edges['max_tariff_cost']
+
     # make sure that From and To node are the first two columns of the dataframe
     # to make sure the conversion from dataframe to igraph network goes smooth
     edges = edges[['edge_id','g_id','from_node','to_node'] + add_columns + ['geometry']]
@@ -735,42 +747,33 @@ def add_igraph_time_costs_province_roads():
     raise NotImplementedError()
 
 
-def add_igraph_generalised_costs_network(G, vehicle_numbers, tonnage, operating_factor_min,
-                                         operating_factor_max):
+def add_igraph_generalised_costs_network(G, vehicle_numbers, tonnage):
     # G.es['max_cost'] = list(cost_param*(np.array(G.es['length'])/np.array(G.es['max_speed'])))
     # G.es['min_cost'] = list(cost_param*(np.array(G.es['length'])/np.array(G.es['min_speed'])))
     # print (G.es['max_time'])
     G.es['max_gcost'] = list(
-        (1 + operating_factor_max) *
-        (
+        
             vehicle_numbers * np.array(G.es['max_time_cost'])
-            + tonnage * np.array(G.es['max_tariff_cost'])
-        )
+            + tonnage * np.array(G.es['max_tariff_cost'])    
     )
     G.es['min_gcost'] = list(
-        (1 + operating_factor_min) *
-        (
             vehicle_numbers * np.array(G.es['min_time_cost'])
             + tonnage * np.array(G.es['min_tariff_cost'])
-        )
     )
 
     return G
 
 
-def add_generalised_costs_network_dataframe(network_dataframe, vehicle_numbers, tonnage,
-                                            operating_factor_min, operating_factor_max):
+def add_generalised_costs_network_dataframe(network_dataframe, vehicle_numbers, tonnage):
     # G.es['max_cost'] = list(cost_param*(np.array(G.es['length'])/np.array(G.es['max_speed'])))
     # G.es['min_cost'] = list(cost_param*(np.array(G.es['length'])/np.array(G.es['min_speed'])))
     # print (G.es['max_time'])
-    network_dataframe['max_gcost'] = (1 + operating_factor_max) * (
-        vehicle_numbers * network_dataframe['max_time_cost']
-        + tonnage * network_dataframe['max_tariff_cost']
-    )
-    network_dataframe['min_gcost'] = (1 + operating_factor_max) * (
-        vehicle_numbers * network_dataframe['min_time_cost']
-        + tonnage * network_dataframe['min_tariff_cost']
-    )
+    network_dataframe['max_gcost'] = vehicle_numbers * network_dataframe['max_time_cost'] + \
+        tonnage * network_dataframe['max_tariff_cost']
+    
+    network_dataframe['min_gcost'] = vehicle_numbers * network_dataframe['min_time_cost'] + \
+        tonnage * network_dataframe['min_tariff_cost']
+    
 
     return network_dataframe
 
@@ -795,7 +798,7 @@ def assign_minmax_tariff_costs_networks_apply(x, cost_dataframe):
     return min_tariff_cost, max_tariff_cost
 
 
-def network_shapefile_to_dataframe(edges_in, mode_properties_file, mode_name, speed_min, speed_max):
+def network_shapefile_to_dataframe(edges_in, mode_properties_file, mode_name, speed_min, speed_max,usage_factors):
     """
     input parameters:
         edges_in : string of path to edges file/network file.
@@ -851,6 +854,12 @@ def network_shapefile_to_dataframe(edges_in, mode_properties_file, mode_name, sp
     edges[['min_tariff_cost', 'max_tariff_cost']] = edges['tariff_cost'].apply(pd.Series)
     edges.drop('tariff_cost', axis=1, inplace=True)
 
+
+    edges['min_time_cost'] = (1 + usage_factors[0])*edges['min_time_cost']
+    edges['max_time_cost'] = (1 + usage_factors[1])*edges['max_time_cost']
+    edges['min_tariff_cost'] = (1 + usage_factors[0])*edges['min_tariff_cost']
+    edges['max_tariff_cost'] = (1 + usage_factors[1])*edges['max_tariff_cost']
+
     # make sure that From and To node are the first two columns of the dataframe
     # to make sure the conversion from dataframe to igraph network goes smooth
     edges = edges[['edge_id','g_id','from_node','to_node'] + add_columns + ['geometry']]
@@ -894,7 +903,7 @@ def assign_minmax_tariff_costs_multi_modal_apply(x, cost_dataframe):
     return min_tariff_cost, max_tariff_cost
 
 
-def multi_modal_shapefile_to_dataframe(edges_in, mode_properties_file, mode_name, length_threshold):
+def multi_modal_shapefile_to_dataframe(edges_in, mode_properties_file, mode_name, length_threshold,usage_factors):
     """
     input parameters:
         edges_in : string of path to edges file/network file.
@@ -925,6 +934,10 @@ def multi_modal_shapefile_to_dataframe(edges_in, mode_properties_file, mode_name
     edges['min_time_cost'] = 0
     edges['max_time_cost'] = 0
 
+    edges['min_time_cost'] = (1 + usage_factors[0])*edges['min_time_cost']
+    edges['max_time_cost'] = (1 + usage_factors[1])*edges['max_time_cost']
+    edges['min_tariff_cost'] = (1 + usage_factors[0])*edges['min_tariff_cost']
+    edges['max_tariff_cost'] = (1 + usage_factors[1])*edges['max_tariff_cost']
     # make sure that From and To node are the first two columns of the dataframe
     # to make sure the conversion from dataframe to igraph network goes smooth
     edges = edges.reindex(list(edges.columns)[2:]+list(edges.columns)[:2], axis=1)

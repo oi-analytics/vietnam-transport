@@ -40,6 +40,8 @@ Results
 1. Excel sheets with results of flow mapping based on MIN-MAX generalised costs estimates:
         origin - String node ID of Origin
         destination - String node ID of Destination
+        o_region - String name of Province of Origin node ID
+        d_region - String name of Province of Destination node ID
         min_edge_path - List of string of edge ID's for paths with minimum generalised cost flows
         max_edge_path - List of string of edge ID's for paths with maximum generalised cost flows
         min_distance - Float values of estimated distance for paths with minimum generalised cost flows
@@ -66,6 +68,7 @@ Results
 import os
 import subprocess
 import sys
+import copy
 
 import geopandas as gpd
 import igraph as ig
@@ -78,7 +81,7 @@ from vtra.transport_network_creation import *
 from vtra.utils import *
 
 def network_od_path_estimations_changing_tonnages(graph,
-    source, target, tonnage, vehicle_wt, utilization_factors, cost_criteria, time_criteria):
+    source, target, tonnage, vehicle_wt, cost_criteria, time_criteria):
     """
     Estimate the paths, distances, times, and costs for given OD pair
 
@@ -89,7 +92,6 @@ def network_od_path_estimations_changing_tonnages(graph,
     source - String/Float/Integer name of Destination node ID
     tonnage - Float value of tonnage 
     vehicle_wt - Float unit weight of vehicle
-    utilization_factors - Tuple of float types for uncertainity in cost function
     cost_criteria - String name of generalised cost criteria to be used: min_gcost or max_gcost
     time_criteria - String name of time criteria to be used: min_time or max_time    
 
@@ -103,7 +105,7 @@ def network_od_path_estimations_changing_tonnages(graph,
     """
 
     graph = add_igraph_generalised_costs_network(graph, np.ceil(
-        tonnage/vehicle_wt), tonnage, utilization_factors[0], utilization_factors[1])
+        tonnage/vehicle_wt), tonnage)
     paths = graph.get_shortest_paths(source, target, weights=cost_criteria, output="epath")
 
     edge_path_list = []
@@ -132,8 +134,8 @@ def network_od_path_estimations_changing_tonnages(graph,
 
 
 def network_od_paths_assembly_changing_tonnages(points_dataframe, 
-    graph, vehicle_wt, utilization_factors, transport_mode, 
-    percentage = 100.0, excel_writer=''):
+    graph, vehicle_wt, transport_mode, 
+    excel_writer=''):
     """
     Assembles estimates of OD paths, distances, times, costs and tonnages on networks 
 
@@ -142,10 +144,7 @@ def network_od_paths_assembly_changing_tonnages(points_dataframe,
     points_dataframe - Pandas DataFrame of OD nodes and their tonnages
     graph - igraph network structure 
     vehicle_wt - Float unit weight of vehicle
-    utilization_factors - Tuple of float types for uncertainity in cost function
     transport_mode - String name of modes
-    percentage - Float value of the percentage of OD flow we want to allocate on paths
-        Default = 100.0 
     excel_writer - Name of the excel writer to save Pandas dataframe to Excel file     
 
     Outputs
@@ -172,12 +171,12 @@ def network_od_paths_assembly_changing_tonnages(points_dataframe,
         try:
             origin = row['origin']
             destinations = [row['destination']]
-            tons = 1.0*percentage/100.0*row['min_tons']
+            tons = row['min_tons']
             get_min_path, get_min_dist, get_min_time, get_min_gcost = network_od_path_estimations_changing_tonnages(
-                graph, origin, destinations, tons, vehicle_wt, utilization_factors, 'min_gcost', 'min_time')
-            tons = 1.0*percentage/100.0*row['max_tons']
+                graph, origin, destinations, tons, vehicle_wt, 'min_gcost', 'min_time')
+            tons = row['max_tons']
             get_max_path, get_max_dist, get_max_time, get_max_gcost = network_od_path_estimations_changing_tonnages(
-                graph, origin, destinations, tons, vehicle_wt, utilization_factors, 'max_gcost', 'max_time')
+                graph, origin, destinations, tons, vehicle_wt, 'max_gcost', 'max_time')
             save_paths += list(zip([origin]*len(destinations), destinations, get_min_path, get_max_path,
                                    get_min_dist, get_max_dist, get_min_time, get_max_time, get_min_gcost, get_max_gcost))
             print("done with {} in network {}".format(origin, transport_mode))
@@ -275,13 +274,11 @@ def main():
         List of strings
     2. Unit weight of vehicle assumed for each mode
         List of float types 
-    3. Range of usage factors for each mode to represent uncertainty in cost estimations
-        List of tuples of float types 
-    4. Names of all industry sector and crops in VITRANSS2 and IFPRI datasets
+    3. Names of all industry sector and crops in VITRANSS2 and IFPRI datasets
         List of string types
-    5. Names of commodity/industry columns for which min-max tonnage column names already exist
+    4. Names of commodity/industry columns for which min-max tonnage column names already exist
         List of string types
-    6. Percentage of OD flow we want to send along path
+    5. Percentage of OD flow we want to send along path
         FLoat type
 
     Give the paths to the input data files:
@@ -299,11 +296,10 @@ def main():
     """
     modes = ['road', 'rail', 'air', 'inland', 'coastal']
     veh_wt = [20, 800, 0, 800, 1200]
-    usage_factors = [(0, 0), (0, 0), (0, 0), (0.2, 0.25), (0.2, 0.25)]
     ind_cols = ['cement', 'coal', 'constructi', 'fertilizer', 'fishery', 'manufactur', 'acof', 'cash', 'cass', 'maiz', 'pepp', 'rcof',
                 'rubb', 'swpo', 'teas', 'meat', 'rice', 'petroluem', 'steel', 'sugar', 'wood', 'tons']
     min_max_exist = ['rice','tons']
-    percentage = 100.0
+    percentage = [10,90]
     
     """Give the paths to the input data files
     """
@@ -317,59 +313,57 @@ def main():
 
     """Specify the output files and paths to be created 
     """
-    output_dir = os.path.join(output_path, 'flow_mapping_shapefiles')
-    if os.path.exists(output_dir) == False:
-        os.mkdir(output_dir)
+    flow_shp_dir = os.path.join(output_path, 'flow_mapping_shapefiles')
+    if os.path.exists(flow_shp_dir) == False:
+        os.mkdir(flow_shp_dir)
 
-    output_dir = os.path.join(output_path, 'flow_mapping_paths')
-    if os.path.exists(output_dir) == False:
-        os.mkdir(output_dir)
+    flow_paths_dir = os.path.join(output_path, 'flow_mapping_paths')
+    if os.path.exists(flow_paths_dir) == False:
+        os.mkdir(flow_paths_dir)
 
-    if percentage == 100.0:
+    for perct in percentage:
         flow_output_excel = os.path.join(
-            output_dir, 'national_scale_flow_paths.xlsx')
-    else:
-        flow_output_excel = os.path.join(
-            output_dir, 
-            'national_scale_flow_paths_{}_percent.xlsx'.format(percentage))
+            flow_paths_dir, 
+            'national_scale_flow_paths_{}_percent.xlsx'.format(int(perct)))
     
-    excl_wrtr = pd.ExcelWriter(flow_output_excel)
+        excl_wrtr = pd.ExcelWriter(flow_output_excel)
 
-    """Start the OD flow mapping process    
-    """
-    for m in range(len(modes)):
-        """Load mode igraph network and GeoDataFrame
+        """Start the OD flow mapping process    
         """
-        print ('* Loading {} igraph network and GeoDataFrame'.format(modes[m]))
-        edges_in = pd.read_excel(network_data_excel,sheet_name = modes[m],encoding='utf-8')
-        G = ig.Graph.TupleList(edges_in.itertuples(index=False), edge_attrs=list(edges_in.columns)[2:])
-        del edges_in
-        gdf_edges = gpd.read_file(os.path.join(network_data_path,'{}_edges.shp'.format(modes[m])),encoding='utf-8')
-        gdf_edges = gdf_edges[['edge_id','geometry']]
+        for m in range(len(modes)):
+            """Load mode igraph network and GeoDataFrame
+            """
+            print ('* Loading {} igraph network and GeoDataFrame'.format(modes[m]))
+            edges_in = pd.read_excel(network_data_excel,sheet_name = modes[m],encoding='utf-8')
+            G = ig.Graph.TupleList(edges_in.itertuples(index=False), edge_attrs=list(edges_in.columns)[2:])
+            del edges_in
+            gdf_edges = gpd.read_file(os.path.join(network_data_path,'{}_edges.shp'.format(modes[m])),encoding='utf-8')
+            gdf_edges = gdf_edges[['edge_id','geometry']]
 
-        """Load mode OD nodes pairs and tonnages
-        """
-        print ('* Loading {} OD nodes pairs and tonnages'.format(modes[m]))
-        all_ods = pd.read_excel(od_output_excel, sheet_name=modes[m])
-        all_ods = all_ods[all_ods['max_tons'] > 0.5]
-        
-        """Calculate mode OD paths
-        """
-        print ('* Calculating {} OD paths'.format(modes[m]))
-        all_paths = network_od_paths_assembly_changing_tonnages(
-            all_ods, G, veh_wt[m], usage_factors[m], modes[m], 
-            percentage = percentage,excel_writer=excl_wrtr)
+            """Load mode OD nodes pairs and tonnages
+            """
+            print ('* Loading {} OD nodes pairs and tonnages'.format(modes[m]))
+            ods = pd.read_excel(od_output_excel, sheet_name=modes[m])
+            ods = ods[ods['max_tons'] > 0.5]
+            
+            all_ods = copy.deepcopy(ods)
+            all_ods_tons_cols = [col for col in all_ods.columns.values.tolist() if col not in ['origin','o_region','destination','d_region']] 
+            all_ods[all_ods_tons_cols] = 0.01*perct*all_ods[all_ods_tons_cols]
+            """Calculate mode OD paths
+            """
+            print ('* Calculating {} OD paths'.format(modes[m]))
+            all_paths = network_od_paths_assembly_changing_tonnages(
+                all_ods, G, veh_wt[m], modes[m],excel_writer=excl_wrtr)
 
-        """Create network shapefiles with flows
-        """
-        print ('* Creating {} network shapefiles with flows'.format(modes[m]))
-        if percentage == 100.0:
-            shp_output_path = os.path.join(output_path,'flow_mapping_shapefiles','weighted_flows_national_{}.shp'.format(modes[m]))
-        else:
-            shp_output_path = os.path.join(output_path,'flow_mapping_shapefiles','weighted_flows_national_{}_{}_percent.shp'.format(modes[m],percentage))
+            del all_ods
+            """Create network shapefiles with flows
+            """
+            print ('* Creating {} network shapefiles with flows'.format(modes[m]))
+            
+            shp_output_path = os.path.join(flow_shp_dir,'weighted_flows_national_{}_{}_percent.shp'.format(modes[m],int(perct)))
 
-        write_national_flow_paths_to_network_shapefile(all_paths,modes[m],
-            ind_cols,min_max_exist,gdf_edges, save_edges=True, shape_output_path=shp_output_path)
+            write_national_flow_paths_to_network_shapefile(all_paths,modes[m],
+                ind_cols,min_max_exist,gdf_edges, save_edges=True, shape_output_path=shp_output_path)
 
 
 if __name__ == '__main__':
