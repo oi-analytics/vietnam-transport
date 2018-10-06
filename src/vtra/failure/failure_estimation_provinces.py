@@ -25,6 +25,7 @@ Input data requirements
 Results
 -------
 Csv sheets with results of failure analysis:
+
 1. All failure scenarios
     edge_id - String name or list of failed edges
     origin - String node ID of Origin of disrupted OD flow
@@ -56,6 +57,7 @@ Csv sheets with results of failure analysis:
     min/max_econ_impact - Float value of total daily economic impact of edge 
 
 Shapefiles
+
 5. Min-max combined scenarios - Combined min-max reults of total network impacts of each edge
     edge_id - String name or list of failed edges
     no_access - Boolean 1 (no reroutng) or 0 (rerouting)
@@ -74,17 +76,13 @@ import math
 import operator
 import os
 import sys
-from collections import Counter
 
 import igraph as ig
 import networkx as nx
 import numpy as np
 import pandas as pd
-import psycopg2
-from sqlalchemy import create_engine
-from vtra.transport_network_creation import *
 from vtra.utils import *
-from failure_functions import *
+from vtra.transport_flow_and_failure_functions import *
 
 
 def main():
@@ -268,7 +266,7 @@ def main():
                 shp_path = os.path.join(
                     shp_output_path,file_name + '.shp')
                 # edge_impact = pd.read_csv(df_path).fillna(0)
-                network_failure_assembly(edge_impact,gdf_edges, save_edges=True, shape_output_path=shp_path)
+                network_failure_assembly_shapefiles(edge_impact,gdf_edges, save_edges=True, shape_output_path=shp_path)
 
 
 if __name__ == "__main__":

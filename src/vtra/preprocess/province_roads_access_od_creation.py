@@ -13,7 +13,6 @@ import igraph as ig
 import numpy as np
 import pandas as pd
 from shapely.geometry import Point
-from vtra.transport_network_creation import *
 from vtra.utils import *
 
 

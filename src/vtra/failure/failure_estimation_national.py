@@ -4,78 +4,79 @@ For transport modes at national scale:
 
 Input data requirements
 -----------------------
+
 1. Correct paths to all files and correct input parameters
 2. Excel sheets with results of flow mapping based on MIN-MAX generalised costs estimates:
-    origin - String node ID of Origin
-    destination - String node ID of Destination
-    o_region - String name of Province of Origin node ID
-    d_region - String name of Province of Destination node ID
-    min_edge_path - List of string of edge ID's for paths with minimum generalised cost flows
-    max_edge_path - List of string of edge ID's for paths with maximum generalised cost flows
-    min_distance - Float values of estimated distance for paths with minimum generalised cost flows
-    max_distance - Float values of estimated distance for paths with maximum generalised cost flows
-    min_time - Float values of estimated time for paths with minimum generalised cost flows
-    max_time - Float values of estimated time for paths with maximum generalised cost flows
-    min_gcost - Float values of estimated generalised cost for paths with minimum generalised cost flows
-    max_gcost - Float values of estimated generalised cost for paths with maximum generalised cost flows
-    min_vehicle_nums - Float values of estimated vehicle numbers for paths with minimum generalised cost flows
-    max_vehicle_nums - Float values of estimated vehicle numbers for paths with maximum generalised cost flows
-    industry_columns - All daily tonnages of industry columns given in the OD matrix data
+    - origin - String node ID of Origin
+    - destination - String node ID of Destination
+    - o_region - String name of Province of Origin node ID
+    - d_region - String name of Province of Destination node ID
+    - min_edge_path - List of string of edge ID's for paths with minimum generalised cost flows
+    - max_edge_path - List of string of edge ID's for paths with maximum generalised cost flows
+    - min_distance - Float values of estimated distance for paths with minimum generalised cost flows
+    - max_distance - Float values of estimated distance for paths with maximum generalised cost flows
+    - min_time - Float values of estimated time for paths with minimum generalised cost flows
+    - max_time - Float values of estimated time for paths with maximum generalised cost flows
+    - min_gcost - Float values of estimated generalised cost for paths with minimum generalised cost flows
+    - max_gcost - Float values of estimated generalised cost for paths with maximum generalised cost flows
+    - min_vehicle_nums - Float values of estimated vehicle numbers for paths with minimum generalised cost flows
+    - max_vehicle_nums - Float values of estimated vehicle numbers for paths with maximum generalised cost flows
+    - industry_columns - All daily tonnages of industry columns given in the OD matrix data
 3. Shapefiles
-    edge_id - String/Integer/Float Edge ID
-    geometry - Shapely LineString geomtry of edges
+    - edge_id - String/Integer/Float Edge ID
+    - geometry - Shapely LineString geomtry of edges
         
 Results
 -------
 Csv sheets with results of failure analysis:
+
 1. All failure scenarios
-    edge_id - String name or list of failed edges
-    origin - String node ID of Origin of disrupted OD flow
-    destination - String node ID of Destination of disrupted OD flow
-    o_region - String name of Province of Origin node ID of disrupted OD flow
-    d_region - String name of Province of Destination node ID of disrupted OD flow
-    no_access - Boolean 1 (no reroutng) or 0 (rerouting)     
-    min/max_distance - Float value of estimated distance of OD journey before disruption   
-    min/max_time - Float value of estimated time of OD journey before disruption     
-    min/max_gcost - Float value of estimated travel cost of OD journey before disruption    
-    min/max_vehicle_nums - Float value of estimated vehicles of OD journey before disruption       
-    new_cost - Float value of estimated cost of OD journey after disruption 
-    new_distance - Float value of estimated distance of OD journey after disruption    
-    new_path - List of string edge ID's of estimated new route of OD journey after disruption   
-    new_time - Float value of estimated time of OD journey after disruption      
-    dist_diff - Float value of Post disruption minus per-disruption distance  
-    time_diff - Float value Post disruption minus per-disruption timee  
-    min/max_tr_loss - Float value of estimated change in rerouting cost
-    industry_columns - Float values of all daily tonnages of industry columns along disrupted OD pairs
-    min/max_tons - Float values of total daily tonnages along disrupted OD pairs
+    - edge_id - String name or list of failed edges
+    - origin - String node ID of Origin of disrupted OD flow
+    - destination - String node ID of Destination of disrupted OD flow
+    - o_region - String name of Province of Origin node ID of disrupted OD flow
+    - d_region - String name of Province of Destination node ID of disrupted OD flow
+    - no_access - Boolean 1 (no reroutng) or 0 (rerouting)     
+    - min/max_distance - Float value of estimated distance of OD journey before disruption   
+    - min/max_time - Float value of estimated time of OD journey before disruption     
+    - min/max_gcost - Float value of estimated travel cost of OD journey before disruption    
+    - min/max_vehicle_nums - Float value of estimated vehicles of OD journey before disruption       
+    - new_cost - Float value of estimated cost of OD journey after disruption 
+    - new_distance - Float value of estimated distance of OD journey after disruption    
+    - new_path - List of string edge ID's of estimated new route of OD journey after disruption   
+    - new_time - Float value of estimated time of OD journey after disruption      
+    - dist_diff - Float value of Post disruption minus per-disruption distance  
+    - time_diff - Float value Post disruption minus per-disruption timee  
+    - min/max_tr_loss - Float value of estimated change in rerouting cost
+    - industry_columns - Float values of all daily tonnages of industry columns along disrupted OD pairs
+    - min/max_tons - Float values of total daily tonnages along disrupted OD pairs
 
 2. Isolated OD scenarios - OD flows with no rerouting options
-    edge_id - String name or list of failed edges
-    o_region - String name of Province of Origin node ID of disrupted OD flow
-    d_region - String name of Province of Destination node ID of disrupted OD flow
-    industry_columns - Float values of all daily tonnages of industry columns along disrupted OD pairs
-    min/max_tons - Float values of total daily tonnages along disrupted OD pairs
+    - edge_id - String name or list of failed edges
+    - o_region - String name of Province of Origin node ID of disrupted OD flow
+    - d_region - String name of Province of Destination node ID of disrupted OD flow
+    - industry_columns - Float values of all daily tonnages of industry columns along disrupted OD pairs
+    - min/max_tons - Float values of total daily tonnages along disrupted OD pairs
 
 3. Rerouting scenarios - OD flows with rerouting options
-    edge_id - String name or list of failed edges
-    o_region - String name of Province of Origin node ID of disrupted OD flow
-    d_region - String name of Province of Destination node ID of disrupted OD flow
-    min/max_tr_loss - Float value of change in rerouting cost
-    min/max_tons - Float values of total daily tonnages along disrupted OD pairs
+    - edge_id - String name or list of failed edges
+    - o_region - String name of Province of Origin node ID of disrupted OD flow
+    - d_region - String name of Province of Destination node ID of disrupted OD flow
+    - min/max_tr_loss - Float value of change in rerouting cost
+    - min/max_tons - Float values of total daily tonnages along disrupted OD pairs
 
 4. Min-max combined scenarios - Combined min-max results along each edge
-    edge_id - String name or list of failed edges
-    no_access - Boolean 1 (no reroutng) or 0 (rerouting)
-    min/max_tr_loss - Float values of change in rerouting cost
-    min/max_tons - Float values of total daily tonnages affted by disrupted edge
+    - edge_id - String name or list of failed edges
+    - no_access - Boolean 1 (no reroutng) or 0 (rerouting)
+    - min/max_tr_loss - Float values of change in rerouting cost
+    - min/max_tons - Float values of total daily tonnages affted by disrupted edge
 
-Shapefiles
-5. Min-max combined scenarios - Combined min-max reults along each edge
-    edge_id - String name or list of failed edges
-    no_access - Boolean 1 (no reroutng) or 0 (rerouting)
-    min/max_tr_loss - Float values of change in rerouting cost
-    min/max_tons - Float values of total daily tonnages affted by disrupted edge    
-    geometry - Shapely LineString geomtry of edges
+5. Shapefile Min-max combined scenarios - Combined min-max reults along each edge
+    - edge_id - String name or list of failed edges
+    - no_access - Boolean 1 (no reroutng) or 0 (rerouting)
+    - min/max_tr_loss - Float values of change in rerouting cost
+    - min/max_tons - Float values of total daily tonnages affted by disrupted edge    
+    - geometry - Shapely LineString geomtry of edges
 
 """
 import ast
@@ -86,27 +87,25 @@ import math
 import operator
 import os
 import sys
-from collections import Counter
 
 import igraph as ig
 import networkx as nx
 import numpy as np
 import pandas as pd
-import psycopg2
-from sqlalchemy import create_engine
-from vtra.transport_network_creation import *
 from vtra.utils import *
-from failure_functions import *
+from vtra.transport_flow_and_failure_functions import *
 
 
 def main():
     """
     Specify the paths from where you want to read and write:
+
     1. Input data
     2. Intermediate calcuations data
     3. Output results
 
     Supply input data and parameters
+
     1. Names of modes
         List of strings
     2. Unit weight of vehicle assumed for each mode
@@ -123,6 +122,7 @@ def main():
         Boolean condition True or False 
 
     Give the paths to the input data files:
+    
     1. Network edges Excel and shapefiles
     2. OD flows Excel file
     3. Costs of modes Excel file 
@@ -297,7 +297,7 @@ def main():
             if single_edge == True:
                 file_name = 'single_edge_failures_minmax_national_{0}_{1}_percent_disrupt'.format(modes[m],int(perct))
             else:
-                file_name = 'multiple_edge_failures_minmax_losses_national_{0}_{1}_percent_disrupt'.format(modes[m],int(perct))
+                file_name = 'multiple_edge_failures_minmax_national_{0}_{1}_percent_disrupt'.format(modes[m],int(perct))
 
             df_path = os.path.join(minmax_combine,file_name + '.csv')
             edge_impact.to_csv(df_path, index = False)
@@ -308,7 +308,7 @@ def main():
             shp_path = os.path.join(
                 shp_output_path,file_name + '.shp')
             # edge_impact = pd.read_csv(df_path).fillna(0)
-            network_failure_assembly(edge_impact,gdf_edges, save_edges=True, shape_output_path=shp_path)
+            network_failure_assembly_shapefiles(edge_impact,gdf_edges, save_edges=True, shape_output_path=shp_path)
 
 
 if __name__ == "__main__":

@@ -8,17 +8,151 @@ import math
 import operator
 import os
 import sys
-from collections import Counter
 
 import igraph as ig
 import networkx as nx
 import numpy as np
 import pandas as pd
-import psycopg2
-from sqlalchemy import create_engine
-from vtra.transport_network_creation import *
 from vtra.utils import *
 
+def add_igraph_generalised_costs(G, vehicle_numbers, tonnage):
+    # G.es['max_cost'] = list(cost_param*(np.array(G.es['length'])/np.array(G.es['max_speed'])))
+    # G.es['min_cost'] = list(cost_param*(np.array(G.es['length'])/np.array(G.es['min_speed'])))
+    # print (G.es['max_time'])
+    G.es['max_gcost'] = list(
+        
+            vehicle_numbers * np.array(G.es['max_time_cost'])
+            + tonnage * np.array(G.es['max_tariff_cost'])    
+    )
+    G.es['min_gcost'] = list(
+            vehicle_numbers * np.array(G.es['min_time_cost'])
+            + tonnage * np.array(G.es['min_tariff_cost'])
+    )
+
+    return G
+
+def network_od_path_estimations(graph,
+    source, target, tonnage, vehicle_weight, cost_criteria, time_criteria):
+    """
+    Estimate the paths, distances, times, and costs for given OD pair
+
+    Parameters
+    ---------
+    graph - igraph network structure 
+    source - String/Float/Integer name of Origin node ID
+    source - String/Float/Integer name of Destination node ID
+    tonnage - Float value of tonnage 
+    vehicle_weight - Float unit weight of vehicle
+    cost_criteria - String name of generalised cost criteria to be used: min_gcost or max_gcost
+    time_criteria - String name of time criteria to be used: min_time or max_time
+    fixed_cost - Boolean Tru or False     
+
+    Outputs
+    -------
+    edge_path_list - List of lists of Strings/Floats/Integers of edge ID's in routes
+    path_dist_list - List of float values of estimated distances of routes
+    path_time_list - List of float values of estimated times of routes
+    path_gcost_list - List of float values of estimated generalised costs of routes
+
+    """
+    if vehicle_weight == 0 and tonnage == 0:
+        vehicle_weight = 1
+        tonnage = 1
+    elif vehicle_weight == 0 and tonnage > 0:
+        vehicle_weight = tonnage
+
+    graph = add_igraph_generalised_costs(graph, np.ceil(
+        tonnage/vehicle_weight), tonnage)
+
+    paths = graph.get_shortest_paths(source, target, weights=cost_criteria, output="epath")
+
+    edge_path_list = []
+    path_dist_list = []
+    path_time_list = []
+    path_gcost_list = []
+
+    for path in paths:
+        edge_path = []
+        path_dist = 0
+        path_time = 0
+        path_gcost = 0
+        if path:
+            for n in path:
+                edge_path.append(graph.es[n]['edge_id'])
+                path_dist += graph.es[n]['length']
+                path_time += graph.es[n][time_criteria]
+                path_gcost += graph.es[n][cost_criteria]
+
+        edge_path_list.append(edge_path)
+        path_dist_list.append(path_dist)
+        path_time_list.append(path_time)
+        path_gcost_list.append(path_gcost)
+
+    return edge_path_list, path_dist_list, path_time_list, path_gcost_list
+
+def write_flow_paths_to_network_files(save_paths_df,
+    industry_columns,min_max_exist,gdf_edges, save_csv=True, save_shapes=True, shape_output_path='',csv_output_path=''):
+    """
+    Write results to Shapefiles
+
+    Parameters
+    ---------
+    save_paths_df - Pandas DataFrame of OD flow paths and their tonnages
+    industry_columns - List of string names of all OD commodities/industries indentified
+    min_max_exist - List of string names of commodity/industry columns for which min-max tonnage column names already exist
+    gdf_edges - GeoDataFrame of network edge set
+    save_csv - Boolean condition to tell code to save created edge csv file
+    save_shapes - Boolean condition to tell code to save created edge shapefile
+    shape_output_path - Path where the output shapefile will be stored
+    csv_output_path - Path where the output csv file will be stored 
+
+    Outputs
+    -------
+    gdf_edges - Shapefile 
+        With minimum and maximum tonnage flows of all commodities/industries for each edge of network
+    """
+    if save_shapes == False:
+        gdf_edges.drop('geometry', axis=1, inplace=True)
+
+    min_ind_cols = []
+    max_ind_cols = []
+    ch_min_ind_cols = []
+    ch_max_ind_cols = []
+    for ind in industry_columns:
+        min_ind_cols.append('min_{}'.format(ind))
+        max_ind_cols.append('max_{}'.format(ind))
+        if ind in min_max_exist:
+            ch_min_ind_cols.append('min_{}'.format(ind))
+            ch_max_ind_cols.append('max_{}'.format(ind))
+        else:
+            ch_min_ind_cols.append(ind)
+            ch_max_ind_cols.append(ind)
+
+    for i in range(len(min_ind_cols)):
+        gdf_edges[min_ind_cols[i]] = 0
+        gdf_edges[max_ind_cols[i]] = 0
+
+    for iter_, path in save_paths_df.iterrows():
+        min_path = path['min_edge_path']
+        max_path = path['max_edge_path']
+
+        gdf_edges.loc[gdf_edges['edge_id'].isin(min_path), min_ind_cols] += path[ch_min_ind_cols].values
+        gdf_edges.loc[gdf_edges['edge_id'].isin(max_path), max_ind_cols] += path[ch_max_ind_cols].values
+
+
+    for ind in industry_columns:
+        gdf_edges['swap'] = gdf_edges.apply(lambda x: swap_min_max(x,'min_{}'.format(ind),'max_{}'.format(ind)), axis = 1)
+        gdf_edges[['min_{}'.format(ind),'max_{}'.format(ind)]] = gdf_edges['swap'].apply(pd.Series)
+        gdf_edges.drop('swap', axis=1, inplace=True)
+
+    if save_shapes == True:
+        gdf_edges.to_file(shape_output_path,encoding='utf-8')
+
+    if save_csv == True:
+        gdf_edges.to_csv(csv_output_path,index=False,encoding='utf-8')
+
+
+    del gdf_edges, save_paths_df
 
 def identify_all_failure_paths(network_df_in,edge_failure_set,flow_dataframe,path_criteria):
     """Identify all paths that contain an edge
@@ -49,7 +183,7 @@ def identify_all_failure_paths(network_df_in,edge_failure_set,flow_dataframe,pat
     return network_df, edge_path_index
 
 def igraph_scenario_edge_failures_changing_tonnages(network_df_in, edge_failure_set, 
-    flow_dataframe, vehicle_wt, path_criteria, tons_criteria, cost_criteria, time_criteria):
+    flow_dataframe, vehicle_weight, path_criteria, tons_criteria, cost_criteria, time_criteria):
     """Estimate network impacts of each failures
     When the tariff costs of each path depends on the changing tonnages
 
@@ -58,7 +192,7 @@ def igraph_scenario_edge_failures_changing_tonnages(network_df_in, edge_failure_
     network_df_in - Pandas DataFrame of network
     edge_failure_set - List of string edge ID's
     flow_dataframe - Pandas DataFrame of list of edge paths
-    vehicle_wt - Float weight of vehcile weight
+    vehicle_weight - Float weight of vehcile weight
     path_criteria - String name of column of edge paths in flow dataframe
     tons_criteria - String name of column of path tons in flow dataframe
     cost_criteria - String name of column of path costs in flow dataframe
@@ -104,8 +238,8 @@ def igraph_scenario_edge_failures_changing_tonnages(network_df_in, edge_failure_
 
             else:
                 tons = flow_dataframe.iloc[e][tons_criteria]
-                vh_nums = math.ceil(1.0*tons/vehicle_wt)
-                network_graph = add_igraph_generalised_costs_network(
+                vh_nums = math.ceil(1.0*tons/vehicle_weight)
+                network_graph = add_igraph_generalised_costs(
                     network_graph, vh_nums, tons)
                 new_route = network_graph.get_shortest_paths(
                     origin, destination, weights=cost_criteria, output='epath')[0]
@@ -134,7 +268,7 @@ def igraph_scenario_edge_failures_changing_tonnages(network_df_in, edge_failure_
 
 
 def igraph_scenario_edge_failures(network_df_in, edge_failure_set, 
-    flow_dataframe, vehicle_wt, path_criteria, 
+    flow_dataframe, vehicle_weight, path_criteria, 
     tons_criteria, cost_criteria, time_criteria):
     """Estimate network impacts of each failures
     When the tariff costs of each path are fixed by vehicle weight
@@ -144,7 +278,7 @@ def igraph_scenario_edge_failures(network_df_in, edge_failure_set,
     network_df_in - Pandas DataFrame of network
     edge_failure_set - List of string edge ID's
     flow_dataframe - Pandas DataFrame of list of edge paths
-    vehicle_wt - Float weight of vehcile weight
+    vehicle_weight - Float weight of vehcile weight
     path_criteria - String name of column of edge paths in flow dataframe
     tons_criteria - String name of column of path tons in flow dataframe
     cost_criteria - String name of column of path costs in flow dataframe
@@ -173,8 +307,8 @@ def igraph_scenario_edge_failures(network_df_in, edge_failure_set,
 
         network_graph = ig.Graph.TupleList(network_df.itertuples(
             index=False), edge_attrs=list(network_df.columns)[2:])
-        network_graph = add_igraph_generalised_costs_network(
-            network_graph, 1, vehicle_wt)
+        network_graph = add_igraph_generalised_costs(
+            network_graph, 1, vehicle_weight)
         
         nodes_name = np.asarray([x['name'] for x in network_graph.vs])
         select_flows = flow_dataframe[flow_dataframe.index.isin(edge_path_index)]
@@ -215,7 +349,7 @@ def igraph_scenario_edge_failures(network_df_in, edge_failure_set,
 
     return edge_fail_dictionary
 
-def network_failure_assembly(edge_failure_dataframe, gdf_edges, save_edges=True, shape_output_path=''):
+def network_failure_assembly_shapefiles(edge_failure_dataframe, gdf_edges, save_edges=True, shape_output_path=''):
     """
     Write results to Shapefiles
 
@@ -223,7 +357,7 @@ def network_failure_assembly(edge_failure_dataframe, gdf_edges, save_edges=True,
     ---------
     edge_failure_dataframe - Pandas DataFrame of edge failure results
     gdf_edges - GeoDataFrame of network edge set with edge ID's and geometry
-    save_Edges - Boolean condition to tell code to save created edge shapefile
+    save_edges - Boolean condition to tell code to save created edge shapefile
     shape_output_path - Path where the output shapefile will be stored 
 
     Outputs

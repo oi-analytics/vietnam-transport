@@ -80,57 +80,11 @@ import numpy as np
 import pandas as pd
 from shapely import wkt
 from shapely.geometry import Point
-from vtra.transport_network_creation import *
+from vtra.transport_flow_and_failure_functions import *
 from vtra.utils import *
 
-def network_od_path_estimations(graph, source, target, cost_criteria, time_criteria):
-    """
-    Estimate the paths, distances, times, and costs for given OD pair
 
-    Parameters
-    ---------
-    graph - igraph network structure 
-    source - String/Float/Integer name of Origin node ID
-    source - String/Float/Integer name of Destination node ID
-    cost_criteria - String name of generalised cost criteria to be used: min_gcost or max_gcost
-    time_criteria - String name of time criteria to be used: min_time or max_time    
-
-    Outputs
-    -------
-    edge_path_list - List of lists of Strings/Floats/Integers of edge ID's in routes
-    path_dist_list - List of float values of estimated distances of routes
-    path_time_list - List of float values of estimated times of routes
-    path_gcost_list - List of float values of estimated generalised costs of routes
-
-    """
-    paths = graph.get_shortest_paths(source, target, weights=cost_criteria, output="epath")
-
-    edge_path_list = []
-    path_dist_list = []
-    path_time_list = []
-    path_gcost_list = []
-
-    for path in paths:
-        edge_path = []
-        path_dist = 0
-        path_time = 0
-        path_gcost = 0
-        if path:
-            for n in path:
-                edge_path.append(graph.es[n]['edge_id'])
-                path_dist += graph.es[n]['length']
-                path_time += graph.es[n][time_criteria]
-                path_gcost += graph.es[n][cost_criteria]
-
-        edge_path_list.append(edge_path)
-        path_dist_list.append(path_dist)
-        path_time_list.append(path_time)
-        path_gcost_list.append(path_gcost)
-
-    return edge_path_list, path_dist_list, path_time_list, path_gcost_list
-
-
-def network_od_paths_assembly(points_dataframe, graph, 
+def network_od_paths_assembly_provincial(points_dataframe, graph, 
     vehicle_wt, region_name,excel_writer=''):
     """
     Assemble estimates of OD paths, distances, times, costs and tonnages on networks
@@ -182,9 +136,9 @@ def network_od_paths_assembly(points_dataframe, graph,
             max_veh_nums = points_dataframe.loc[[origin], 'max_vehicle_nums'].values.tolist()
 
             get_min_path, get_min_dist, get_min_time, get_min_gcost = network_od_path_estimations(
-                graph, origin, destinations, 'min_gcost', 'min_time')
+                graph, origin, destinations,vehicle_wt,vehicle_wt, 'min_gcost', 'min_time')
             get_max_path, get_max_dist, get_max_time, get_max_gcost = network_od_path_estimations(
-                graph, origin, destinations, 'max_gcost', 'max_time')
+                graph, origin, destinations,vehicle_wt,vehicle_wt, 'max_gcost', 'max_time')
 
 
             save_paths += list(zip([origin]*len(destinations), destinations, get_min_path, get_max_path, min_rev, max_rev, min_croptons, max_croptons,
@@ -199,52 +153,10 @@ def network_od_paths_assembly(points_dataframe, graph,
     save_paths_df.to_excel(excel_writer, region_name +
                            '_{}_tons'.format(int(vehicle_wt)), index=False)
     excel_writer.save()
-    del save_paths_df
+    del save_paths
+    # del save_paths_df
 
-    return save_paths
-
-def write_province_flow_paths_to_network_shapefile(save_paths,gdf_edges, save_edges=True, shape_output_path=''):
-    """
-    Write results to Shapefiles
-
-    Parameters
-    ---------
-    save_paths - List of lists of OD flow paths and their min-max tonnages and revenues
-    region_name - String name of province
-    gdf_edges - GeoDataFrame of network edge set
-    save_Edges - Boolean condition to tell code to save created edge shapefile
-    shape_output_path - Path where the output shapefile will be stored 
-
-    Outputs
-    -------
-    gdf_edges - Shapefile 
-        With minimum and maximum tonnage and net revenue flows for each edges in network
-    """
-
-    gdf_edges['min_netrev'] = 0
-    gdf_edges['max_netrev'] = 0
-    gdf_edges['min_tons'] = 0
-    gdf_edges['max_tons'] = 0
-
-    for path in save_paths:
-        gdf_edges.loc[gdf_edges['edge_id'].isin(path[2]), 'min_netrev'] += path[4]
-        gdf_edges.loc[gdf_edges['edge_id'].isin(path[3]), 'max_netrev'] += path[5]
-        gdf_edges.loc[gdf_edges['edge_id'].isin(path[2]), 'min_tons'] += path[6]
-        gdf_edges.loc[gdf_edges['edge_id'].isin(path[3]), 'max_tons'] += path[7]
-
-    gdf_edges['swap'] = gdf_edges.apply(
-        lambda x: swap_min_max(x, 'min_netrev', 'max_netrev'), axis=1)
-    gdf_edges[['min_netrev', 'max_netrev']] = gdf_edges['swap'].apply(pd.Series)
-    gdf_edges.drop('swap', axis=1, inplace=True)
-
-    gdf_edges['swap'] = gdf_edges.apply(
-        lambda x: swap_min_max(x, 'min_tons', 'max_tons'), axis=1)
-    gdf_edges[['min_tons', 'max_tons']] = gdf_edges['swap'].apply(pd.Series)
-    gdf_edges.drop('swap', axis=1, inplace=True)
-
-    if save_edges == True:
-        gdf_edges.to_file(shape_output_path,encoding='utf-8')
-
+    return save_paths_df
 
 if __name__ == '__main__':
     """
@@ -292,6 +204,10 @@ if __name__ == '__main__':
     if os.path.exists(flow_shp_dir) == False:
         os.mkdir(flow_shp_dir)
 
+    flow_csv_dir = os.path.join(output_path, 'flow_mapping_combined')
+    if os.path.exists(flow_csv_dir) == False:
+        os.mkdir(flow_csv_dir)
+
     flow_paths_dir = os.path.join(output_path, 'flow_mapping_paths')
     if os.path.exists(flow_paths_dir) == False:
         os.mkdir(flow_paths_dir)
@@ -333,18 +249,22 @@ if __name__ == '__main__':
                 print ('* Calculating {} OD paths'.format(province))
                 all_ods['min_vehicle_nums'] = np.maximum(1, np.ceil(all_ods['min_croptons']/tr_wt))
                 all_ods['max_vehicle_nums'] = np.maximum(1, np.ceil(all_ods['max_croptons']/tr_wt))
-                G = add_igraph_generalised_costs_roads(G, 1, tr_wt)
-                all_paths = network_od_paths_assembly(all_ods, G, tr_wt,province_name, excel_writer=excl_wrtr)
+                # G = add_igraph_generalised_costs_roads(G, 1, tr_wt)
+                all_paths = network_od_paths_assembly_provincial(all_ods, G, tr_wt,province_name, excel_writer=excl_wrtr)
                 
                 """Create network shapefiles with flows
                 """
-                print ('* Creating {} network shapefiles with flows'.format(province))
+                print ('* Creating {} network csv and shapefiles with flows'.format(province))
                 shp_output_path = os.path.join(
                     flow_shp_dir,
                     'weighted_edges_commune_center_access_flows_{0}_{1}_tons_{2}_percent.shp'.format(province_name,int(tr_wt),int(perct)))
+                csv_output_path = os.path.join(
+                    flow_csv_dir,
+                    'weighted_edges_commune_center_access_flows_{0}_{1}_tons_{2}_percent.csv'.format(province_name,int(tr_wt),int(perct)))
 
-                write_province_flow_paths_to_network_shapefile(
-                    all_paths, gdf_edges, save_edges=True, shape_output_path=shp_output_path)
+                write_flow_paths_to_network_files(
+                    all_paths,['netrev','croptons'],['netrev','croptons'], gdf_edges, 
+                    save_csv=True, save_shapes=False, shape_output_path=shp_output_path,csv_output_path=csv_output_path)
 
             del all_ods
 

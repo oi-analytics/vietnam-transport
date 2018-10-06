@@ -18,7 +18,6 @@ import numpy as np
 import pandas as pd
 from scipy.spatial import Voronoi
 from shapely.geometry import Point, Polygon
-from vtra.transport_network_creation import *
 from vtra.utils import *
 
 

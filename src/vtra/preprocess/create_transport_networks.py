@@ -112,7 +112,7 @@ import pandas as pd
 from shapely import wkt,wkb
 from scipy.spatial import Voronoi
 from shapely.geometry import Point, Polygon
-from vtra.transport_network_creation import *
+from vtra.preprocess.transport_network_inputs import *
 from vtra.utils import *
 
 

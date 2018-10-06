@@ -77,63 +77,11 @@ import pandas as pd
 from shapely import wkt
 from scipy.spatial import Voronoi
 from shapely.geometry import Point, Polygon
-from vtra.transport_network_creation import *
+from vtra.transport_flow_and_failure_functions import *
 from vtra.utils import *
 
-def network_od_path_estimations_changing_tonnages(graph,
-    source, target, tonnage, vehicle_wt, cost_criteria, time_criteria):
-    """
-    Estimate the paths, distances, times, and costs for given OD pair
 
-    Parameters
-    ---------
-    graph - igraph network structure 
-    source - String/Float/Integer name of Origin node ID
-    source - String/Float/Integer name of Destination node ID
-    tonnage - Float value of tonnage 
-    vehicle_wt - Float unit weight of vehicle
-    cost_criteria - String name of generalised cost criteria to be used: min_gcost or max_gcost
-    time_criteria - String name of time criteria to be used: min_time or max_time    
-
-    Outputs
-    -------
-    edge_path_list - List of lists of Strings/Floats/Integers of edge ID's in routes
-    path_dist_list - List of float values of estimated distances of routes
-    path_time_list - List of float values of estimated times of routes
-    path_gcost_list - List of float values of estimated generalised costs of routes
-
-    """
-
-    graph = add_igraph_generalised_costs_network(graph, np.ceil(
-        tonnage/vehicle_wt), tonnage)
-    paths = graph.get_shortest_paths(source, target, weights=cost_criteria, output="epath")
-
-    edge_path_list = []
-    path_dist_list = []
-    path_time_list = []
-    path_gcost_list = []
-
-    for path in paths:
-        edge_path = []
-        path_dist = 0
-        path_time = 0
-        path_gcost = 0
-        if path:
-            for n in path:
-                edge_path.append(graph.es[n]['edge_id'])
-                path_dist += graph.es[n]['length']
-                path_time += graph.es[n][time_criteria]
-                path_gcost += graph.es[n][cost_criteria]
-
-        edge_path_list.append(edge_path)
-        path_dist_list.append(path_dist)
-        path_time_list.append(path_time)
-        path_gcost_list.append(path_gcost)
-
-    return edge_path_list, path_dist_list, path_time_list, path_gcost_list
-
-
-def network_od_paths_assembly_changing_tonnages(points_dataframe, 
+def network_od_paths_assembly_national(points_dataframe, 
     graph, vehicle_wt, transport_mode, 
     excel_writer=''):
     """
@@ -172,10 +120,10 @@ def network_od_paths_assembly_changing_tonnages(points_dataframe,
             origin = row['origin']
             destinations = [row['destination']]
             tons = row['min_tons']
-            get_min_path, get_min_dist, get_min_time, get_min_gcost = network_od_path_estimations_changing_tonnages(
+            get_min_path, get_min_dist, get_min_time, get_min_gcost = network_od_path_estimations(
                 graph, origin, destinations, tons, vehicle_wt, 'min_gcost', 'min_time')
             tons = row['max_tons']
-            get_max_path, get_max_dist, get_max_time, get_max_gcost = network_od_path_estimations_changing_tonnages(
+            get_max_path, get_max_dist, get_max_time, get_max_gcost = network_od_path_estimations(
                 graph, origin, destinations, tons, vehicle_wt, 'max_gcost', 'max_time')
             save_paths += list(zip([origin]*len(destinations), destinations, get_min_path, get_max_path,
                                    get_min_dist, get_max_dist, get_min_time, get_max_time, get_min_gcost, get_max_gcost))
@@ -204,63 +152,6 @@ def network_od_paths_assembly_changing_tonnages(points_dataframe,
     del save_paths
     
     return save_paths_df
-
-def write_national_flow_paths_to_network_shapefile(save_paths_df,transport_mode,
-    industry_columns,min_max_exist,gdf_edges, save_edges=True, shape_output_path=''):
-    """
-    Write results to Shapefiles
-
-    Parameters
-    ---------
-    save_paths_df - Pandas DataFrame of OD flow paths and their tonnages
-    transport_mode - String name of modes
-    industry_columns - List of string names of all OD commodities/industries indentified
-    min_max_exist - List of string names of commodity/industry columns for which min-max tonnage column names already exist
-    gdf_edges - GeoDataFrame of network edge set
-    save_Edges - Boolean condition to tell code to save created edge shapefile
-    shape_output_path - Path where the output shapefile will be stored 
-
-    Outputs
-    -------
-    gdf_edges - Shapefile 
-        With minimum and maximum tonnage flows of all commodities/industries for each edge of network
-    """
-
-    min_ind_cols = []
-    max_ind_cols = []
-    ch_min_ind_cols = []
-    ch_max_ind_cols = []
-    for ind in industry_columns:
-        min_ind_cols.append('min_{}'.format(ind))
-        max_ind_cols.append('max_{}'.format(ind))
-        if ind in min_max_exist:
-            ch_min_ind_cols.append('min_{}'.format(ind))
-            ch_max_ind_cols.append('max_{}'.format(ind))
-        else:
-            ch_min_ind_cols.append(ind)
-            ch_max_ind_cols.append(ind)
-
-    for i in range(len(min_ind_cols)):
-        gdf_edges[min_ind_cols[i]] = 0
-        gdf_edges[max_ind_cols[i]] = 0
-
-    for iter_, path in save_paths_df.iterrows():
-        min_path = path['min_edge_path']
-        max_path = path['max_edge_path']
-
-        gdf_edges.loc[gdf_edges['edge_id'].isin(min_path), min_ind_cols] += path[ch_min_ind_cols].values
-        gdf_edges.loc[gdf_edges['edge_id'].isin(max_path), max_ind_cols] += path[ch_max_ind_cols].values
-
-
-    for ind in industry_columns:
-        gdf_edges['swap'] = gdf_edges.apply(lambda x: swap_min_max(x,'min_{}'.format(ind),'max_{}'.format(ind)), axis = 1)
-        gdf_edges[['min_{}'.format(ind),'max_{}'.format(ind)]] = gdf_edges['swap'].apply(pd.Series)
-        gdf_edges.drop('swap', axis=1, inplace=True)
-
-    if save_edges == True:
-        gdf_edges.to_file(shape_output_path,encoding='utf-8')
-
-    del gdf_edges, save_paths_df
 
 def main():
     """
@@ -299,7 +190,7 @@ def main():
     ind_cols = ['cement', 'coal', 'constructi', 'fertilizer', 'fishery', 'manufactur', 'acof', 'cash', 'cass', 'maiz', 'pepp', 'rcof',
                 'rubb', 'swpo', 'teas', 'meat', 'rice', 'petroluem', 'steel', 'sugar', 'wood', 'tons']
     min_max_exist = ['rice','tons']
-    percentage = [10,90]
+    percentage = [10,90,100]
     
     """Give the paths to the input data files
     """
@@ -316,6 +207,10 @@ def main():
     flow_shp_dir = os.path.join(output_path, 'flow_mapping_shapefiles')
     if os.path.exists(flow_shp_dir) == False:
         os.mkdir(flow_shp_dir)
+
+    flow_csv_dir = os.path.join(output_path, 'flow_mapping_combined')
+    if os.path.exists(flow_csv_dir) == False:
+        os.mkdir(flow_csv_dir)
 
     flow_paths_dir = os.path.join(output_path, 'flow_mapping_paths')
     if os.path.exists(flow_paths_dir) == False:
@@ -352,7 +247,7 @@ def main():
             """Calculate mode OD paths
             """
             print ('* Calculating {} OD paths'.format(modes[m]))
-            all_paths = network_od_paths_assembly_changing_tonnages(
+            all_paths = network_od_paths_assembly_national(
                 all_ods, G, veh_wt[m], modes[m],excel_writer=excl_wrtr)
 
             del all_ods
@@ -361,9 +256,12 @@ def main():
             print ('* Creating {} network shapefiles with flows'.format(modes[m]))
             
             shp_output_path = os.path.join(flow_shp_dir,'weighted_flows_national_{}_{}_percent.shp'.format(modes[m],int(perct)))
+            csv_output_path = os.path.join(flow_csv_dir,'weighted_flows_national_{}_{}_percent.csv'.format(modes[m],int(perct)))
 
-            write_national_flow_paths_to_network_shapefile(all_paths,modes[m],
-                ind_cols,min_max_exist,gdf_edges, save_edges=True, shape_output_path=shp_output_path)
+
+            write_flow_paths_to_network_files(all_paths,
+                ind_cols,min_max_exist,gdf_edges, 
+                save_csv=True, save_shapes=False, shape_output_path=shp_output_path,csv_output_path=csv_output_path)
 
 
 if __name__ == '__main__':
