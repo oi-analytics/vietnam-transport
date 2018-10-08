@@ -131,6 +131,8 @@ def main():
     
     Specify the output files and paths to be created 
     """
+    data_path, calc_path, output_path = load_config()['paths']['data'], load_config()[
+        'paths']['calc'], load_config()['paths']['output']
 
     """Supply input data and parameters
     """
@@ -146,7 +148,7 @@ def main():
     ind_crop_cols = ['sugar', 'wood', 'steel', 'constructi', 'cement', 'fertilizer', 'coal', 'petroluem', 'manufactur',
                      'fishery', 'meat', 'cash', 'cass', 'teas', 'maiz', 'rubb', 'swpo', 'acof', 'rcof', 'pepp']
     min_max_exist = ['rice','tons']
-    percentage = [10,90,100.0]
+    percentage = [10,100.0]
     single_edge = True
     
     """Give the paths to the input data files
@@ -185,7 +187,7 @@ def main():
 
     """Create theee multi-modal networks
     """
-
+    print ('* Creating multi-modal networks') 
     G_multi_df = []
     for m in range(len(modes)):
         """Load mode igraph network and GeoDataFrame
@@ -198,14 +200,18 @@ def main():
     G_multi_df = pd.concat(G_multi_df, axis=0, sort='False', ignore_index=True)
     G_multi_df = G_multi_df[['from_node', 'to_node', 'edge_id', 'g_id', 'length', 'min_time',
                              'max_time', 'min_time_cost', 'max_time_cost', 'min_tariff_cost', 'max_tariff_cost']]
-    G_multi = ig.Graph.TupleList(G_multi_df.itertuples(
-        index=False), edge_attrs=list(G_multi_df.columns)[2:])
     
     """Perform analysis for the modes selected for failure
     """
     modes = ['road','rail']
     veh_wt = [20, 800]
     for m in range(len(modes)):
+        """Load mode igraph network and GeoDataFrame
+        """
+        print ('* Loading {} igraph network and GeoDataFrame'.format(modes[m]))
+        gdf_edges = gpd.read_file(os.path.join(network_data_path,'{}_edges.shp'.format(modes[m])),encoding='utf-8')
+        gdf_edges = gdf_edges[['edge_id','geometry']]
+
         """Create failure scenarios
         """
         print ('* Creating {} failure scenarios'.format(modes[m]))
@@ -317,8 +323,7 @@ def main():
             print ('* Creating {} network shapefiles with failure results'.format(modes[m]))
             shp_path = os.path.join(
                 shp_output_path,file_name + '.shp')
-            # edge_impact = pd.read_csv(df_path).fillna(0)
-            network_failure_assembly(edge_impact,gdf_edges, save_edges=True, shape_output_path=shp_path)
+            network_failure_assembly_shapefiles(edge_impact,gdf_edges, save_edges=True, shape_output_path=shp_path)
 
 
 if __name__ == "__main__":

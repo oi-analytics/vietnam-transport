@@ -149,7 +149,7 @@ def main():
     ind_crop_cols = ['sugar', 'wood', 'steel', 'constructi', 'cement', 'fertilizer', 'coal', 'petroluem', 'manufactur',
                      'fishery', 'meat', 'cash', 'cass', 'teas', 'maiz', 'rubb', 'swpo', 'acof', 'rcof', 'pepp']
     min_max_exist = ['rice','tons']
-    percentage = [100.0]
+    percentage = [90,100.0]
     single_edge = True
     
     """Give the paths to the input data files
@@ -307,7 +307,6 @@ def main():
             print ('* Creating {} network shapefiles with failure results'.format(modes[m]))
             shp_path = os.path.join(
                 shp_output_path,file_name + '.shp')
-            # edge_impact = pd.read_csv(df_path).fillna(0)
             network_failure_assembly_shapefiles(edge_impact,gdf_edges, save_edges=True, shape_output_path=shp_path)
 
 

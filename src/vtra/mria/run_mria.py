@@ -18,7 +18,8 @@ def estimate_losses(input_file):
 
     print('{} started!'.format(input_file))
 
-    data_path = load_config()['paths']['data']
+    data_path, calc_path, output_path = load_config()['paths']['data'], load_config()[
+        'paths']['calc'], load_config()['paths']['output']
 
     """ Set booleans"""
     if 'min' in input_file:
@@ -46,9 +47,8 @@ def estimate_losses(input_file):
 
     """Specify disruption"""
     output_dir = os.path.join(
-        data_path,
-        'Results',
-        'Economic_Failure_Results',
+        output_path,
+        'economic_failure_results',
         os.path.basename(os.path.splitext(input_file)[0])
     )
 
@@ -126,10 +126,9 @@ def estimate_losses(input_file):
 
     if collect_outputs:
         """Specify disruption"""
-        output_dir = os.path.join(data_path,
-                                  'Results',
-                                  'Economic_failure_results',
-                                  'provincial'
+        output_dir = os.path.join(output_path,
+                                  'economic_failure_results',
+                                  'od_regions_losses'
                                   )
 
         """Create output folders"""
@@ -137,11 +136,10 @@ def estimate_losses(input_file):
             os.mkdir(output_dir)
 
         pd.concat(collect_outputs).to_csv(os.path.join(
-            data_path,
-            'Results',
-            'Economic_failure_results',
-            'provincial',
-            '{}_provincial.csv'.format(os.path.basename(os.path.splitext(input_file)[0]))))
+            output_path,
+            'economic_failure_results',
+            'od_regions_losses',
+            '{}_od_regions.csv'.format(os.path.basename(os.path.splitext(input_file)[0]))))
 
         get_sums = {}
         for event in collect_outputs:
@@ -151,34 +149,42 @@ def estimate_losses(input_file):
         sums.columns = ['total_losses']
 
         """Specify disruption"""
-        output_dir = os.path.join(data_path,
-                                  'Results',
-                                  'Economic_failure_results',
-                                  'summarized'
-                                  )
+        output_dir = os.path.join(
+            output_path,
+            'economic_failure_results',
+            'od_regions_losses',
+            'summarized'
+        )
 
         """Create output folders"""
         if os.path.exists(output_dir) == False:
             os.mkdir(output_dir)
 
-        sums.to_csv(os.path.join(data_path,
-                                 'Results',
-                                 'Economic_failure_results',
-                                 'summarized',
-                                 '{}_summarized.csv'.format(os.path.basename(os.path.splitext(input_file)[0]))))
+        sums.to_csv(os.path.join(
+            output_path,
+            'economic_failure_results',
+            'od_regions_losses',
+            'summarized',
+            '{}_summarized.csv'.format(os.path.basename(os.path.splitext(input_file)[0]))))
 
         return pd.concat(collect_outputs), sums
 
 
 if __name__ == '__main__':
 
-    data_path = load_config()['paths']['data']
+    data_path, calc_path, output_path = load_config()['paths']['data'], load_config()[
+        'paths']['calc'], load_config()['paths']['output']
 
-    # input_file = os.path.join(data_path,'Results','Failure_results','single_edge_failures_totals_national_road_max.csv')
+    output_dir = os.path.join(
+        output_path,
+        'economic_failure_results')
+    """Create output folders"""
+    if os.path.exists(output_dir) == False:
+        os.mkdir(output_dir)
 
-    # get_all_input_files = [os.path.join(data_path,'Results','Failure_results', x) for x in os.listdir(os.path.join(data_path,'Results','Failure_results')) if x.endswith(".csv")]
-    get_all_input_files = [os.path.join(data_path, 'Results', 'Failure_results', 'roads', x) for x in os.listdir(
-        os.path.join(data_path, 'Results', 'Failure_results', 'roads')) if x.endswith(".csv")]
+    get_all_input_files = [os.path.join(
+        output_path,'failure_results','isolated_od_scenarios', x) 
+        for x in os.listdir(os.path.join(output_path,'failure_results','isolated_od_scenarios')) if x.endswith(".csv")]
 
     # with Pool(int(cpu_count())-2) as pool:
     #     pool.map(estimate_losses, get_all_input_files, chunksize=1)

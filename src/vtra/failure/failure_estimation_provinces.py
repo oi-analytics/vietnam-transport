@@ -205,7 +205,7 @@ def main():
                         if isinstance(fail_edge,list) == False:
                             fail_edge = [fail_edge]
                         ef_dict = igraph_scenario_edge_failures(
-                            G_df, fail_edge, flow_df, tr_wt,(0,0),path_types[t], tons_types[t], cost_types[t], time_types[t])
+                            G_df, fail_edge, flow_df, tr_wt,path_types[t], tons_types[t], cost_types[t], time_types[t])
 
                         if ef_dict:
                             ef_list += ef_dict
@@ -265,7 +265,6 @@ def main():
                 print ('* Creating {} network shapefiles with flows'.format(province))
                 shp_path = os.path.join(
                     shp_output_path,file_name + '.shp')
-                # edge_impact = pd.read_csv(df_path).fillna(0)
                 network_failure_assembly_shapefiles(edge_impact,gdf_edges, save_edges=True, shape_output_path=shp_path)
 
 

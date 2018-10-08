@@ -16,8 +16,8 @@ import igraph as ig
 import networkx as nx
 import numpy as np
 import pandas as pd
-from vtra.transport_network_creation import *
 from vtra.utils import *
+from vtra.transport_flow_and_failure_functions import *
 
 
 def main():
@@ -37,8 +37,6 @@ def main():
     """
     Get the modal shares
     """
-    # modes = ['road','rail','inland','coastal']
-    modes = ['road', 'rail']
 
     for m in range(len(modes)):
         """Load mode igraph network and GeoDataFrame

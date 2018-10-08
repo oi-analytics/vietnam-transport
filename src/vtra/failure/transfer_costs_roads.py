@@ -15,87 +15,8 @@ import igraph as ig
 import networkx as nx
 import numpy as np
 import pandas as pd
-import psycopg2
-from sqlalchemy import create_engine
-from vtra.transport_network_creation import *
 from vtra.utils import *
-
-
-def swap_min_max(x, min_col, max_col):
-    """
-    """
-    if abs(x[min_col]) > abs(x[max_col]):
-        return x[max_col], x[min_col]
-    else:
-        return x[min_col], x[max_col]
-
-
-def network_failure_assembly(edge_failure_dataframe, vehicle_wt, transport_mode, gdf_edges, save_edges=True, output_path=''):
-    """
-    Assign net revenue to roads assets in Vietnam
-
-    Parameters
-    ---------
-    start_points - GeoDataFrame of start points for shortest path analysis.
-    end_points - GeoDataFrame of potential end points for shorest path analysis.
-    G - iGraph network of the province.
-    save_edges -
-
-    Outputs
-    -------
-    Shapefile with all edges and the total net reveneu transferred along each edge
-    GeoDataFrame of total net revenue transferred along each edge
-    """
-    # min_ind_cols = []
-    # max_ind_cols = []
-    # ch_min_ind_cols = []
-    # ch_max_ind_cols = []
-    # for ind in industry_columns:
-    #     min_ind_cols.append('min_{}'.format(ind))
-    #     max_ind_cols.append('max_{}'.format(ind))
-    #     if ind in ('rice','tons'):
-    #         ch_min_ind_cols.append('min_{}'.format(ind))
-    #         ch_max_ind_cols.append('max_{}'.format(ind))
-    #     else:
-    #         ch_min_ind_cols.append(ind)
-    #         ch_max_ind_cols.append(ind)
-
-    # print (len(ch_min_ind_cols))
-    # print (len(ch_max_ind_cols))
-    # print (len(min_ind_cols))
-    # print (len(max_ind_cols))
-
-    failure_columns = edge_failure_dataframe.columns.values.tolist()
-    failure_columns = [f for f in failure_columns if f != 'edge_id']
-
-    for fc in failure_columns:
-        gdf_edges[fc] = 0
-
-    for iter_, row in edge_failure_dataframe.iterrows():
-        # print (row[1:])
-        gdf_edges.loc[gdf_edges['edge_id'] == row['edge_id'],
-                      failure_columns] = row[failure_columns].values
-
-    # gdf_edges[min_ind_cols] = gdf_edges['min_vals'].apply(pd.Series)
-    # gdf_edges[max_ind_cols] = gdf_edges['max_vals'].apply(pd.Series)
-    # gdf_edges.drop('min_vals', axis=1, inplace=True)
-    # gdf_edges.drop('max_vals', axis=1, inplace=True)
-
-    industry_columns = list(set([f.split('min_')[1] for f in failure_columns if 'min' in f]))
-
-    for ind in industry_columns:
-        gdf_edges['swap'] = gdf_edges.apply(lambda x: swap_min_max(
-            x, 'min_{}'.format(ind), 'max_{}'.format(ind)), axis=1)
-        gdf_edges[['min_{}'.format(ind), 'max_{}'.format(ind)]
-                  ] = gdf_edges['swap'].apply(pd.Series)
-        gdf_edges.drop('swap', axis=1, inplace=True)
-
-    if save_edges == True:
-        gdf_edges.to_file(os.path.join(
-            output_path, 'weighted_edges_failures_national_{0}_10_percent_shift.shp'.format(transport_mode)))
-
-    del gdf_edges, edge_failure_dataframe
-
+from vtra.transport_flow_and_failure_functions import *
 
 def main():
     data_path, calc_path, output_path = load_config()['paths']['data'], load_config()[
