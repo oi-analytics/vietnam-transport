@@ -51,6 +51,30 @@ Failure Analysis
     - which scripts to run in what order
     - output files
 
+Input data requirements
+~~~~~~~~~~~~~~~~~~~~~~~
+
+1. Correct paths to all files and correct input parameters
+2. Excel sheets with results of flow mapping based on MIN-MAX generalised costs estimates:
+    - origin - String node ID of Origin
+    - destination - String node ID of Destination
+    - o_region - String name of Province of Origin node ID
+    - d_region - String name of Province of Destination node ID
+    - min_edge_path - List of string of edge ID's for paths with minimum generalised cost flows
+    - max_edge_path - List of string of edge ID's for paths with maximum generalised cost flows
+    - min_distance - Float values of estimated distance for paths with minimum generalised cost flows
+    - max_distance - Float values of estimated distance for paths with maximum generalised cost flows
+    - min_time - Float values of estimated time for paths with minimum generalised cost flows
+    - max_time - Float values of estimated time for paths with maximum generalised cost flows
+    - min_gcost - Float values of estimated generalised cost for paths with minimum generalised cost flows
+    - max_gcost - Float values of estimated generalised cost for paths with maximum generalised cost flows
+    - min_vehicle_nums - Float values of estimated vehicle numbers for paths with minimum generalised cost flows
+    - max_vehicle_nums - Float values of estimated vehicle numbers for paths with maximum generalised cost flows
+    - industry_columns - All daily tonnages of industry columns given in the OD matrix data
+3. Shapefiles
+    - edge_id - String/Integer/Float Edge ID
+    - geometry - Shapely LineString geomtry of edges
+
 
 Economic Impact Assessment
 --------------------------

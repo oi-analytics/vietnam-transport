@@ -12,7 +12,7 @@ dependencies:
   - fiona
   - GDAL
   - geoalchemy2
-  - geopandas
+  - geopandas==0.4.0
   - geopy
   - haversine
   - ipopt
