@@ -15,6 +15,20 @@ import numpy as np
 import pandas as pd
 from vtra.utils import *
 
+def swap_min_max(x, min_col, max_col):
+    """
+    """
+    if x[min_col] < 0 and x[max_col] < 0:
+        if abs(x[min_col]) > abs(x[max_col]):
+            return x[max_col], x[min_col]
+        else:
+            return x[min_col], x[max_col]
+    else:
+        if x[min_col] > x[max_col]:
+            return x[max_col], x[min_col]
+        else:
+            return x[min_col], x[max_col]
+
 def add_igraph_generalised_costs(G, vehicle_numbers, tonnage):
     # G.es['max_cost'] = list(cost_param*(np.array(G.es['length'])/np.array(G.es['max_speed'])))
     # G.es['min_cost'] = list(cost_param*(np.array(G.es['length'])/np.array(G.es['min_speed'])))
@@ -348,6 +362,33 @@ def igraph_scenario_edge_failures(network_df_in, edge_failure_set,
                                                      'new_path':[],'new_distance': 0, 'new_time': 0, 'new_cost': 0, 'no_access': 1})
 
     return edge_fail_dictionary
+
+def rearrange_minmax_values(edge_failure_dataframe):
+    """
+    Write results to Shapefiles
+
+    Parameters
+    ---------
+    edge_failure_dataframe - Pandas DataFrame with min-max columns
+
+    Outputs
+    -------
+    edge_failure_dataframe - Pandas DataFrame 
+        With columns where min < max
+    """
+    failure_columns = edge_failure_dataframe.columns.values.tolist()
+    failure_columns = [f for f in failure_columns if f != ('edge_id','no_access')]
+
+    industry_columns = list(set([f.split('min_')[1] for f in failure_columns if 'min' in f]))
+
+    for ind in industry_columns:
+        edge_failure_dataframe['swap'] = edge_failure_dataframe.apply(lambda x: swap_min_max(
+            x, 'min_{}'.format(ind), 'max_{}'.format(ind)), axis=1)
+        edge_failure_dataframe[['min_{}'.format(ind), 'max_{}'.format(ind)]
+                  ] = edge_failure_dataframe['swap'].apply(pd.Series)
+        edge_failure_dataframe.drop('swap', axis=1, inplace=True)
+
+    return edge_failure_dataframe
 
 def network_failure_assembly_shapefiles(edge_failure_dataframe, gdf_edges, save_edges=True, shape_output_path=''):
     """

@@ -136,8 +136,6 @@ def main():
 
     """Supply input data and parameters
     """
-    modes = ['road', 'rail', 'air', 'inland', 'coastal']
-
     types = ['min', 'max']
     path_types = ['min_edge_path', 'max_edge_path']
     dist_types = ['min_distance', 'max_distance']
@@ -177,6 +175,10 @@ def main():
     if os.path.exists(isolated_ods) == False:
         os.mkdir(isolated_ods)
 
+    isolated_ods = os.path.join(fail_output_path,'isolated_od_scenarios','multi_modal')
+    if os.path.exists(isolated_ods) == False:
+        os.mkdir(isolated_ods)
+
     rerouting = os.path.join(fail_output_path,'rerouting_scenarios')
     if os.path.exists(rerouting) == False:
         os.mkdir(rerouting)
@@ -185,9 +187,10 @@ def main():
     if os.path.exists(minmax_combine) == False:
         os.mkdir(minmax_combine)
 
-    """Create theee multi-modal networks
+    """Create the multi-modal networks
     """
     print ('* Creating multi-modal networks') 
+    modes = ['road', 'rail', 'inland', 'multi']
     G_multi_df = []
     for m in range(len(modes)):
         """Load mode igraph network and GeoDataFrame
@@ -200,6 +203,7 @@ def main():
     G_multi_df = pd.concat(G_multi_df, axis=0, sort='False', ignore_index=True)
     G_multi_df = G_multi_df[['from_node', 'to_node', 'edge_id', 'g_id', 'length', 'min_time',
                              'max_time', 'min_time_cost', 'max_time_cost', 'min_tariff_cost', 'max_tariff_cost']]
+
     
     """Perform analysis for the modes selected for failure
     """

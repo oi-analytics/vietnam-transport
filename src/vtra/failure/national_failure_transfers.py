@@ -71,7 +71,7 @@ def main():
     """Give the paths to the input data files
     """
     network_data_path = os.path.join(data_path,'post_processed_networks')
-    all_fail_scenarios = os.path.join(fail_output_path,'all_fail_scenarios')
+    all_fail_scenarios = os.path.join(output_path,'failure_results','all_fail_scenarios')
 
     """Specify the output files and paths to be created 
     """
@@ -79,7 +79,7 @@ def main():
     if os.path.exists(shp_output_path) == False:
         os.mkdir(shp_output_path)
 
-    minmax_combine = os.path.join(fail_output_path,'minmax_combined_scenarios')
+    minmax_combine = os.path.join(output_path,'failure_results','minmax_combined_scenarios')
     if os.path.exists(minmax_combine) == False:
         os.mkdir(minmax_combine)
 
@@ -99,7 +99,7 @@ def main():
     """
     Get the modal shares
     """
-    fail_mode = ['road']
+    fail_mode = ['road','rail']
 
     for m in range(len(fail_mode)):
         for perct in percentage:
@@ -112,7 +112,7 @@ def main():
                     file_name = 'multiple_edge_failures_all_national_{0}_{1}_{2}_percent_disrupt_multi_modal.csv'.format(modes[m], types[t],int(perct))
 
                 df_path = os.path.join(all_fail_scenarios,file_name)
-                flow_df_select.read_csv(df_path).fillna(0)
+                flow_df_select = pd.read_csv(df_path).fillna(0)
 
                 flow_df_select = flow_df_select[[
                     'origin', 'destination', 'new_path', '{}_tons'.format(types[t])]]
@@ -164,12 +164,10 @@ def main():
             edge_impact = edge_fail_ranges[0]
             edge_impact = pd.merge(edge_impact, edge_fail_ranges[1], how='left', on=[
                                    'edge_id']).fillna(0)
+            edge_impact = rearrange_minmax_values(edge_impact)
             df_path = os.path.join(minmax_combine,
                                    'single_edge_failures_transfers_national_{0}_{1}_percent_shift.csv'.format(fail_mode[m],int(perct)))
             edge_impact.to_csv(df_path, index=False)
-
-            # network_failure_assembly_shapefiles(edge_impact, fail_mode[m], [
-            #                          'road', 'rail', 'water'], G_multi_df, save_edges=True, output_path=shp_output_path)
 
 
 if __name__ == "__main__":

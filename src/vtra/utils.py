@@ -832,11 +832,3 @@ def get_node_edge_files(mode_file_path,file_identification):
             print('Network nodes and edge files necessary')
 
     return nodes_in,edges_in
-
-def swap_min_max(x, min_col, max_col):
-    """
-    """
-    if x[min_col] > x[max_col]:
-        return x[max_col], x[min_col]
-    else:
-        return x[min_col], x[max_col]

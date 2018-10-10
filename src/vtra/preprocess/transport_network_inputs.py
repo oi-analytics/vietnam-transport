@@ -75,20 +75,8 @@ def assign_assumed_width_to_province_roads(x):
         Assigned width of the road asset based on design specifications
 
     """
-    if 0 <= x.width < 4.25:
-        return 3.5
-    elif 4.25 <= x.width < 6.0:
-        return 5.0
-    elif 6.0 <= x.width < 8.0:
-        return 7.0
-    elif 8.0 <= x.width < 11.5:
-        return 9.0
-    elif 11.5 <= x.width < 17.5:
-        return 14.0
-    elif 17.5 <= x.width < 24.5:
-        return 21.0
-    elif 24.5 <= x.width < 100:
-        return 9.0
+    if x.width == 0:
+        return 6
     else:
         return x.width
 

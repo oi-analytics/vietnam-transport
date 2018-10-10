@@ -178,6 +178,10 @@ def main():
     if os.path.exists(isolated_ods) == False:
         os.mkdir(isolated_ods)
 
+    isolated_ods = os.path.join(fail_output_path,'isolated_od_scenarios','single_mode')
+    if os.path.exists(isolated_ods) == False:
+        os.mkdir(isolated_ods)
+
     rerouting = os.path.join(fail_output_path,'rerouting_scenarios')
     if os.path.exists(rerouting) == False:
         os.mkdir(rerouting)
