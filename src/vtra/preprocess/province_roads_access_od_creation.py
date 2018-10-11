@@ -126,14 +126,12 @@ def crop_od_pairs(start_points, end_points, crop_name):
 
     Parameters
     ----------
-
     - start_points - GeoDataFrame of start points for Origins
     - end_points - GeoDataFrame of potential end points for Destinations
     - crop_name - String name of crop
 
     Outputs
     -------
-
     od_pairs_df - Pandas DataFrame wit columns:
         - origin - Origin node ID
         - destination - Destination node ID
@@ -251,7 +249,6 @@ def netrevenue_values_to_province_od_nodes(province_ods_df,prov_communes,commune
 
     Parameters
     ----------
-
     - province_ods_df - List of lists of Pandas dataframes
     - prov_communes - GeoDataFrame of commune level statistics
     - commune_sindex - Spatial index of communes
@@ -270,7 +267,6 @@ def netrevenue_values_to_province_od_nodes(province_ods_df,prov_communes,commune
 
     Outputs
     -------
-
     province_ods_df - List of Lists of Pandas dataframes with columns:
         - origin - Origin node ID
         - destination - Destination node ID

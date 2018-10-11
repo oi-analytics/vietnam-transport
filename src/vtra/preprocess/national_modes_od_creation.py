@@ -83,7 +83,6 @@ def vitranss2_od_split(vitranss2_od_data_file,modes,o_id_col,d_id_col):
 
     Parameters
     ----------
-    
     - vitranss2_od_data_file - Excel file with VITRANSS2 OD data
     - modes - List of strings of mode types, e.g. ['road', 'rail', 'air', 'inland', 'coastal']
     - o_id_col - String name of name of Origin column 
@@ -91,7 +90,6 @@ def vitranss2_od_split(vitranss2_od_data_file,modes,o_id_col,d_id_col):
 
     Outputs
     -------
-    
     - od_fracs - Pandas dataframe of VITRANSS 2 commodity OD data with modal splits 
     """
     od_data_modes = pd.read_excel(vitranss2_od_data_file, sheet_name='mode').fillna(0)
@@ -117,7 +115,6 @@ def ifpri_crop_od_split(vitranss2_od_data_file,modes,o_id_col,d_id_col,crop_cols
 
     Parameters
     ----------
-
     - vitranss2_od_data_file - Excel file with VITRANSS2 OD data
     - modes - List of strings of mode types, e.g. ['road', 'rail', 'air', 'inland', 'coastal']
     - o_id_col - String name of name of Origin column 
@@ -126,7 +123,6 @@ def ifpri_crop_od_split(vitranss2_od_data_file,modes,o_id_col,d_id_col,crop_cols
 
     Outputs
     -------
-
     - od_fracs_crops - Pandas dataframe of VITRANSS2 crop OD data with modal splits 
     """
     od_data_modes = pd.read_excel(vitranss2_od_data_file, sheet_name='mode').fillna(0)
@@ -182,7 +178,6 @@ def assign_province_name_id_to_nodes(province_path,nodes_in,province_name_col,pr
 
     Parameters
     ----------
-
     - province_path - Path of province shapefile 
     - nodes_in - Path of nodes shapefile
     - province_name_col - String name of column containing province names
@@ -190,7 +185,6 @@ def assign_province_name_id_to_nodes(province_path,nodes_in,province_name_col,pr
 
     Outputs
     -------
-
     - nodes - Geopandas dataframe of nodes with new columns called province_name and od_id
     """
 
@@ -219,14 +213,12 @@ def assign_road_weights(nodes,edges_in,aadt_column):
 
     Parameters
     ----------
-
     - nodes - Geopandas dataframe of nodes  
     - edges_in - Path of edges shapefile
     - aadt_column - String name of column containing AADT values
 
     Outputs
     -------
-
     - nodes - Geopandas dataframe of nodes with new column called weight
     """
 
@@ -253,14 +245,12 @@ def assign_node_weights_by_commune_population_proximity(commune_path,nodes,commu
 
     Parameters
     ----------
-
     - commune_path - Path of commune shapefile 
     - nodes_in - Path of nodes shapefile
     - commune_pop_col - String name of column containing commune population values
 
     Outputs
     -------
-
     - nodes - Geopandas dataframe of nodes with new column called weight
     """
 
@@ -322,7 +312,6 @@ def assign_industry_od_flows_to_nodes(national_ods_df,ind_cols,modes_df,modes,od
 
     Parameters
     ----------
-
     - national_ods_df - List of lists of Pandas dataframes 
     - ind_cols - List of strings of names of indsutry columns
     - modes_df - List of Geopnadas dataframes with nodes of each transport mode
@@ -338,8 +327,7 @@ def assign_industry_od_flows_to_nodes(national_ods_df,ind_cols,modes_df,modes,od
         - o_region - Origin province name
         - destination - Destination node ID
         - d_region - Destination province ID
-        - ind - Tonnage values for the named industry 
-
+        - ind - Tonnage values for the named industry
     """
     for ind in ind_cols:
         national_ods_modes_df = []
@@ -396,7 +384,6 @@ def assign_daily_min_max_tons_rice(crop_df, rice_prod_df):
 
     Parameters
     ----------
-
     - crop_df - Geopandas dataframe of crop points with annual tonnages 
     - rice_prod_df - Geopandas dataframe of RiceAtlas crop values with minimum and maximum monthly production as fraction of annual production
 
@@ -426,7 +413,6 @@ def assign_crop_od_flows_to_nodes(national_ods_df,province_path,province_name_co
 
     Parameters
     ----------
-
     - national_ods_df - List of lists of Pandas dataframes
     - province_path - Path of province shapefile
     - province_name_col - String name of column containing province names 
@@ -442,7 +428,6 @@ def assign_crop_od_flows_to_nodes(national_ods_df,province_path,province_name_co
 - 
     Outputs
     -------
-
     national_ods_df - List of Lists of Pandas dataframes with columns:
         - origin - Origin node ID
         - o_region - Origin province name
