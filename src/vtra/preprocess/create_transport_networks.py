@@ -55,16 +55,16 @@ Results
 	- terrain - String name of terrain of edge	
 	- level - Integer number for edge level: National, Provincial, Local, etc.
 	- width - Float width in meters of edge
-	- length - Estimated length in kilometers of edge	
-	- min_speed - Estimated minimum speed in km/hr on edge
-	- max_speed - Estimated maximum speed in km/hr on edge
-	- min_time - Estimated minimum time of travel in hours on edge
-	- max_time - Estimated maximum time of travel in hours on edge	
-	- min_time_cost - Estimated minimum cost of time in USD on edge
-	- max_time_cost - Estimated maximum cost of time in USD on edge
-	- min_tariff_cost - Estimated minimum tariff cost in USD on edge	
-	- max_tariff_cost - Estimated maximum tariff cost in USD on edge
-	- vehicle_co - Number of daily vehicle counts on edge
+	- length - Float estimated length in kilometers of edge	
+	- min_speed - Float estimated minimum speed in km/hr on edge
+	- max_speed - Float estimated maximum speed in km/hr on edge
+	- min_time - Float estimated minimum time of travel in hours on edge
+	- max_time - Float estimated maximum time of travel in hours on edge	
+	- min_time_cost - Float estimated minimum cost of time in USD on edge
+	- max_time_cost - Float estimated maximum cost of time in USD on edge
+	- min_tariff_cost - Float estimated minimum tariff cost in USD on edge	
+	- max_tariff_cost - Float estimated maximum tariff cost in USD on edge
+	- vehicle_co - Integer number of daily vehicle counts on edge
 
 6. Attributes only present in Province and national roads edges
 	- surface - String value for surface
@@ -74,9 +74,7 @@ Results
 
 References
 ----------
-1. Pant, R., Koks, E.E., Russell, T., Schoenmakers, R. & Hall, J.W. (2018). 
-Analysis and development of model for addressing climate change/disaster risks in multi-modal transport networks in Vietnam. 
-Final Report, Oxford Infrastructure Analytics Ltd., Oxford, UK.
+1. Pant, R., Koks, E.E., Russell, T., Schoenmakers, R. & Hall, J.W. (2018). Analysis and development of model for addressing climate change/disaster risks in multi-modal transport networks in Vietnam. Final Report, Oxford Infrastructure Analytics Ltd., Oxford, UK.
 2. All input data folders and files referred to in the code below.		 
 """
 import os
