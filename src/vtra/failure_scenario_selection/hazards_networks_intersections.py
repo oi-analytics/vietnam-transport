@@ -1,38 +1,35 @@
 
 """
-DOES NOT WORK WITH GEOPANDAS v0.3.0 WHICH GIVES ERROR IF SHAPEFILE IS EMPTY!!
+Purpose
+-------
 
-Intersect hazards and network line and point geometries 
-With hazatd polygons
+Intersect hazards and network line and point geometries with hazatd polygons
 
 Write final results to Shapefiles
 
 Input data requirements
 -----------------------
+
 1. Correct paths to all files and correct input parameters 
 
-2. Shapefiles of network edges or nodes
-    Should contain following column names and attributes:
-        edge_id or node_id - String/Integer/Float Edge ID or Node ID of network
-        geometry - Shapely geometry of edges as LineStrings or nodes as Points
+2. Shapefiles of network edges or nodes with attributes:
+    - edge_id or node_id - String/Integer/Float Edge ID or Node ID of network
+    - geometry - Shapely geometry of edges as LineStrings or nodes as Points
 
-3. Shapefile of hazards
-    Should contain following column names and attributes:
-        geometry - Shapely geometry of hazard Polygon
+3. Shapefile of hazards with attributes:
+    - geometry - Shapely geometry of hazard Polygon
 
 Results
 -------
-Edge shapefiles
-    Contains:
-        edge_id - String name of intersecting edge ID
-        length - Float length of intersection of edge LineString and hazard Polygon
-        geometry - LineString geometry of intersection of edge LineString and hazard Polygon
 
-Node Shapefile
-    Contains:
-        node_id - String name of intersecting node ID
-        geometry - Point geometry of intersecting node ID
+1. Edge shapefiles with attributes:
+    - edge_id - String name of intersecting edge ID
+    - length - Float length of intersection of edge LineString and hazard Polygon
+    - geometry - Shapely LineString geometry of intersection of edge LineString and hazard Polygon
 
+2. Node Shapefile with attributes:
+    - node_id - String name of intersecting node ID
+    - geometry - Shapely Point geometry of intersecting node ID
 """
 import itertools
 import os
@@ -49,18 +46,15 @@ def networkedge_hazard_intersection(edge_shapefile, hazard_shapefile, output_sha
     Intersect network edges and hazards and write results to shapefiles
 
     Parameters
-    ---------
-    edge_shapefile - Shapefile of network LineStrings 
-    hazard_shapefile - Shapefile of hazard Polygons
-    output_shapefile - String name of edge-hazard shapefile for storing results   
+        - edge_shapefile - Shapefile of network LineStrings 
+        - hazard_shapefile - Shapefile of hazard Polygons
+        - output_shapefile - String name of edge-hazard shapefile for storing results   
 
     Outputs
-    -------
-    output_shapefile - Shapefile
-        Contains:
-            edge_id - String name of intersecting edge ID
-            length - Float length of intersection of edge LineString and hazard Polygon
-            geometry - LineString geometry of intersection of edge LineString and hazard Polygon
+        output_shapefile with attributes:
+            - edge_id - String name of intersecting edge ID
+            - length - Float length of intersection of edge LineString and hazard Polygon
+            - geometry - Shapely LineString geometry of intersection of edge LineString and hazard Polygon
     """
     print ('* Starting {} and {} intersections'.format(edge_shapefile,hazard_shapefile))
     line_gpd = gpd.read_file(edge_shapefile)
@@ -115,17 +109,14 @@ def networknode_hazard_intersection(node_shapefile, hazard_shapefile, output_sha
     Intersect network nodes and hazards and write results to shapefiles
 
     Parameters
-    ---------
-    node_shapefile - Shapefile of network Points 
-    hazard_shapefile - Shapefile of hazard Polygons
-    output_shapefile - String name of node-hazard shapefile for storing results   
+        - node_shapefile - Shapefile of network Points 
+        - hazard_shapefile - Shapefile of hazard Polygons
+        - output_shapefile - String name of node-hazard shapefile for storing results   
 
     Outputs
-    -------
-    output_shapefile - Shapefile
-        Contains:
-            node_id - String name of intersecting node ID
-            geometry - Point geometry of intersecting node ID
+        output_shapefile with attributes:
+            - node_id - String name of intersecting node ID
+            - geometry - Shapely Point geometry of intersecting node ID
     """
     print ('* Starting {} and {} intersections'.format(node_shapefile,hazard_shapefile))
     point_gpd = gpd.read_file(node_shapefile)
@@ -154,20 +145,18 @@ def networknode_hazard_intersection(node_shapefile, hazard_shapefile, output_sha
 def intersect_networks_and_all_hazards(hazard_dir,network_file_path,network_file_name,output_file_path,network_type = ''):
     """
     Walk through all hazard files and select network-hazard intersection criteria
+    
     Call other functions accordingly 
 
     Parameters
-    ---------
-    hazard_dir - String name of directory where all hazard shapefiles are stored 
-    network_file_path - String name of directory where network shapefile is stored 
-    network_file_name - String name network shapefile
-    output_file_path - String name of directory where network-hazard instersection result shapefiles will be stored
-    network_type - String values
-        'edges' or 'nodes'    
+        - hazard_dir - String name of directory where all hazard shapefiles are stored 
+        - network_file_path - String name of directory where network shapefile is stored 
+        - network_file_name - String name network shapefile
+        - output_file_path - String name of directory where network-hazard instersection result shapefiles will be stored
+        - network_type - String values of 'edges' or 'nodes'    
     
     Outputs
-    -------
-    Edge or Node shapefiles
+        Edge or Node shapefiles
     """
     for root, dirs, files in os.walk(hazard_dir):
         for file in files:
@@ -183,28 +172,22 @@ def intersect_networks_and_all_hazards(hazard_dir,network_file_path,network_file
 
 def main():
     """
-    Specify the paths from where you to read and write:
-    1. Input data
-    2. Intermediate calcuations data
-    3. Output results
+    1. Specify the paths from where you to read and write:
+        - Input data
+        - Intermediate calcuations data
+        - Output results
 
-    Supply input data and parameters
-    1. Names of the three Provinces
-        List of string types 
-    2. Paths of the mode files
-        List of tuples of strings
-    3. Names of modes
-        List of strings
-    4. Names of output modes
-        List of strings
-    5. Condition 'Yes' or 'No' is the users wants to process
-        Province scale results
-        National scale results 
+    2. Supply input data and parameters
+        - Names of the three Provinces - List of string types 
+        - Paths of the mode files - List of tuples of strings
+        - Names of modes - List of strings
+        - Names of output modes - List of strings
+        - Condition 'Yes' or 'No' is the users wants to process results 
 
-    Give the paths to the input data files:
-    1. Hazard directory
+    3. Give the paths to the input data files:
+        - Hazard directory
     
-    Specify the output files and paths to be created 
+    4. Specify the output files and paths to be created 
     """
     data_path, calc_path, output_path = load_config()['paths']['data'], load_config()[
         'paths']['calc'], load_config()['paths']['output']

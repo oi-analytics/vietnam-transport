@@ -1,62 +1,61 @@
 """
-Collect network-hazard intersection attributes 
-And combine with boundary Polygons to collect network-hazard-boundary intersection attributes 
+Purpose
+-------
 
-Write final results to an Excel sheet 
+Collect network-hazard intersection attributes 
+    - Combine with boundary Polygons to collect network-hazard-boundary intersection attributes 
+    - Write final results to an Excel sheet 
 
 Input data requirements
 -----------------------
+
 1. Correct paths to all files and correct input parameters 
 
-2. Shapefiles of network-hazard intersections results
-    Should contain following column names and attributes:
-        edge_id or node_id - String/Integer/Float Edge ID or Node ID of network
-        length - Float length of edge intersecting with hazards
-        geometry - Shapely geometry of edges as LineString or nodes as Points
+2. Shapefiles of network-hazard intersections results with attributes:
+    - edge_id or node_id - String/Integer/Float Edge ID or Node ID of network
+    - length - Float length of edge intersecting with hazards
+    - geometry - Shapely geometry of edges as LineString or nodes as Points
 
-3. Shapefile of administrative boundaries of Vietnam
-    Should contain following column names and attributes:
-        province_i - String/Integer ID of Province
-        pro_name_e - String name of Province in English
-        district_i - String/Integer ID of District
-        dis_name_e - String name of District in English
-        commune_id - String/Integer ID of Commune
-        name_eng - String name of Commune in English
-        geometry - Shapely geometry of boundary Polygon 
+3. Shapefile of administrative boundaries of Vietnam with attributes:
+    - province_i - String/Integer ID of Province
+    - pro_name_e - String name of Province in English
+    - district_i - String/Integer ID of District
+    - dis_name_e - String name of District in English
+    - commune_id - String/Integer ID of Commune
+    - name_eng - String name of Commune in English
+    - geometry - Shapely geometry of boundary Polygon 
 
-4. Excel sheet of hazard attributes
-    Should contain following column names and attributes:
-        hazard_type - String name of hazard type
-        model - String name of hazard model
-        year - String name of hazard year
-        climate_scenario - String name of hazard scenario
-        probability - Float/String value of hazard probability
-        band_num - Integer value of hazard band
-        min_val - Integer value of minimum value of hazard threshold
-        max_val - Integer value of maximum value of hazard threshold
+4. Excel sheet of hazard attributes with attributes:
+    - azard_type - String name of hazard type
+    - odel - String name of hazard model
+    - ear - String name of hazard year
+    - limate_scenario - String name of hazard scenario
+    - robability - Float/String value of hazard probability
+    - and_num - Integer value of hazard band
+    - in_val - Integer value of minimum value of hazard threshold
+    - ax_val - Integer value of maximum value of hazard threshold
 
 Results
 -------
-Excel sheet of network-hazard-boundary intersection attributes
-    Contains:
-        edge_id/node_id - String name of intersecting edge ID or node ID
-        length - Float length of intersection of edge LineString and hazard Polygon
-            Only for edges 
-        province_id - String/Integer ID of Province
-        province_name - String name of Province in English
-        district_id - String/Integer ID of District
-        district_name - String name of District in English
-        commune_id - String/Integer ID of Commune
-        commune_name - String name of Commune in English
-        sector - String name of transport mode
-        hazard_type - String name of hazard type
-        model - String name of hazard model
-        year - String name of hazard year
-        climate_scenario - String name of hazard scenario
-        probability - Float/String value of hazard probability
-        band_num - Integer value of hazard band
-        min_val - Integer value of minimum value of hazard threshold
-        max_val - Integer value of maximum value of hazard threshold  
+
+1. Excel sheet of network-hazard-boundary intersection with attributes:
+    - edge_id/node_id - String name of intersecting edge ID or node ID
+    - length - Float length of intersection of edge LineString and hazard Polygon: Only for edges 
+    - province_id - String/Integer ID of Province
+    - province_name - String name of Province in English
+    - district_id - String/Integer ID of District
+    - district_name - String name of District in English
+    - commune_id - String/Integer ID of Commune
+    - commune_name - String name of Commune in English
+    - sector - String name of transport mode
+    - hazard_type - String name of hazard type
+    - model - String name of hazard model
+    - year - String name of hazard year
+    - climate_scenario - String name of hazard scenario
+    - probability - Float/String value of hazard probability
+    - band_num - Integer value of hazard band
+    - min_val - Integer value of minimum value of hazard threshold
+    - max_val - Integer value of maximum value of hazard threshold  
 """
 import itertools
 import os
@@ -73,30 +72,24 @@ def spatial_scenario_selection(network_shapefile, polygon_shapefile, hazard_dict
     Intersect network edges/nodes and boundary Polygons to collect boundary and hazard attributes  
 
     Parameters
-    ---------
-    network_shapefile - Shapefile of edge LineStrings or node Points 
-    polygon_shapefile - Shapefile of boundary Polygons
-    hazard_dictionary - Dictionary of hazard attributes
-    data_dictionary - Dictionary of network-hazard-boundary intersection attributes
-    network_type - String value -'edges' or 'nodes'
-        Default = 'nodes'
-    name_province - String name of province if needed
-        Default = ''    
+        - network_shapefile - Shapefile of edge LineStrings or node Points 
+        - polygon_shapefile - Shapefile of boundary Polygons
+        - hazard_dictionary - Dictionary of hazard attributes
+        - data_dictionary - Dictionary of network-hazard-boundary intersection attributes
+        - network_type - String value -'edges' or 'nodes' - Default = 'nodes'
+        - name_province - String name of province if needed - Default = ''    
 
     Outputs
-    -------
-    data_dictionary - Dictionary of network-hazard-boundary intersection attributes
-        Contains:
-            edge_id/node_id - String name of intersecting edge ID or node ID
-            length - Float length of intersection of edge LineString and hazard Polygon
-                Only for edges 
-            province_id - String/Integer ID of Province
-            province_name - String name of Province in English
-            district_id - String/Integer ID of District
-            district_name - String name of District in English
-            commune_id - String/Integer ID of Commune
-            commune_name - String name of Commune in English
-            hazard_attributes - Dictionary of all attributes from hazard dictionary   
+    data_dictionary - Dictionary of network-hazard-boundary intersection attributes:
+        - edge_id/node_id - String name of intersecting edge ID or node ID
+        - length - Float length of intersection of edge LineString and hazard Polygon: Only for edges 
+        - province_id - String/Integer ID of Province
+        - province_name - String name of Province in English
+        - district_id - String/Integer ID of District
+        - district_name - String name of District in English
+        - commune_id - String/Integer ID of Commune
+        - commune_name - String name of Commune in English
+        - hazard_attributes - Dictionary of all attributes from hazard dictionary   
     """
     line_gpd = gpd.read_file(network_shapefile)
     poly_gpd = gpd.read_file(polygon_shapefile)
@@ -136,48 +129,40 @@ def spatial_scenario_selection(network_shapefile, polygon_shapefile, hazard_dict
 def create_hazard_attributes_for_network(intersection_dir,sector,hazard_files,hazard_df,bands,thresholds,commune_shape,network_type='',name_province=''):
     """
     Extract results of network edges/nodes and hazard intersections to collect network-hazard intersection attributes 
-    And combine with boundary Polygons to collect network-hazard-boundary intersection attributes 
-
-    Write final results to an Excel sheet 
+        - Combine with boundary Polygons to collect network-hazard-boundary intersection attributes 
+        - Write final results to an Excel sheet 
 
     Parameters
-    ---------
-    intersection_dir - String Path to Directory where the network-hazard shapefile results are stored
-    sector - String name of transport mode
-    hazard_files - List of string names of all hazard files
-    hazard_df - Pandas DataFrame of hazard attributes   
-    bands - List of intergers values of hazard bands
-    thresholds - List of intergers values of hazard thresholds
-    commune_shahe - Shapefile of commune boundaries and attributes
-    network_type - String value -'edges' or 'nodes'
-        Default = 'nodes'
-    name_province - String name of province if needed
-        Default = ''    
+        - intersection_dir - String Path to Directory where the network-hazard shapefile results are stored
+        - sector - String name of transport mode
+        - hazard_files - List of string names of all hazard files
+        - hazard_df - Pandas DataFrame of hazard attributes   
+        - bands - List of intergers values of hazard bands
+        - thresholds - List of intergers values of hazard thresholds
+        - commune_shahe - Shapefile of commune boundaries and attributes
+        - network_type - String value -'edges' or 'nodes': Default = 'nodes'
+        - name_province - String name of province if needed: Default = ''    
 
     Outputs
-    -------
-    data_df - Pandas DataFrame of network-hazard-boundary intersection attributes
-        Contains:
-            edge_id/node_id - String name of intersecting edge ID or node ID
-            length - Float length of intersection of edge LineString and hazard Polygon
-                Only for edges 
-            province_id - String/Integer ID of Province
-            province_name - String name of Province in English
-            district_id - String/Integer ID of District
-            district_name - String name of District in English
-            commune_id - String/Integer ID of Commune
-            commune_name - String name of Commune in English
-            sector - String name of transport mode
-            hazard_type - String name of hazard type
-            model - String name of hazard model
-            year - String name of hazard year
-            climate_scenario - String name of hazard scenario
-            probability - Float/String value of hazard probability
-            band_num - Integer value of hazard band
-            min_val - Integer value of minimum value of hazard threshold
-            max_val - Integer value of maximum value of hazard threshold
-            length - Float length of intersection of edge LineString and hazard Polygon
-                Only for edges    
+        data_df - Pandas DataFrame of network-hazard-boundary intersection attributes:
+            - edge_id/node_id - String name of intersecting edge ID or node ID
+            - length - Float length of intersection of edge LineString and hazard Polygon: Only for edges 
+            - province_id - String/Integer ID of Province
+            - province_name - String name of Province in English
+            - district_id - String/Integer ID of District
+            - district_name - String name of District in English
+            - commune_id - String/Integer ID of Commune
+            - commune_name - String name of Commune in English
+            - sector - String name of transport mode
+            - hazard_type - String name of hazard type
+            - model - String name of hazard model
+            - year - String name of hazard year
+            - climate_scenario - String name of hazard scenario
+            - probability - Float/String value of hazard probability
+            - band_num - Integer value of hazard band
+            - min_val - Integer value of minimum value of hazard threshold
+            - max_val - Integer value of maximum value of hazard threshold
+            - length - Float length of intersection of edge LineString and hazard Polygon: Only for edges    
     """
     data_dict = []
     for root, dirs, files in os.walk(intersection_dir):
@@ -229,32 +214,25 @@ def create_hazard_attributes_for_network(intersection_dir,sector,hazard_files,ha
 
 def main():
     """
-    Specify the paths from where you to read and write:
-    1. Input data
-    2. Intermediate calcuations data
-    3. Output results
+    1. Specify the paths from where you to read and write:
+        - Input data
+        - Intermediate calcuations data
+        - Output results
 
-    Supply input data and parameters
-    1. Names of the three Provinces
-        List of string types 
-    2. Names of modes
-        List of strings
-    3. Names of output modes
-        List of strings
-    4. Names of hazard bands
-        List of integers
-    5. Names of hazard thresholds
-        List of integers
-    6. Condition 'Yes' or 'No' is the users wants to process
-        Province scale results
-        National scale results 
+    2. Supply input data and parameters
+        - Names of the three Provinces - List of string types 
+        - Names of modes - List of strings
+        - Names of output modes - List of strings
+        - Names of hazard bands - List of integers
+        - Names of hazard thresholds - List of integers
+        - Condition 'Yes' or 'No' is the users wants to process results
 
-    Give the paths to the input data files:
-    1. Commune boundary and stats data shapefile
-    2. Hazard datasets description Excel file
-    3. String name of sheet in hazard datasets description Excel file
+    3. Give the paths to the input data files:
+        - Commune boundary and stats data shapefile
+        - Hazard datasets description Excel file
+        - String name of sheet in hazard datasets description Excel file
     
-    Specify the output files and paths to be created 
+    4. Specify the output files and paths to be created 
     """
     data_path, calc_path, output_path = load_config()['paths']['data'], load_config()[
         'paths']['calc'], load_config()['paths']['output']
