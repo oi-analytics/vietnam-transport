@@ -1,9 +1,10 @@
 """Creating post-processed transport networks with attributes 
+
 From input Shapefiles 
-For all Province road networks:
-	['Lao Cai', 'Binh Dinh', 'Thanh Hoa']
-For all transport modes at national scale:
-    ['road', 'rail', 'air', 'inland', 'coastal']
+
+For all Province road networks: ['Lao Cai', 'Binh Dinh', 'Thanh Hoa']
+
+For all transport modes at national scale: ['road', 'rail', 'air', 'inland', 'coastal','multi']
 
 Input data requirements
 -----------------------
@@ -17,15 +18,15 @@ All Geometries in Edge Shapefiles should be valid LineStrings
 All Geometries in Node Shapefiles should be valid Points
 	
 A. Node Shapefiles should contain following column names and attributes
-- node_id - String node ID
-- geometry - Shapely Point geometry of nodes
-- attributes - Multiple types depending upon sector and context 
+    - node_id - String node ID
+    - geometry - Shapely Point geometry of nodes
+    - attributes - Multiple types depending upon sector and context 
 
 B. Edge Shapefiles should contain following column names and attributes:
-- edge_id - String Edge ID
-- from_node - String node ID that should be present in node_id column
-- to_node - String node ID that should be present in node_id column 
-- geometry - Shapely LineString geometry of edges 
+    - edge_id - String Edge ID
+    - from_node - String node ID that should be present in node_id column
+    - to_node - String node ID that should be present in node_id column 
+    - geometry - Shapely LineString geometry of edges 
 
 
 Results
@@ -33,59 +34,39 @@ Results
 1. Excel sheets with post-processed network nodes and edges 
 2. Shapefiles with post-processed network nodes and edges
 	
-All nodes have the following attributes:
+3. All nodes have the following attributes:
 	- node_id - String Node ID
 	- name - String name in Vietnamese/English
 	- tons - Float assigned cargo freight tonnage using node 
-		Compiled from observed data/statistics 
 	- population - Float assigned passenger/population number using node 
-	 	Compiled from observed data/statistics 
-	- capacity - Float assigned capacity in tons/passenger numbers/other untis
-	 	Compiled from observed data/statistics 
+	- capacity - Float assigned capacity in tons/passenger numbers/other units
 	- geometry - Shapely Point geometry of node
-	 	Written to the Shapefiles only
 
-Attributes only present in inland and coastal port nodes
-	- port_type - String name of type of port: inland or sea
-	 	Compiled from observed data/statistics  	
-	- port_class - String name of class of port: class1A (international) or class1 (domestic hub)
-		Compiled from observed data/statistics   
+4. Attributes only present in inland and coastal port nodes
+	- port_type - String name of type of port: inland or sea 	
+	- port_class - String name of class of port: class1A (international) or class1 (domestic hub)  
 
-All edges have the following attributes:
+5. All edges have the following attributes:
 	- edge_id - String edge ID
 	- g_id - Interger edge ID
 	- from_node - String node ID that should be present in node_id column
 	- to_node - String node ID that should be present in node_id column
 	- geometry - Shapely LineString geometry of edge
-     	Written to the Shapefiles only
-	- terrain - String name of terrain of edge
-	 	Compiled from observed data/statistics 	
+	- terrain - String name of terrain of edge	
 	- level - Integer number for edge level: National, Provincial, Local, etc.
-	 	Compiled from observed data/statistics
 	- width - Float width in meters of edge
-	 	Compiled from observed data/statistics
-	- length - Estimated length in kilometers of edge
-	 	Calculated from geometry  	
+	- length - Estimated length in kilometers of edge	
 	- min_speed - Estimated minimum speed in km/hr on edge
-	 	Calculated from compiled data/statistics 	
 	- max_speed - Estimated maximum speed in km/hr on edge
-	 	Calculated from compiled data/statistics 	
 	- min_time - Estimated minimum time of travel in hours on edge
-		length/max_speed 	
-	- max_time - Estimated maximum time of travel in hours on edge
-	 	length/min_speed	
+	- max_time - Estimated maximum time of travel in hours on edge	
 	- min_time_cost - Estimated minimum cost of time in USD on edge
-	 	Calculated from compiled data/statistics	
 	- max_time_cost - Estimated maximum cost of time in USD on edge
-	 	Calculated from compiled data/statistics	
-	- min_tariff_cost - Estimated minimum tariff cost in USD on edge
-		Calculated from compiled data/statistics	
+	- min_tariff_cost - Estimated minimum tariff cost in USD on edge	
 	- max_tariff_cost - Estimated maximum tariff cost in USD on edge
-	 	Calculated from compiled data/statistics
 	- vehicle_co - Number of daily vehicle counts on edge
-		Calculated from compiled data/statistics
 
-Attributes only present in Province and national roads edges
+6. Attributes only present in Province and national roads edges
 	- surface - String value for surface
 	- road_class - Integer between 1 and 6
 	- road_cond - String value: paved or unpaved 
@@ -97,8 +78,7 @@ References
 Analysis and development of model for addressing climate change/disaster risks in multi-modal transport networks in Vietnam. 
 Final Report, Oxford Infrastructure Analytics Ltd., Oxford, UK.
 
-2. All input data folders and files referred to in the code below
-		 
+2. All input data folders and files referred to in the code below.		 
 """
 import os
 import subprocess
