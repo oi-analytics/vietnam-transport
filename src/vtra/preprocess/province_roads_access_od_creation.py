@@ -89,17 +89,15 @@ def netrev_od_pairs(start_points, end_points):
     Assign crop tonnages to OD pairs 
 
     Parameters
-    ---------
-    - start_points - GeoDataFrame of start points for Origins
-    - end_points - GeoDataFrame of potential end points for Destinations
+        - start_points - GeoDataFrame of start points for Origins
+        - end_points - GeoDataFrame of potential end points for Destinations
 
     Outputs
-    -------
-    od_pairs_df - Pandas DataFrame with columns:
-        - origin - Origin node ID
-        - destination - Destination node ID
-        - netrev_argi - Net revenue of agriculture firms
-        - netrev_noargi - Net revenue of non-agriculture firms
+        od_pairs_df - Pandas DataFrame with columns:
+            - origin - Origin node ID
+            - destination - Destination node ID
+            - netrev_argi - Net revenue of agriculture firms
+            - netrev_noargi - Net revenue of non-agriculture firms
     """
     save_paths = []
     for iter_, place in start_points.iterrows():
@@ -125,19 +123,17 @@ def crop_od_pairs(start_points, end_points, crop_name):
     Assign crop tonnages to OD pairs 
 
     Parameters
-    ----------
-    - start_points - GeoDataFrame of start points for Origins
-    - end_points - GeoDataFrame of potential end points for Destinations
-    - crop_name - String name of crop
+        - start_points - GeoDataFrame of start points for Origins
+        - end_points - GeoDataFrame of potential end points for Destinations
+        - crop_name - String name of crop
 
     Outputs
-    -------
-    od_pairs_df - Pandas DataFrame wit columns:
-        - origin - Origin node ID
-        - destination - Destination node ID
-        - crop - Tonnage values for the named crop
-        - netrev_argi - Daily Net revenue of agriculture firms in USD
-        - netrev_noargi - Daily Net revenue of non-agriculture firms in USD
+        od_pairs_df - Pandas DataFrame wit columns:
+            - origin - Origin node ID
+            - destination - Destination node ID
+            - crop - Tonnage values for the named crop
+            - netrev_argi - Daily Net revenue of agriculture firms in USD
+            - netrev_noargi - Daily Net revenue of non-agriculture firms in USD
     """
     save_paths = []
     for iter_, place in start_points.iterrows():
@@ -160,17 +156,15 @@ def assign_monthly_tons_crops(x,rice_prod_file,crop_month_fields,province,x_cols
     Assign crop tonnages to OD pairs 
 
     Parameters
-    ---------
-    - x - Pandas DataFrame of values
-    - rice_prod_file - Shapefile of RiceAltas monthly production value
-    - crop_month_fields - Lsit of strings of month columns in Rice Atlas shapefile
-    - province - Stirng name of province
-    - x_cols - List of string names of crops
+        - x - Pandas DataFrame of values
+        - rice_prod_file - Shapefile of RiceAltas monthly production value
+        - crop_month_fields - Lsit of strings of month columns in Rice Atlas shapefile
+        - province - Stirng name of province
+        - x_cols - List of string names of crops
 
     Outputs
-    -------
-    - min_croptons - Float value of Minimum daily tonnages of crops 
-    - max_croptons - Float value of Maximum daily tonnages of crops 
+        - min_croptons - Float value of Minimum daily tonnages of crops 
+        - max_croptons - Float value of Maximum daily tonnages of crops 
     """
     # find the crop production months for the province
     rice_prod_months = gpd.read_file(rice_prod_file)
@@ -198,18 +192,16 @@ def assign_io_rev_costs_crops(x, cost_dataframe,rice_prod_file,crop_month_fields
     Assign crop tonnages to daily net revenues
 
     Parameters
-    ---------
-    - x - Pandas DataFrame of values
-    - cost_dataframe - Pandas DataFrame of conversion of tonnages to net revenues
-    - rice_prod_file - Shapefile of RiceAltas monthly production value
-    - province - Stirng name of province
-    - x_cols - List of string names of crops
-    - ex_rate - Exchange rate from VND millions to USD
+        - x - Pandas DataFrame of values
+        - cost_dataframe - Pandas DataFrame of conversion of tonnages to net revenues
+        - rice_prod_file - Shapefile of RiceAltas monthly production value
+        - province - Stirng name of province
+        - x_cols - List of string names of crops
+        - ex_rate - Exchange rate from VND millions to USD
 
     Outputs
-    -------
-    - min_croprev - Float value of Minimum daily revenue of crops 
-    - max_croprev - Float value of Maximum daily revenue of crops 
+        - min_croprev - Float value of Minimum daily revenue of crops 
+        - max_croprev - Float value of Maximum daily revenue of crops 
     """
     # find the crop production months for the province
     rice_prod_months = gpd.read_file(rice_prod_file)
@@ -248,30 +240,28 @@ def netrevenue_values_to_province_od_nodes(province_ods_df,prov_communes,commune
         - And finding nearest commune centers as Destinations
 
     Parameters
-    ----------
-    - province_ods_df - List of lists of Pandas dataframes
-    - prov_communes - GeoDataFrame of commune level statistics
-    - commune_sindex - Spatial index of communes
-    - netrevenue - String name of column for netrevenue of communes in VND millions
-    - nfirm - String name of column for numebr of firms in communes
-    - agri_prop - Stirng name of column for proportion of agriculture firms in communes
-    - prov_pop - GeoDataFrame of population points in Province
-    - prov_pop_sindex - Spatial index of population points in Province
-    - nodes - GeoDataFrame of province road nodes
-    - sindex_nodes - Spatial index of province road nodes 
-    - prov_commune_center - GeoDataFrame of province commune center points 
-    - sindex_commune_center - Spatial index of commune center points
-    - node_id - String name of Node ID column
-    - object_id - String name of commune ID column
-    - exchange_rate - Float value for exchange rate from VND million to USD 
+        - province_ods_df - List of lists of Pandas dataframes
+        - prov_communes - GeoDataFrame of commune level statistics
+        - commune_sindex - Spatial index of communes
+        - netrevenue - String name of column for netrevenue of communes in VND millions
+        - nfirm - String name of column for numebr of firms in communes
+        - agri_prop - Stirng name of column for proportion of agriculture firms in communes
+        - prov_pop - GeoDataFrame of population points in Province
+        - prov_pop_sindex - Spatial index of population points in Province
+        - nodes - GeoDataFrame of province road nodes
+        - sindex_nodes - Spatial index of province road nodes 
+        - prov_commune_center - GeoDataFrame of province commune center points 
+        - sindex_commune_center - Spatial index of commune center points
+        - node_id - String name of Node ID column
+        - object_id - String name of commune ID column
+        - exchange_rate - Float value for exchange rate from VND million to USD 
 
     Outputs
-    -------
-    province_ods_df - List of Lists of Pandas dataframes with columns:
-        - origin - Origin node ID
-        - destination - Destination node ID
-        - netrev_argi - Net revenue of agriculture firms
-        - netrev_noargi - Net revenue of non-agriculture firms
+        province_ods_df - List of Lists of Pandas dataframes with columns:
+            - origin - Origin node ID
+            - destination - Destination node ID
+            - netrev_argi - Net revenue of agriculture firms
+            - netrev_noargi - Net revenue of non-agriculture firms
     """
 
     # create new column in prov_communes with amount of villages
@@ -312,25 +302,23 @@ def crop_values_to_province_od_nodes(province_ods_df,province_geom,calc_path,
         - And finding nearest commune centers as Destinations
 
     Parameters
-    ----------
-    - province_ods_df - List of lists of Pandas dataframes
-    - province_geom - Shapely Geometry of province 
-    - calc_path - Path to store intermediary calculations 
-    - crop_data_path - Path to crop datasets
-    - crop_names - List of string of crop names in IFPRI datasets
-    - nodes - GeoDataFrame of province road nodes
-    - sindex_nodes - Spatial index of province road nodes 
-    - prov_commune_center - GeoDataFrame of province commune center points 
-    - sindex_commune_center - Spatial index of commune center points
-    - node_id - String name of Node ID column
-    - object_id - String name of commune ID column 
+        - province_ods_df - List of lists of Pandas dataframes
+        - province_geom - Shapely Geometry of province 
+        - calc_path - Path to store intermediary calculations 
+        - crop_data_path - Path to crop datasets
+        - crop_names - List of string of crop names in IFPRI datasets
+        - nodes - GeoDataFrame of province road nodes
+        - sindex_nodes - Spatial index of province road nodes 
+        - prov_commune_center - GeoDataFrame of province commune center points 
+        - sindex_commune_center - Spatial index of commune center points
+        - node_id - String name of Node ID column
+        - object_id - String name of commune ID column 
 
     Outputs
-    -------
-    province_ods_df - List of Lists of Pandas dataframes with columns:
-        - origin - Origin node ID
-        - destination - Destination node ID
-        - crop - Tonnage values for the named crop
+        province_ods_df - List of Lists of Pandas dataframes with columns:
+            - origin - Origin node ID
+            - destination - Destination node ID
+            - crop - Tonnage values for the named crop
     """
     # all the crop OD pairs
     for file in os.listdir(crop_data_path):
