@@ -1,69 +1,70 @@
-"""Mapping the OD node level matrix values to network paths
-For all transport modes at national scale:
-    ['road', 'rail', 'air', 'inland', 'coastal']
+"""
+Purpose
+-------
+
+Mapping the OD node level matrix values to network paths
+
+For all transport modes at national scale: ['road', 'rail', 'air', 'inland', 'coastal']
 
 The code estimates 2 values - A MIN and a MAX value of flows between each selected OD node pair
-    Based on MIN-MAX generalised costs estimates
+    - Based on MIN-MAX generalised costs estimates
 
 Input data requirements
 -----------------------
 1. Correct paths to all files and correct input parameters
-2. MINIMUM MANDATORY DATA SPECIFICATION
-    A. Excel file with mode sheets containing network graph structure and attributes
-        Should contain following column names and attributes:
-            edge_id - String/Integer/Float Edge ID
-            from_node - String/Integer/Float node ID that should be present in node_id column
-            to_node - String/Integer/Float node ID that should be present in node_id column
-            length - Float length of edge in km
-            min_time - Float minimum time of travel in hours on edge 
-            max_time - Float maximum time of travel in hours on edge  
-            min_time_cost - Float minimum cost of time in USD on edge   
-            max_time_cost - Float maximum cost of time in USD on edge 
-            min_tariff_cost - Float minimum tariff cost in USD on edge   
-            max_tariff_cost - Float maximum tariff cost in USD on edge
-             
-    B. Edge shapefiles for all national-scale networks
-        Should contain following column names and attributes:
-            edge_id - String/Integer/Float Edge ID
-            geometry - Shapely LineString geometry of edges
+2. Excel file with mode sheets containing network graph structure and attributes
+    - edge_id - String/Integer/Float Edge ID
+    - from_node - String/Integer/Float node ID that should be present in node_id column
+    - to_node - String/Integer/Float node ID that should be present in node_id column
+    - length - Float length of edge in km
+    - min_time - Float minimum time of travel in hours on edge 
+    - max_time - Float maximum time of travel in hours on edge  
+    - min_time_cost - Float minimum cost of time in USD on edge   
+    - max_time_cost - Float maximum cost of time in USD on edge 
+    - min_tariff_cost - Float minimum tariff cost in USD on edge   
+    - max_tariff_cost - Float maximum tariff cost in USD on edge
+         
+3. Edge shapefiles for all national-scale networks with attributes:
+    - edge_id - String/Integer/Float Edge ID
+    - geometry - Shapely LineString geometry of edges
 
-    C. Excel file with mode sheets containing node-level OD values
-        Should contain following column names and attributes:
-            origin - String node ID of Origin
-            destination - String node ID of Destination
-            min_tons -  Float values of minimum daily OD in tons
-            max_tons - Float values of maximum daily OD in tons
-        Should also contain names of the industry columns specified in the inputs
+4. Excel file with mode sheets containing node-level OD values with attributes:
+    - origin - String node ID of Origin
+    - destination - String node ID of Destination
+    - min_tons -  Float values of minimum daily OD in tons
+    - max_tons - Float values of maximum daily OD in tons
+    - Names of the industry columns specified in the inputs
             
 Results
 -------
 1. Excel sheets with results of flow mapping based on MIN-MAX generalised costs estimates:
-        origin - String node ID of Origin
-        destination - String node ID of Destination
-        o_region - String name of Province of Origin node ID
-        d_region - String name of Province of Destination node ID
-        min_edge_path - List of string of edge ID's for paths with minimum generalised cost flows
-        max_edge_path - List of string of edge ID's for paths with maximum generalised cost flows
-        min_distance - Float values of estimated distance for paths with minimum generalised cost flows
-        max_distance - Float values of estimated distance for paths with maximum generalised cost flows
-        min_time - Float values of estimated time for paths with minimum generalised cost flows
-        max_time - Float values of estimated time for paths with maximum generalised cost flows
-        min_gcost - Float values of estimated generalised cost for paths with minimum generalised cost flows
-        max_gcost - Float values of estimated generalised cost for paths with maximum generalised cost flows
-        min_vehicle_nums - Float values of estimated vehicle numbers for paths with minimum generalised cost flows
-        max_vehicle_nums - Float values of estimated vehicle numbers for paths with maximum generalised cost flows
-        industry_columns - All daily tonnages of industry columns given in the OD matrix data
+    - origin - String node ID of Origin
+    - destination - String node ID of Destination
+    - o_region - String name of Province of Origin node ID
+    - d_region - String name of Province of Destination node ID
+    - min_edge_path - List of string of edge ID's for paths with minimum generalised cost flows
+    - max_edge_path - List of string of edge ID's for paths with maximum generalised cost flows
+    - min_distance - Float values of estimated distance for paths with minimum generalised cost flows
+    - max_distance - Float values of estimated distance for paths with maximum generalised cost flows
+    - min_time - Float values of estimated time for paths with minimum generalised cost flows
+    - max_time - Float values of estimated time for paths with maximum generalised cost flows
+    - min_gcost - Float values of estimated generalised cost for paths with minimum generalised cost flows
+    - max_gcost - Float values of estimated generalised cost for paths with maximum generalised cost flows
+    - min_vehicle_nums - Float values of estimated vehicle numbers for paths with minimum generalised cost flows
+    - max_vehicle_nums - Float values of estimated vehicle numbers for paths with maximum generalised cost flows
+    - industry_columns - All daily tonnages of industry columns given in the OD matrix data
 2. Shapefiles
-        edge_id - String/Integer/Float Edge ID
-        geometry - Shapely LineString geomtry of edges
-        min_{industry} - Float values of estimated minimum daily industries/commodities/total volumes in tons on edges 
-        max_{industry} - Float values of estimated maximum daily industries/commodities/total volumes in tons on edges
-            For all industry/commodities in the list: 
-            ['cement', 'coal', 'constructi', 'fertilizer', 'fishery', 
-            'manufactur', 'acof', 'cash', 'cass', 'maiz', 'pepp', 'rcof',
-            'rubb', 'swpo', 'teas', 'meat', 'rice', 'petroluem', 'steel', 
-            'sugar', 'wood', 'tons'] 
+    - edge_id - String/Integer/Float Edge ID
+    - geometry - Shapely LineString geomtry of edges
+    - min_{industry} - Float values of estimated minimum daily industries/commodities/total volumes in tons on edges 
+    - max_{industry} - Float values of estimated maximum daily industries/commodities/total volumes in tons on edges
 
+References
+----------
+1. Pant, R., Koks, E.E., Russell, T., Schoenmakers, R. & Hall, J.W. (2018).
+   Analysis and development of model for addressing climate change/disaster risks in multi-modal transport networks in Vietnam.
+   Final Report, Oxford Infrastructure Analytics Ltd., Oxford, UK.
+2. All input data folders and files referred to in the code below.
 """
 import os
 import subprocess
@@ -89,30 +90,28 @@ def network_od_paths_assembly_national(points_dataframe,
 
     Parameters
     ---------
-    points_dataframe - Pandas DataFrame of OD nodes and their tonnages
-    graph - igraph network structure 
-    vehicle_wt - Float unit weight of vehicle
-    transport_mode - String name of modes
-    excel_writer - Name of the excel writer to save Pandas dataframe to Excel file     
+    - points_dataframe - Pandas DataFrame of OD nodes and their tonnages
+    - graph - igraph network structure 
+    - vehicle_wt - Float unit weight of vehicle
+    - transport_mode - String name of modes
+    - excel_writer - Name of the excel writer to save Pandas dataframe to Excel file     
 
     Outputs
     -------
-    save_paths_df - Pandas DataFrame 
-        With columns:
-            origin - String node ID of Origin
-            destination - String node ID of Destination
-            min_edge_path - List of string of edge ID's for paths with minimum generalised cost flows
-            max_edge_path - List of string of edge ID's for paths with maximum generalised cost flows
-            min_distance - Float values of estimated distance for paths with minimum generalised cost flows
-            max_distance - Float values of estimated distance for paths with maximum generalised cost flows
-            min_time - Float values of estimated time for paths with minimum generalised cost flows
-            max_time - Float values of estimated time for paths with maximum generalised cost flows
-            min_gcost - Float values of estimated generalised cost for paths with minimum generalised cost flows
-            max_gcost - Float values of estimated generalised cost for paths with maximum generalised cost flows
-            min_vehicle_nums - Float values of estimated vehicle numbers for paths with minimum generalised cost flows
-            max_vehicle_nums - Float values of estimated vehicle numbers for paths with maximum generalised cost flows
-            industry_columns - All tonnages of industry columns given in the OD matrix data
-
+    save_paths_df - Pandas DataFrame with columns:
+        - origin - String node ID of Origin
+        - destination - String node ID of Destination
+        - min_edge_path - List of string of edge ID's for paths with minimum generalised cost flows
+        - max_edge_path - List of string of edge ID's for paths with maximum generalised cost flows
+        - min_distance - Float values of estimated distance for paths with minimum generalised cost flows
+        - max_distance - Float values of estimated distance for paths with maximum generalised cost flows
+        - min_time - Float values of estimated time for paths with minimum generalised cost flows
+        - max_time - Float values of estimated time for paths with maximum generalised cost flows
+        - min_gcost - Float values of estimated generalised cost for paths with minimum generalised cost flows
+        - max_gcost - Float values of estimated generalised cost for paths with maximum generalised cost flows
+        - min_vehicle_nums - Float values of estimated vehicle numbers for paths with minimum generalised cost flows
+        - max_vehicle_nums - Float values of estimated vehicle numbers for paths with maximum generalised cost flows
+        - industry_columns - All tonnages of industry columns given in the OD matrix data
     """
     save_paths = []
     for iter_, row in points_dataframe.iterrows():
@@ -156,23 +155,26 @@ def network_od_paths_assembly_national(points_dataframe,
 def main():
     """
     Specify the paths from where you want to read and write:
+    
     1. Input data
     2. Intermediate calcuations data
     3. Output results
 
     Supply input data and parameters
+    
     1. Names of modes
-        List of strings
+        - List of strings
     2. Unit weight of vehicle assumed for each mode
-        List of float types 
+        - List of float types 
     3. Names of all industry sector and crops in VITRANSS2 and IFPRI datasets
-        List of string types
+        - List of string types
     4. Names of commodity/industry columns for which min-max tonnage column names already exist
-        List of string types
+        - List of string types
     5. Percentage of OD flow we want to send along path
-        FLoat type
+        - FLoat type
 
     Give the paths to the input data files:
+    
     1. Network edges Excel file
     2. OD flows Excel file
     3. Costs of modes Excel file 

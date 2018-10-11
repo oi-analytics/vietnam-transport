@@ -1,68 +1,75 @@
-"""Mapping the commune access OD node level matrix values to road network paths in Provinces
-For all roads in the Provinces:
-    ['Lao Cai', 'Binh Dinh', 'Thanh Hoa']
+"""
+Purpose
+-------
+
+Mapping the commune access OD node level matrix values to road network paths in Provinces
+
+For all roads in the Provinces: ['Lao Cai', 'Binh Dinh', 'Thanh Hoa']
 
 The code estimates 2 values - A MIN and a MAX value of flows between each selected OD node pair
-    Based on MIN-MAX generalised costs estimates
+    - Based on MIN-MAX generalised costs estimates
 
 Input data requirements
 -----------------------
 1. Correct paths to all files and correct input parameters
-2. MINIMUM MANDATORY DATA SPECIFICATION
-    A. Excel file with mode sheets containing network graph structure and attributes
-        Should contain following column names and attributes:
-            edge_id - String/Integer/Float Edge ID
-            from_node - String/Integer/Float node ID that should be present in node_id column
-            to_node - String/Integer/Float node ID that should be present in node_id column
-            length - Float length of edge in km
-            min_time - Float minimum time of travel in hours on edge 
-            max_time - Float maximum time of travel in hours on edge  
-            min_time_cost - Float minimum cost of time in USD on edge   
-            max_time_cost - Float maximum cost of time in USD on edge 
-            min_tariff_cost - Float minimum tariff cost in USD on edge   
-            max_tariff_cost - Float maximum tariff cost in USD on edge
-             
-    B. Edge shapefiles for all national-scale networks
-        Should contain following column names and attributes:
-            edge_id - String/Integer/Float Edge ID
-            geometry - Shapely LineString geometry of edges
+2. Excel file with mode sheets containing network graph structure and attributes
+    - edge_id - String/Integer/Float Edge ID
+    - from_node - String/Integer/Float node ID that should be present in node_id column
+    - to_node - String/Integer/Float node ID that should be present in node_id column
+    - length - Float length of edge in km
+    - min_time - Float minimum time of travel in hours on edge 
+    - max_time - Float maximum time of travel in hours on edge  
+    - min_time_cost - Float minimum cost of time in USD on edge   
+    - max_time_cost - Float maximum cost of time in USD on edge 
+    - min_tariff_cost - Float minimum tariff cost in USD on edge   
+    - max_tariff_cost - Float maximum tariff cost in USD on edge
+         
+3. Edge shapefiles for all national-scale networks with attributes:
+    - edge_id - String/Integer/Float Edge ID
+    - geometry - Shapely LineString geometry of edges
 
-    C. Excel file with mode sheets containing node-level OD values
-        Should contain following column names and attributes:
-            origin - String node ID of Origin
-            destination - String node ID of Destination
-            min_netrev - Float values of miniimum daily OD Net Revenue in USD
-            max_netrev - Float values of maximum daily OD Net Revenue in USD
-            min_tons -  Float values of minimum daily OD in tons
-            max_tons - Float values of maximum daily OD in tons
+4. Excel file with mode sheets containing node-level OD values with attributes:
+    - origin - String node ID of Origin
+    - destination - String node ID of Destination
+    - min_netrev - Float values of miniimum daily OD Net Revenue in USD
+    - max_netrev - Float values of maximum daily OD Net Revenue in USD
+    - min_tons -  Float values of minimum daily OD in tons
+    - max_tons - Float values of maximum daily OD in tons
 
 Results
 -------
 1. Excel sheets with results of flow mapping based on MIN-MAX generalised costs estimates:
-    origin - String node ID of Origin
-    destination - String node ID of Destination
-    min_edge_path - List of string of edge ID's for paths with minimum generalised cost flows
-    max_edge_path - List of string of edge ID's for paths with maximum generalised cost flows
-    min_netrev - Float values of estimated daily Net Revenue for paths with minimum generalised cost flows
-    max_netrev - Float values of estimated daily Net Revenue for paths with maximum generalised cost flows
-    min_croptons - Float values of estimated daily crop tonnage for paths with minimum generalised cost flows
-    max_croptons - Float values of estimated daily crop tonnage for paths with maximum generalised cost flows
-    min_distance - Float values of estimated distance for paths with minimum generalised cost flows
-    max_distance - Float values of estimated distance for paths with maximum generalised cost flows
-    min_time - Float values of estimated time for paths with minimum generalised cost flows
-    max_time - Float values of estimated time for paths with maximum generalised cost flows
-    min_gcost - Float values of estimated generalised cost for paths with minimum generalised cost flows
-    max_gcost - Float values of estimated generalised cost for paths with maximum generalised cost flows
-    min_vehicle_nums - Float values of estimated vehicle numbers for paths with minimum generalised cost flows
-    max_vehicle_nums - Float values of estimated vehicle numbers for paths with maximum generalised cost flows
+    - origin - String node ID of Origin
+    - destination - String node ID of Destination
+    - min_edge_path - List of string of edge ID's for paths with minimum generalised cost flows
+    - max_edge_path - List of string of edge ID's for paths with maximum generalised cost flows
+    - min_netrev - Float values of estimated daily Net Revenue for paths with minimum generalised cost flows
+    - max_netrev - Float values of estimated daily Net Revenue for paths with maximum generalised cost flows
+    - min_croptons - Float values of estimated daily crop tonnage for paths with minimum generalised cost flows
+    - max_croptons - Float values of estimated daily crop tonnage for paths with maximum generalised cost flows
+    - min_distance - Float values of estimated distance for paths with minimum generalised cost flows
+    - max_distance - Float values of estimated distance for paths with maximum generalised cost flows
+    - min_time - Float values of estimated time for paths with minimum generalised cost flows
+    - max_time - Float values of estimated time for paths with maximum generalised cost flows
+    - min_gcost - Float values of estimated generalised cost for paths with minimum generalised cost flows
+    - max_gcost - Float values of estimated generalised cost for paths with maximum generalised cost flows
+    - min_vehicle_nums - Float values of estimated vehicle numbers for paths with minimum generalised cost flows
+    - max_vehicle_nums - Float values of estimated vehicle numbers for paths with maximum generalised cost flows
 
-2. Shapefiles with all flows on edges mapping based on MIN-MAX generalised costs estimates
-    edge_id - String/Integer/Float Edge ID
-    geometry - Shapely LineString geomtry of edges
-    min_netrev - Float values of estimated daily Net Revenue in USD on edges
-    max_netrev - Float values of estimated daily Net Revenue in USD on edges
-    min_tons - Float values of estimated daily crops in tons on edges
-    max_tons - Float values of estimated daily crops in tons on edges  
+2. Shapefiles with all flows on edges mapping based on MIN-MAX generalised costs estimates:
+    - edge_id - String/Integer/Float Edge ID
+    - geometry - Shapely LineString geomtry of edges
+    - min_netrev - Float values of estimated daily Net Revenue in USD on edges
+    - max_netrev - Float values of estimated daily Net Revenue in USD on edges
+    - min_tons - Float values of estimated daily crops in tons on edges
+    - max_tons - Float values of estimated daily crops in tons on edges
+
+References
+----------
+1. Pant, R., Koks, E.E., Russell, T., Schoenmakers, R. & Hall, J.W. (2018).
+   Analysis and development of model for addressing climate change/disaster risks in multi-modal transport networks in Vietnam.
+   Final Report, Oxford Infrastructure Analytics Ltd., Oxford, UK.
+2. All input data folders and files referred to in the code below.
 """
 
 import ast
@@ -91,32 +98,31 @@ def network_od_paths_assembly_provincial(points_dataframe, graph,
 
     Parameters
     ---------
-    points_dataframe - Pandas DataFrame of OD nodes and their tonnages
-    graph - igraph network structure 
-    vehicle_wt - Float unit weight of vehicle
-    region_name - String name of Province
-    excel_writer - Name of the excel writer to save Pandas dataframe to Excel file     
+    - points_dataframe - Pandas DataFrame of OD nodes and their tonnages
+    - graph - igraph network structure 
+    - vehicle_wt - Float unit weight of vehicle
+    - region_name - String name of Province
+    - excel_writer - Name of the excel writer to save Pandas dataframe to Excel file     
 
     Outputs
     -------
-    save_paths_df - Pandas DataFrame 
-        With columns:
-            origin - String node ID of Origin
-            destination - String node ID of Destination
-            min_edge_path - List of string of edge ID's for paths with minimum generalised cost flows
-            max_edge_path - List of string of edge ID's for paths with maximum generalised cost flows
-            min_netrev - Float values of estimated netrevenue for paths with minimum generalised cost flows
-            max_netrev - Float values of estimated netrevenue for paths with maximum generalised cost flows
-            min_croptons - Float values of estimated crop tons for paths with minimum generalised cost flows
-            max_croptons - Float values of estimated crop tons for paths with maximum generalised cost flows
-            min_distance - Float values of estimated distance for paths with minimum generalised cost flows
-            max_distance - Float values of estimated distance for paths with maximum generalised cost flows
-            min_time - Float values of estimated time for paths with minimum generalised cost flows
-            max_time - Float values of estimated time for paths with maximum generalised cost flows
-            min_gcost - Float values of estimated generalised cost for paths with minimum generalised cost flows
-            max_gcost - Float values of estimated generalised cost for paths with maximum generalised cost flows
-            min_vehicle_nums - Float values of estimated vehicle numbers for paths with minimum generalised cost flows
-            max_vehicle_nums - Float values of estimated vehicle numbers for paths with maximum generalised cost flows
+    save_paths_df - Pandas DataFrame with columns:
+        - origin - String node ID of Origin
+        - destination - String node ID of Destination
+        - min_edge_path - List of string of edge ID's for paths with minimum generalised cost flows
+        - max_edge_path - List of string of edge ID's for paths with maximum generalised cost flows
+        - min_netrev - Float values of estimated netrevenue for paths with minimum generalised cost flows
+        - max_netrev - Float values of estimated netrevenue for paths with maximum generalised cost flows
+        - min_croptons - Float values of estimated crop tons for paths with minimum generalised cost flows
+        - max_croptons - Float values of estimated crop tons for paths with maximum generalised cost flows
+        - min_distance - Float values of estimated distance for paths with minimum generalised cost flows
+        - max_distance - Float values of estimated distance for paths with maximum generalised cost flows
+        - min_time - Float values of estimated time for paths with minimum generalised cost flows
+        - max_time - Float values of estimated time for paths with maximum generalised cost flows
+        - min_gcost - Float values of estimated generalised cost for paths with minimum generalised cost flows
+        - max_gcost - Float values of estimated generalised cost for paths with maximum generalised cost flows
+        - min_vehicle_nums - Float values of estimated vehicle numbers for paths with minimum generalised cost flows
+        - max_vehicle_nums - Float values of estimated vehicle numbers for paths with maximum generalised cost flows
 
     """
     save_paths = []
@@ -154,26 +160,28 @@ def network_od_paths_assembly_provincial(points_dataframe, graph,
                            '_{}_tons'.format(int(vehicle_wt)), index=False)
     excel_writer.save()
     del save_paths
-    # del save_paths_df
 
     return save_paths_df
 
 if __name__ == '__main__':
     """
     Specify the paths from where you want to read and write:
+    
     1. Input data
     2. Intermediate calcuations data
     3. Output results
 
     Supply input data and parameters
+    
     1. Names of the three Provinces: ['Lao Cai', 'Binh Dinh', 'Thanh Hoa']
-        List of string types 
+        - List of string types 
     2. Assumed terrains of the provinces: flat or mountanious
-        List of string types
+        - List of string types
     3. Assumed unit weights of trucks
-        List of float types
+        - List of float types
 
     Give the paths to the input data files:
+    
     1. Network edges EXcel File
     2. OD flows Excel file
     3. Road properties Excel file

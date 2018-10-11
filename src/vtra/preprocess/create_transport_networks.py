@@ -4,7 +4,7 @@ Purpose
 
 Creating post-processed transport networks with attributes 
 
-From input Shapefiles 
+From pre-processed input Shapefiles and collected network attributes data  
 
 For all Province road networks: ['Lao Cai', 'Binh Dinh', 'Thanh Hoa']
 
@@ -78,8 +78,8 @@ Results
 
 References
 ----------
-1. Pant, R., Koks, E.E., Russell, T., Schoenmakers, R. & Hall, J.W. (2018). 
-   Analysis and development of model for addressing climate change/disaster risks in multi-modal transport networks in Vietnam. 
+1. Pant, R., Koks, E.E., Russell, T., Schoenmakers, R. & Hall, J.W. (2018).
+   Analysis and development of model for addressing climate change/disaster risks in multi-modal transport networks in Vietnam.
    Final Report, Oxford Infrastructure Analytics Ltd., Oxford, UK.
 2. All input data folders and files referred to in the code below.		 
 """
@@ -101,30 +101,33 @@ from vtra.utils import *
 def main():
     """
     Specify the paths from where you want to read and write:
+    
     1. Input data
     2. Intermediate calcuations data
     3. Output results
 
     Supply input data and parameters
+    
     1. Paths of the mode files
-        List of tuples of strings 
+        - List of tuples of strings 
     2. Names of modes
-        List of strings
+        - List of strings
     3. Unit weight of vehicle assumed for each mode
-        List of float types 
+        - List of float types 
     4. Range of usage factors for each mode to represent uncertainty in cost estimations
-        List of tuples of float types 
+        - List of tuples of float types 
     5. Ranges of speeds for each mode to represent uncertainty in speeds
-        List of tuple of float types 
+        - List of tuple of float types 
     6. Names of all industry sector and crops in VITRANSS2 and IFPRI datasets
-        List of string types
+        - List of string types
     7. Names of commodity/industry columns for which min-max tonnage column names already exist
-        List of string types
+        - List of string types
     8. Percentage of OD flow we want to send along path
-        Float type
+        - Float type
 
     Give the paths to the input data files:
-    1. OD flows Excel file
+    
+    1. Pre-proccesed network shapefiles
     2. Costs of modes Excel file 
     3. Road properties Excel file
     
