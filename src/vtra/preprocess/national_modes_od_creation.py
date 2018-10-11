@@ -82,15 +82,13 @@ def vitranss2_od_split(vitranss2_od_data_file,modes,o_id_col,d_id_col):
         - And estimating the OD modal-split from the mode-wsie OD values  
 
     Parameters
-    ----------
-    - vitranss2_od_data_file - Excel file with VITRANSS2 OD data
-    - modes - List of strings of mode types, e.g. ['road', 'rail', 'air', 'inland', 'coastal']
-    - o_id_col - String name of name of Origin column 
-    - d_id_col - String name of name of Destination column  
+        - vitranss2_od_data_file - Excel file with VITRANSS2 OD data
+        - modes - List of strings of mode types, e.g. ['road', 'rail', 'air', 'inland', 'coastal']
+        - o_id_col - String name of name of Origin column 
+        - d_id_col - String name of name of Destination column  
 
     Outputs
-    -------
-    - od_fracs - Pandas dataframe of VITRANSS 2 commodity OD data with modal splits 
+        - od_fracs - Pandas dataframe of VITRANSS 2 commodity OD data with modal splits 
     """
     od_data_modes = pd.read_excel(vitranss2_od_data_file, sheet_name='mode').fillna(0)
     od_data_com = pd.read_excel(vitranss2_od_data_file, sheet_name='goods').fillna(0)
@@ -154,7 +152,9 @@ def riceatlas_crop_minmax(riceatlas_crop_file,crop_month_fields):
         - crop_month_fields - List of strings of names of columns indicating rice monthly production 
 
     Outputs
-        - rice_prod_months - Geopandas dataframe of RiceAtlas crop values with minimum and maximum monthly production as fraction of annual production
+        rice_prod_months - Geopandas dataframe of RiceAtlas crop values 
+            - min_frac - minimum month of production as fraction of annual production
+            - max_frac - maximum month of production as fraction of annual production
     """
     rice_prod_months = gpd.read_file(riceatlas_crop_file)
     rice_prod_months['total_prod'] = rice_prod_months[crop_month_fields].sum(axis=1)
