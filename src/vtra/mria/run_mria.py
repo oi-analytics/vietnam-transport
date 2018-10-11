@@ -163,7 +163,6 @@ def estimate_losses(input_file):
         sums.to_csv(os.path.join(
             output_path,
             'economic_failure_results',
-            'od_regions_losses',
             'summarized',
             '{}_summarized.csv'.format(os.path.basename(os.path.splitext(input_file)[0]))))
 
@@ -175,6 +174,7 @@ if __name__ == '__main__':
     data_path, calc_path, output_path = load_config()['paths']['data'], load_config()[
         'paths']['calc'], load_config()['paths']['output']
 
+    multi_modal = True
     output_dir = os.path.join(
         output_path,
         'economic_failure_results')
@@ -182,9 +182,14 @@ if __name__ == '__main__':
     if os.path.exists(output_dir) == False:
         os.mkdir(output_dir)
 
-    get_all_input_files = [os.path.join(
-        output_path,'failure_results','isolated_od_scenarios', x) 
-        for x in os.listdir(os.path.join(output_path,'failure_results','isolated_od_scenarios')) if x.endswith(".csv")]
+    if multi_modal == True:
+        get_all_input_files = [os.path.join(
+            output_path,'failure_results','isolated_od_scenarios','multi_modal', x) 
+            for x in os.listdir(os.path.join(output_path,'failure_results','isolated_od_scenarios','multi_modal')) if x.endswith(".csv")]
+    else:
+        get_all_input_files = [os.path.join(
+            output_path,'failure_results','isolated_od_scenarios','single_mode', x) 
+            for x in os.listdir(os.path.join(output_path,'failure_results','isolated_od_scenarios','single_mode')) if x.endswith(".csv")]
 
     # with Pool(int(cpu_count())-2) as pool:
     #     pool.map(estimate_losses, get_all_input_files, chunksize=1)

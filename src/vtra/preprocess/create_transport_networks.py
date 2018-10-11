@@ -17,15 +17,15 @@ All Geometries in Edge Shapefiles should be valid LineStrings
 All Geometries in Node Shapefiles should be valid Points
 	
 A. Node Shapefiles should contain following column names and attributes
-	- node_id - String/Integer/Float node ID
-	- geometry - Shapely Point geometry of nodes
-	- attributes - Multiple types depending upon sector and context 
+- node_id - String node ID
+- geometry - Shapely Point geometry of nodes
+- attributes - Multiple types depending upon sector and context 
 
 B. Edge Shapefiles should contain following column names and attributes:
-	- edge_id - String/Integer/Float Edge ID
-	- from_node - String/Integer/Float node ID that should be present in node_id column
-	- to_node - String/Integer/Float node ID that should be present in node_id column 
-	- geometry - Shapely LineString geometry of edges 
+- edge_id - String Edge ID
+- from_node - String node ID that should be present in node_id column
+- to_node - String node ID that should be present in node_id column 
+- geometry - Shapely LineString geometry of edges 
 
 
 Results
@@ -33,67 +33,66 @@ Results
 1. Excel sheets with post-processed network nodes and edges 
 2. Shapefiles with post-processed network nodes and edges
 	
-	All nodes have the following attributes:
-		node_id - String/Integer/Float Node ID
-		name - String name in Vietnamese/English
-		tons - Float assigned cargo freight tonnage using node 
-			Compiled from observed data/statistics 
-		population - Float assigned passenger/population number using node 
-			Compiled from observed data/statistics 
-		capacity - Float assigned capacity in tons/passenger numbers/other untis
-			Compiled from observed data/statistics 
-		geometry - Shapely Point geometry of node
-			Written to the Shapefiles only
-	
-	Attributes only present in inland and coastal port nodes
-		port_type - String name of type of port: inland or sea
-			Compiled from observed data/statistics  	
-		port_class - String name of class of port: class1A (international) or class1 (domestic hub)
-			Compiled from observed data/statistics   
-	
-	All edges have the following attributes:
-		edge_id - String edge ID
-		g_id - Interger edge ID
-		from_node - String/Integer/Float node ID that should be present in node_id column
-		to_node - String/Integer/Float node ID that should be present in node_id column
-		geometry - Shapely LineString geometry of edge
-			Written to the Shapefiles only
-		terrain - String name of terrain of edge
-			Compiled from observed data/statistics 	
-		level - Integer number for edge level: National, Provincial, Local, etc.
-			Compiled from observed data/statistics
-		width - Float width in meters of edge
-			Compiled from observed data/statistics
-		length - Estimated length in kilometers of edge
-			Calculated from geometry  	
-		min_speed - Estimated minimum speed in km/hr on edge
-			Calculated from compiled data/statistics 	
-		max_speed - Estimated maximum speed in km/hr on edge
-			Calculated from compiled data/statistics 	
-		min_time - Estimated minimum time of travel in hours on edge
-			length/max_speed 	
-		max_time - Estimated maximum time of travel in hours on edge
-			length/min_speed	
-		min_time_cost - Estimated minimum cost of time in USD on edge
-			Calculated from compiled data/statistics	
-		max_time_cost - Estimated maximum cost of time in USD on edge
-			Calculated from compiled data/statistics	
-		min_tariff_cost - Estimated minimum tariff cost in USD on edge
-			Calculated from compiled data/statistics	
-		max_tariff_cost - Estimated maximum tariff cost in USD on edge
-			Calculated from compiled data/statistics
-		vehicle_co - Number of daily vehicle counts on edge
-			Calculated from compiled data/statistics
-	
-	Attributes only present in Province and national roads edges
-		surface - 
-		road_class
-		road_cond
-		asset_type
+All nodes have the following attributes:
+	- node_id - String Node ID
+	- name - String name in Vietnamese/English
+	- tons - Float assigned cargo freight tonnage using node 
+		Compiled from observed data/statistics 
+	- population - Float assigned passenger/population number using node 
+	 	Compiled from observed data/statistics 
+	- capacity - Float assigned capacity in tons/passenger numbers/other untis
+	 	Compiled from observed data/statistics 
+	- geometry - Shapely Point geometry of node
+	 	Written to the Shapefiles only
+
+Attributes only present in inland and coastal port nodes
+	- port_type - String name of type of port: inland or sea
+	 	Compiled from observed data/statistics  	
+	- port_class - String name of class of port: class1A (international) or class1 (domestic hub)
+		Compiled from observed data/statistics   
+
+All edges have the following attributes:
+	- edge_id - String edge ID
+	- g_id - Interger edge ID
+	- from_node - String node ID that should be present in node_id column
+	- to_node - String node ID that should be present in node_id column
+	- geometry - Shapely LineString geometry of edge
+     	Written to the Shapefiles only
+	- terrain - String name of terrain of edge
+	 	Compiled from observed data/statistics 	
+	- level - Integer number for edge level: National, Provincial, Local, etc.
+	 	Compiled from observed data/statistics
+	- width - Float width in meters of edge
+	 	Compiled from observed data/statistics
+	- length - Estimated length in kilometers of edge
+	 	Calculated from geometry  	
+	- min_speed - Estimated minimum speed in km/hr on edge
+	 	Calculated from compiled data/statistics 	
+	- max_speed - Estimated maximum speed in km/hr on edge
+	 	Calculated from compiled data/statistics 	
+	- min_time - Estimated minimum time of travel in hours on edge
+		length/max_speed 	
+	- max_time - Estimated maximum time of travel in hours on edge
+	 	length/min_speed	
+	- min_time_cost - Estimated minimum cost of time in USD on edge
+	 	Calculated from compiled data/statistics	
+	- max_time_cost - Estimated maximum cost of time in USD on edge
+	 	Calculated from compiled data/statistics	
+	- min_tariff_cost - Estimated minimum tariff cost in USD on edge
+		Calculated from compiled data/statistics	
+	- max_tariff_cost - Estimated maximum tariff cost in USD on edge
+	 	Calculated from compiled data/statistics
+	- vehicle_co - Number of daily vehicle counts on edge
+		Calculated from compiled data/statistics
+
+Attributes only present in Province and national roads edges
+	- surface - String value for surface
+	- road_class - Integer between 1 and 6
+	- road_cond - String value: paved or unpaved 
+	- asset_type - String name of type of asset
 
 References
 ----------
-To understnad how the results are created and what is the data used see:
 1. Pant, R., Koks, E.E., Russell, T., Schoenmakers, R. & Hall, J.W. (2018). 
 Analysis and development of model for addressing climate change/disaster risks in multi-modal transport networks in Vietnam. 
 Final Report, Oxford Infrastructure Analytics Ltd., Oxford, UK.
@@ -169,10 +168,10 @@ def main():
     
     """Give the paths to the input data files
     """
-    od_output_excel = os.path.join(
-        output_path, 'flow_ods', 'national_scale_flow_ods.xlsx')
-    md_prop_file = os.path.join(data_path, 'mode_properties', 'mode_costs.xlsx')
-    rd_prop_file = os.path.join(data_path, 'mode_properties', 'road_properties.xlsx')
+    network_data_path = os.path.join(
+        data_path, 'pre_processed_networks_data')
+    md_prop_file = os.path.join(network_data_path, 'mode_properties', 'mode_costs.xlsx')
+    rd_prop_file = os.path.join(network_data_path, 'mode_properties', 'road_properties.xlsx')
 
 
     """Specify the output files and paths to be created 
@@ -200,7 +199,7 @@ def main():
             """Load igraph network and GeoDataFrame
             """
             print ('* Creating and writing {} GeoDataFrame to Shapefiles and Excel Sheets'.format(province))
-            province_path = os.path.join(data_path, 'Roads', '{}_roads'.format(province_name))
+            province_path = os.path.join(network_data_path, 'Roads', '{}_roads'.format(province_name))
             nodes_in,edges_in = get_node_edge_files_in_path(province_path)
             gdf_edges = province_shapefile_to_dataframe(
                 edges_in, province_terrian[prn], rd_prop_file,(0,0))
@@ -231,7 +230,7 @@ def main():
         for m in range(len(modes)):
             print ('* Creating and writing {} GeoDataFrame to Shapefiles and Excel Sheets'.format(modes[m]))
             mode_data_path = os.path.join(
-                data_path, modes_file_paths[m][0], modes_file_paths[m][1])
+                network_data_path, modes_file_paths[m][0], modes_file_paths[m][1])
             nodes_in,edges_in = get_node_edge_files_in_path(mode_data_path)
 
             """Load mode igraph network and GeoDataFrame

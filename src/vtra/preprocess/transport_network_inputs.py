@@ -76,7 +76,7 @@ def assign_assumed_width_to_province_roads(x):
 
     """
     if x.width == 0:
-        return 6
+        return 5.5
     else:
         return x.width
 
