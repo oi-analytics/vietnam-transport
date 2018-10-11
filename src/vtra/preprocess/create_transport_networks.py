@@ -100,38 +100,27 @@ from vtra.utils import *
 
 def main():
     """
-    Specify the paths from where you want to read and write:
-    
-    1. Input data
-    2. Intermediate calcuations data
-    3. Output results
+    1. Specify the paths from where you want to read and write:
+        - Input data
+        - Intermediate calcuations data
+        - Output results
 
-    Supply input data and parameters
-    
-    1. Paths of the mode files
-        - List of tuples of strings 
-    2. Names of modes
-        - List of strings
-    3. Unit weight of vehicle assumed for each mode
-        - List of float types 
-    4. Range of usage factors for each mode to represent uncertainty in cost estimations
-        - List of tuples of float types 
-    5. Ranges of speeds for each mode to represent uncertainty in speeds
-        - List of tuple of float types 
-    6. Names of all industry sector and crops in VITRANSS2 and IFPRI datasets
-        - List of string types
-    7. Names of commodity/industry columns for which min-max tonnage column names already exist
-        - List of string types
-    8. Percentage of OD flow we want to send along path
-        - Float type
+    2. Supply input data and parameters
+        - Paths of the mode files: List of tuples of strings 
+        - Names of modes: List of strings
+        - Unit weight of vehicle assumed for each mode: List of float types 
+        - Ranges of usage factors for each mode to represent uncertainty in cost estimations: List of tuples of float types 
+        - Ranges of speeds for each mode to represent uncertainty in speeds: List of tuple of float types 
+        - Names of all industry sector and crops in VITRANSS2 and IFPRI datasets: List of string types
+        - Names of commodity/industry columns for which min-max tonnage column names already exist: List of string types
+        - Percentage of OD flow we want to send along path: Float type
 
-    Give the paths to the input data files:
+    3. Give the paths to the input data files:
+        - Pre-proccesed network shapefiles
+        - Costs of modes Excel file 
+        - Road properties Excel file
     
-    1. Pre-proccesed network shapefiles
-    2. Costs of modes Excel file 
-    3. Road properties Excel file
-    
-    Specify the output files and paths to be created 
+    4. Specify the output files and paths to be created 
     """
     data_path, calc_path, output_path = load_config()['paths']['data'], load_config()[
         'paths']['calc'], load_config()['paths']['output']

@@ -165,28 +165,22 @@ def network_od_paths_assembly_provincial(points_dataframe, graph,
 
 if __name__ == '__main__':
     """
-    Specify the paths from where you want to read and write:
+    1. Specify the paths from where you want to read and write:
+        - Input data
+        - Intermediate calcuations data
+        - Output results
     
-    1. Input data
-    2. Intermediate calcuations data
-    3. Output results
+    2. Supply input data and parameters
+        - Names of the three Provinces: List of string types 
+        - Assumed terrains of the provinces: List of string types
+        - Assumed unit weights of trucks: List of float types
 
-    Supply input data and parameters
+    3. Give the paths to the input data files:
+        - Network edges EXcel File
+        - OD flows Excel file
+        - Road properties Excel file
     
-    1. Names of the three Provinces: ['Lao Cai', 'Binh Dinh', 'Thanh Hoa']
-        - List of string types 
-    2. Assumed terrains of the provinces: flat or mountanious
-        - List of string types
-    3. Assumed unit weights of trucks
-        - List of float types
-
-    Give the paths to the input data files:
-    
-    1. Network edges EXcel File
-    2. OD flows Excel file
-    3. Road properties Excel file
-    
-    Specify the output files and paths to be created 
+    4. Specify the output files and paths to be created 
     """
     data_path, calc_path, output_path = load_config()['paths']['data'], load_config()[
         'paths']['calc'], load_config()['paths']['output']

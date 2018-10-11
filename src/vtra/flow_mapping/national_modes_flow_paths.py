@@ -154,33 +154,25 @@ def network_od_paths_assembly_national(points_dataframe,
 
 def main():
     """
-    Specify the paths from where you want to read and write:
-    
-    1. Input data
-    2. Intermediate calcuations data
-    3. Output results
+    1. Specify the paths from where you want to read and write:
+        - Input data
+        - Intermediate calcuations data
+        - Output results
 
-    Supply input data and parameters
-    
-    1. Names of modes
-        - List of strings
-    2. Unit weight of vehicle assumed for each mode
-        - List of float types 
-    3. Names of all industry sector and crops in VITRANSS2 and IFPRI datasets
-        - List of string types
-    4. Names of commodity/industry columns for which min-max tonnage column names already exist
-        - List of string types
-    5. Percentage of OD flow we want to send along path
-        - FLoat type
+    2. Supply input data and parameters
+        - Names of modes: List of strings
+        - Unit weight of vehicle assumed for each mode: List of float types 
+        - Names of all industry sector and crops in VITRANSS2 and IFPRI datasets: List of string types
+        - Names of commodity/industry columns for which min-max tonnage column names already exist: List of string types
+        - Percentage of OD flow we want to send along path: FLoat type
 
-    Give the paths to the input data files:
+    3. Give the paths to the input data files:
+        - Network edges Excel file
+        - OD flows Excel file
+        - Costs of modes Excel file 
+        - Road properties Excel file
     
-    1. Network edges Excel file
-    2. OD flows Excel file
-    3. Costs of modes Excel file 
-    4. Road properties Excel file
-    
-    Specify the output files and paths to be created 
+    4. Specify the output files and paths to be created 
     """
     data_path, calc_path, output_path = load_config()['paths']['data'], load_config()[
         'paths']['calc'], load_config()['paths']['output']
