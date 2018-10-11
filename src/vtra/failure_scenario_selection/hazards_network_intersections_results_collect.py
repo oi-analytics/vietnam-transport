@@ -80,16 +80,16 @@ def spatial_scenario_selection(network_shapefile, polygon_shapefile, hazard_dict
         - name_province - String name of province if needed - Default = ''    
 
     Outputs
-    data_dictionary - Dictionary of network-hazard-boundary intersection attributes:
-        - edge_id/node_id - String name of intersecting edge ID or node ID
-        - length - Float length of intersection of edge LineString and hazard Polygon: Only for edges 
-        - province_id - String/Integer ID of Province
-        - province_name - String name of Province in English
-        - district_id - String/Integer ID of District
-        - district_name - String name of District in English
-        - commune_id - String/Integer ID of Commune
-        - commune_name - String name of Commune in English
-        - hazard_attributes - Dictionary of all attributes from hazard dictionary   
+        data_dictionary - Dictionary of network-hazard-boundary intersection attributes:
+            - edge_id/node_id - String name of intersecting edge ID or node ID
+            - length - Float length of intersection of edge LineString and hazard Polygon: Only for edges 
+            - province_id - String/Integer ID of Province
+            - province_name - String name of Province in English
+            - district_id - String/Integer ID of District
+            - district_name - String name of District in English
+            - commune_id - String/Integer ID of Commune
+            - commune_name - String name of Commune in English
+            - hazard_attributes - Dictionary of all attributes from hazard dictionary   
     """
     line_gpd = gpd.read_file(network_shapefile)
     poly_gpd = gpd.read_file(polygon_shapefile)
