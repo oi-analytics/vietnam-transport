@@ -1,13 +1,67 @@
-"""Create national scale OD matrices at node and province levels from: 
-1. VITRANSS2 province-scale OD data
-2. IFPRI crop data at 1km resolution
+"""
+Purpose
+-------
+
+Create national scale OD matrices at node and province levels from: 
+    - VITRANSS2 province-scale OD data
+    - IFPRI crop data at 1km resolution
 
 Input data requirements
 -----------------------
-1. Correct paths to all files and correct input parameters 
+
+1. Correct paths to all files and correct input parameters
+2. Excel file with VITRANSS2 OD data with columns:
+    - o - Integer values of Origin Province ID
+    - d - Integer values of Destination Province ID
+    - industry and crop names - Float values of tons between OD Provinces
+    - modes - Float values to infer model split values for OD Provinces
+
+3. Geotiff files with IFPRI crop data:
+    - tons - Float values of production tonnage at each grid cell
+    - geometry - Raster grid cell geometry
+
+4. Shapefile of RiceAtlas data:
+    - month production columns - tonnage of rice for each month
+    - geometry - Shapely Polygon geometry of Provinces
+
+5. Shapefile of Provinces
+    - od_id - Integer Province ID corresponding to OD ID
+    - name_eng - String name of Province in English
+    - geometry - Shapely Polygon geometry of Provinces
+
+6. Shapefile of Communes
+    - population - Float values of populations in Communes
+    - geometry - Shapely Polygon geometry of Communes
+
+7. Shapefiles of network nodes
+    - node_id - String node ID
+    - geometry - Shapely point geometry of nodes
+
+8. Shapefiels of network edges
+    - vehicle_co - Count of vehiles only for roads
+    - geometry - Shapely LineString geometry of edges 
+
 
 Results
-------- 
+-------
+
+1. Excel workbook with sheet of mode-wise and total OD flows
+    - origin - String node ID of origin node
+    - destination - String node ID of destination node
+    - o_region - String names of origin Province
+    - d_region - String names of destination Province
+    - commodity_names - Float values of daily tonnages of commodities/industries between OD nodes from VITRANSS2 and IFPRI data (except rice)
+    - min_rice - Float values of minimum daily tonnages of rice between OD nodes
+    - max_rice - Float values of maximum daily tonnages of rice between OD nodes
+    - min_tons - Float values of minimum daily tonnages between OD nodes
+    - max_tons - Float values of maximum daily tonnages between OD nodes
+
+References
+----------
+1. Pant, R., Koks, E.E., Russell, T., Schoenmakers, R. & Hall, J.W. (2018).
+   Analysis and development of model for addressing climate change/disaster risks in multi-modal transport networks in Vietnam.
+   Final Report, Oxford Infrastructure Analytics Ltd., Oxford, UK.
+2. All input data folders and files referred to in the code below.
 """
 import os
 import subprocess
@@ -22,21 +76,23 @@ from vtra.utils import *
 
 
 def vitranss2_od_split(vitranss2_od_data_file,modes,o_id_col,d_id_col):
-    """Create VITRANSS2 OD modal split estimates
-    
-    By combining the commodity-wise OD values with the mode-wise OD values
-    And estimating the OD modal-split from the mode-wsie OD values  
+    """
+    Create VITRANSS2 OD modal split estimates
+        - By combining the commodity-wise OD values with the mode-wise OD values
+        - And estimating the OD modal-split from the mode-wsie OD values  
 
     Parameters
     ----------
-    vitranss2_od_data_file - Excel file with VITRANSS 2 OD data
-    modes - List of strings of mode types, e.g. ['road', 'rail', 'air', 'inland', 'coastal']
-    o_id_col - String name of name of Origin column 
-    d_id_col - String name of name of Destination column  
+    
+    - vitranss2_od_data_file - Excel file with VITRANSS2 OD data
+    - modes - List of strings of mode types, e.g. ['road', 'rail', 'air', 'inland', 'coastal']
+    - o_id_col - String name of name of Origin column 
+    - d_id_col - String name of name of Destination column  
 
     Outputs
     -------
-    od_fracs - Pandas dataframe of VITRANSS 2 commodity OD data with modal splits 
+    
+    - od_fracs - Pandas dataframe of VITRANSS 2 commodity OD data with modal splits 
     """
     od_data_modes = pd.read_excel(vitranss2_od_data_file, sheet_name='mode').fillna(0)
     od_data_com = pd.read_excel(vitranss2_od_data_file, sheet_name='goods').fillna(0)
@@ -54,22 +110,24 @@ def vitranss2_od_split(vitranss2_od_data_file,modes,o_id_col,d_id_col):
     return od_fracs
 
 def ifpri_crop_od_split(vitranss2_od_data_file,modes,o_id_col,d_id_col,crop_cols):
-    """Create IFPRI crop OD modal split estimates from VITRANSS2 OD values
-    
-    By combining the crop-wise OD values with the mode-wise OD values
-    And estimating the OD modal-split from the mode-wsie OD values  
+    """
+    Create IFPRI crop OD modal split estimates from VITRANSS2 OD values
+        - By combining the crop-wise OD values with the mode-wise OD values
+        - And estimating the OD modal-split from the mode-wsie OD values  
 
     Parameters
     ----------
-    vitranss2_od_data_file - Excel file with VITRANSS2 OD data
-    modes - List of strings of mode types, e.g. ['road', 'rail', 'air', 'inland', 'coastal']
-    o_id_col - String name of name of Origin column 
-    d_id_col - String name of name of Destination column
-    crop_cols - List of strings of crop names in VITRANSS 2 OD data  
+
+    - vitranss2_od_data_file - Excel file with VITRANSS2 OD data
+    - modes - List of strings of mode types, e.g. ['road', 'rail', 'air', 'inland', 'coastal']
+    - o_id_col - String name of name of Origin column 
+    - d_id_col - String name of name of Destination column
+    - crop_cols - List of strings of crop names in VITRANSS 2 OD data  
 
     Outputs
     -------
-    od_fracs_crops - Pandas dataframe of VITRANSS2 crop OD data with modal splits 
+
+    - od_fracs_crops - Pandas dataframe of VITRANSS2 crop OD data with modal splits 
     """
     od_data_modes = pd.read_excel(vitranss2_od_data_file, sheet_name='mode').fillna(0)
     od_data_com = pd.read_excel(vitranss2_od_data_file, sheet_name='goods').fillna(0)
@@ -92,19 +150,19 @@ def ifpri_crop_od_split(vitranss2_od_data_file,modes,o_id_col,d_id_col,crop_cols
     return od_fracs_crops
 
 def riceatlas_crop_minmax(riceatlas_crop_file,crop_month_fields):
-    """Create MIN_MAX fractions of rice production estimates for provinces
-    
-    By reading data from the RiceAtlas data
-    And estimating the minimum and maximum monthly values > 0 
+    """
+    Create MIN_MAX fractions of rice production estimates for provinces
+        - By reading data from the RiceAtlas data
+        - And estimating the minimum and maximum monthly values > 0 
 
     Parameters
     ----------
-    riceatlas_crop_file - Shapefile with RiceAtlas data
-    crop_month_fields - List of strings of names of columns indicating rice monthly production 
+    - riceatlas_crop_file - Shapefile with RiceAtlas data
+    - crop_month_fields - List of strings of names of columns indicating rice monthly production 
 
     Outputs
     -------
-    rice_prod_months - Geopandas dataframe of RiceAtlas crop values with minimum and maximum monthly production as fraction of annual production
+    - rice_prod_months - Geopandas dataframe of RiceAtlas crop values with minimum and maximum monthly production as fraction of annual production
     """
     rice_prod_months = gpd.read_file(riceatlas_crop_file)
     rice_prod_months['total_prod'] = rice_prod_months[crop_month_fields].sum(axis=1)
@@ -118,20 +176,22 @@ def riceatlas_crop_minmax(riceatlas_crop_file,crop_month_fields):
     return rice_prod_months
 
 def assign_province_name_id_to_nodes(province_path,nodes_in,province_name_col,province_id_col):
-    """Match the nodes to their province names and province IDs
-    
-    By finding the province that contains or is nearest to the node 
+    """
+    Match the nodes to their province names and province IDs
+        - By finding the province that contains or is nearest to the node 
 
     Parameters
     ----------
-    province_path - Path of province shapefile 
-    nodes_in - Path of nodes shapefile
-    province_name_col - String name of column containing province names
-    province_id_col - String name of column containing province ID's that match VITRANSS 2 OD ids
+
+    - province_path - Path of province shapefile 
+    - nodes_in - Path of nodes shapefile
+    - province_name_col - String name of column containing province names
+    - province_id_col - String name of column containing province ID's that match VITRANSS 2 OD ids
 
     Outputs
     -------
-    nodes - Geopandas dataframe of nodes with new columns called province_name and od_id
+
+    - nodes - Geopandas dataframe of nodes with new columns called province_name and od_id
     """
 
     # load provinces and get geometry of the right province
@@ -153,19 +213,21 @@ def assign_province_name_id_to_nodes(province_path,nodes_in,province_name_col,pr
     return nodes
 
 def assign_road_weights(nodes,edges_in,aadt_column):
-    """Assign weights to nodes on the road network
-    
-    By finding the total AADT counts converging on the node 
+    """
+    Assign weights to nodes on the road network
+        - By finding the total AADT counts converging on the node 
 
     Parameters
     ----------
-    nodes - Geopandas dataframe of nodes  
-    edges_in - Path of edges shapefile
-    aadt_column - String name of column containing AADT values
+
+    - nodes - Geopandas dataframe of nodes  
+    - edges_in - Path of edges shapefile
+    - aadt_column - String name of column containing AADT values
 
     Outputs
     -------
-    nodes - Geopandas dataframe of nodes with new column called weight
+
+    - nodes - Geopandas dataframe of nodes with new column called weight
     """
 
     edges_df = gpd.read_file(edges_in)
@@ -185,19 +247,21 @@ def assign_road_weights(nodes,edges_in,aadt_column):
     return nodes
 
 def assign_node_weights_by_commune_population_proximity(commune_path,nodes,commune_pop_col):
-    """Assign weights to nodes based on their nearest commune populations 
-    
-    By finding the communes that intersect with the Voronoi extents of nodes 
+    """
+    Assign weights to nodes based on their nearest commune populations 
+        - By finding the communes that intersect with the Voronoi extents of nodes 
 
     Parameters
     ----------
-    commune_path - Path of commune shapefile 
-    nodes_in - Path of nodes shapefile
-    commune_pop_col - String name of column containing commune population values
+
+    - commune_path - Path of commune shapefile 
+    - nodes_in - Path of nodes shapefile
+    - commune_pop_col - String name of column containing commune population values
 
     Outputs
     -------
-    nodes - Geopandas dataframe of nodes with new column called weight
+
+    - nodes - Geopandas dataframe of nodes with new column called weight
     """
 
     # load provinces and get geometry of the right communes within the provinces
@@ -253,27 +317,28 @@ def assign_node_weights_by_commune_population_proximity(commune_path,nodes,commu
     return nodes
 
 def assign_industry_od_flows_to_nodes(national_ods_df,ind_cols,modes_df,modes,od_fracs,o_id_col,d_id_col):
-    """Assign VITRANSS 2 OD flows to nodes 
+    """
+    Assign VITRANSS 2 OD flows to nodes 
 
     Parameters
     ----------
-    national_ods_df - List of lists of Pandas dataframes 
-    ind_cols - List of strings of names of indsutry columns
-    modes_df - List of Geopnadas dataframes with nodes of each transport mode
-    modes - List of strings of names of transport modes
-    od_fracs - Pandas dataframe of Industry OD flows and modal splits
-    o_id_col - String name of Origin province ID column 
-    d_id_col - String name of Destination province ID column 
+
+    - national_ods_df - List of lists of Pandas dataframes 
+    - ind_cols - List of strings of names of indsutry columns
+    - modes_df - List of Geopnadas dataframes with nodes of each transport mode
+    - modes - List of strings of names of transport modes
+    - od_fracs - Pandas dataframe of Industry OD flows and modal splits
+    - o_id_col - String name of Origin province ID column 
+    - d_id_col - String name of Destination province ID column 
 
     Outputs
     -------
-    national_ods_df - List of Lists of Pandas dataframes 
-        Each dataframe has columns:
-            origin - Origin node ID
-            o_region - Origin province name
-            destination - Destination node ID
-            d_region - Destination province ID
-            ind - Tonnage values for the named industry 
+    national_ods_df - List of Lists of Pandas dataframes with columns:
+        - origin - Origin node ID
+        - o_region - Origin province name
+        - destination - Destination node ID
+        - d_region - Destination province ID
+        - ind - Tonnage values for the named industry 
 
     """
     for ind in ind_cols:
@@ -326,20 +391,20 @@ def assign_industry_od_flows_to_nodes(national_ods_df,ind_cols,modes_df,modes,od
     return national_ods_df
 
 def assign_daily_min_max_tons_rice(crop_df, rice_prod_df):
-    """Estimate minimum and maximum daily rice tonnages
+    """
+    Estimate minimum and maximum daily rice tonnages
 
     Parameters
     ----------
-    crop_df - Geopandas dataframe of crop points with annual tonnages 
-    rice_prod_df - Geopandas dataframe of RiceAtlas crop values with minimum and maximum monthly production as fraction of annual production
+
+    - crop_df - Geopandas dataframe of crop points with annual tonnages 
+    - rice_prod_df - Geopandas dataframe of RiceAtlas crop values with minimum and maximum monthly production as fraction of annual production
 
     Outputs
     -------
-    crop_df - Geopandas dataframe of crop points 
-        With new columns:
-            min_rice - Minimum daily rice tonnages
-            max_rice - Maximum daily rice tonnages
-       
+    crop_df - Geopandas dataframe of crop points with new columns:
+        - min_rice - Minimum daily rice tonnages
+        - max_rice - Maximum daily rice tonnages
     """
     sindex_rice_prod_df = rice_prod_df.sindex
 
@@ -355,37 +420,38 @@ def assign_daily_min_max_tons_rice(crop_df, rice_prod_df):
 
 def assign_crop_od_flows_to_nodes(national_ods_df,province_path,province_name_col,calc_path,
     crop_data_path,crop_names,rice_prod_months,modes_df,modes,od_fracs_crops,o_id_col,d_id_col):
-    """Assign IFPRI crop values to OD nodes based on VITRANSS 2 OD distributions
-    
-    Based on VITRANSS 2 OD distributions
+    """
+    Assign IFPRI crop values to OD nodes based on VITRANSS 2 OD distributions
+        - Based on VITRANSS 2 OD distributions
 
     Parameters
     ----------
-    national_ods_df - List of lists of Pandas dataframes
-    province_path - Path of province shapefile
-    province_name_col - String name of column containing province names 
-    calc_path - Path to store intermediary calculations 
-    crop_data_path - Path to crop datasets
-    crop_names - List of string of crop names in IFPRI datasets
-    rice_prod_months - Geopandas dataframe of RiceAtlas crop values with minimum and maximum monthly production as fraction of annual production
-    modes_df - List of Geopnadas dataframes with nodes of each transport mode
-    modes - List of strings of names of transport modes
-    od_fracs_crops - Pandas dataframe of crop OD distributions and modal splits as per VITRANSS 2 data
-    o_id_col - String name of Origin province ID column 
-    d_id_col - String name of Destination province ID column 
 
+    - national_ods_df - List of lists of Pandas dataframes
+    - province_path - Path of province shapefile
+    - province_name_col - String name of column containing province names 
+    - calc_path - Path to store intermediary calculations 
+    - crop_data_path - Path to crop datasets
+    - crop_names - List of string of crop names in IFPRI datasets
+    - rice_prod_months - Geopandas dataframe of RiceAtlas crop values with minimum and maximum monthly production as fraction of annual production
+    - modes_df - List of Geopnadas dataframes with nodes of each transport mode
+    - modes - List of strings of names of transport modes
+    - od_fracs_crops - Pandas dataframe of crop OD distributions and modal splits as per VITRANSS 2 data
+    - o_id_col - String name of Origin province ID column 
+    - d_id_col - String name of Destination province ID column 
+- 
     Outputs
     -------
-    national_ods_df - List of Lists of Pandas dataframes 
-        Each dataframe has columns:
-            origin - Origin node ID
-            o_region - Origin province name
-            destination - Destination node ID
-            d_region - Destination province ID
-            min_crop - Minimum Tonnage values for the named crop
-            max_crop - Maximum Tonnage values for the named crop 
 
+    national_ods_df - List of Lists of Pandas dataframes with columns:
+        - origin - Origin node ID
+        - o_region - Origin province name
+        - destination - Destination node ID
+        - d_region - Destination province ID
+        - min_crop - Minimum Tonnage values for the named crop
+        - max_crop - Maximum Tonnage values for the named crop 
     """
+    
     # load provinces and get geometry of the right province
     provinces = gpd.read_file(province_path)
     provinces = provinces.to_crs({'init': 'epsg:4326'})
@@ -493,41 +559,34 @@ def assign_crop_od_flows_to_nodes(national_ods_df,province_path,province_name_co
 
 def main():
     """
-    Specify the paths from where you to read and write:
-    1. Input data
-    2. Intermediate calcuations data
-    3. Output results
+    1. Specify the paths from where you to read and write:
+        - Input data
+        - Intermediate calcuations data
+        - Output results
 
-    Supply input data and parameters
-    1. Names of modes
-        List of strings
-    2. OD column names in OD file
-        String types 
-    3. Names of industry columns in VITRANSS2 data
-        List of string types
-    4. Names of crop columns in VITRANSS2 data
-        List of string types
-    5. Names of crops in IFPRI crop data
-        List of string types
-    6. Names of months in Rice Atlas data
-        List of string types
+    2. Supply input data and parameters
+        - Names of modes: List of strings
+        - OD column names in OD file: String types 
+        - Names of industry columns in VITRANSS2 data: List of string types
+        - Names of crop columns in VITRANSS2 data: List of string types
+        - Names of crops in IFPRI crop data: List of string types
+        - Names of months in Rice Atlas data: List of string types
     
-    Give the paths to the input data files:
-    1. Network nodes files
-    2. VITRANSS 2 OD file
-    3. IFPRI crop data files
-    4. Rice Altas data shapefile
-    5. Province boundary and stats data shapefile
-    6. Commune boundary and stats data shapefile
+    3. Give the paths to the input data files:
+        - Network nodes files
+        - VITRANSS 2 OD file
+        - IFPRI crop data files
+        - Rice Altas data shapefile
+        - Province boundary and stats data shapefile
+        - Commune boundary and stats data shapefile
 
-    Specify the output files and paths to be created 
+    4. Specify the output files and paths to be created 
     """
     data_path, calc_path, output_path = load_config()['paths']['data'], load_config()[
         'paths']['calc'], load_config()['paths']['output']
 
     """Supply input data and parameters
     """
-    # modes_file_paths = [('Roads','national_roads'), ('Railways','national_rail'), ('Airports','airnetwork'), ('Waterways','waterways'), ('Waterways','waterways')]
     modes = ['road', 'rail', 'air', 'inland', 'coastal']
     o_id_col = 'o'
     d_id_col = 'd'

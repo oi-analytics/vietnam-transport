@@ -13,9 +13,9 @@ Input data requirements
 -----------------------
 1. Correct paths to all files and correct input parameters
 2. Excel file with mode sheets containing network graph structure and attributes
-    - edge_id - String/Integer/Float Edge ID
-    - from_node - String/Integer/Float node ID that should be present in node_id column
-    - to_node - String/Integer/Float node ID that should be present in node_id column
+    - edge_id - String Edge ID
+    - from_node - String node ID that should be present in node_id column
+    - to_node - String node ID that should be present in node_id column
     - length - Float length of edge in km
     - min_time - Float minimum time of travel in hours on edge 
     - max_time - Float maximum time of travel in hours on edge  
@@ -25,7 +25,7 @@ Input data requirements
     - max_tariff_cost - Float maximum tariff cost in USD on edge
          
 3. Edge shapefiles for all national-scale networks with attributes:
-    - edge_id - String/Integer/Float Edge ID
+    - edge_id - String Edge ID
     - geometry - Shapely LineString geometry of edges
 
 4. Excel file with mode sheets containing node-level OD values with attributes:
