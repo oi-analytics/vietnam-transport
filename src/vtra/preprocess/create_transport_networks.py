@@ -1,4 +1,8 @@
-"""Creating post-processed transport networks with attributes 
+"""
+Purpose
+-------
+
+Creating post-processed transport networks with attributes 
 
 From input Shapefiles 
 
@@ -74,7 +78,9 @@ Results
 
 References
 ----------
-1. Pant, R., Koks, E.E., Russell, T., Schoenmakers, R. & Hall, J.W. (2018). Analysis and development of model for addressing climate change/disaster risks in multi-modal transport networks in Vietnam. Final Report, Oxford Infrastructure Analytics Ltd., Oxford, UK.
+1. Pant, R., Koks, E.E., Russell, T., Schoenmakers, R. & Hall, J.W. (2018). 
+   Analysis and development of model for addressing climate change/disaster risks in multi-modal transport networks in Vietnam. 
+   Final Report, Oxford Infrastructure Analytics Ltd., Oxford, UK.
 2. All input data folders and files referred to in the code below.		 
 """
 import os
