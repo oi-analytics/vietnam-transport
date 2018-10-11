@@ -152,13 +152,11 @@ def riceatlas_crop_minmax(riceatlas_crop_file,crop_month_fields):
         - And estimating the minimum and maximum monthly values > 0 
 
     Parameters
-    ----------
-    - riceatlas_crop_file - Shapefile with RiceAtlas data
-    - crop_month_fields - List of strings of names of columns indicating rice monthly production 
+        riceatlas_crop_file - Shapefile with RiceAtlas data
+        crop_month_fields - List of strings of names of columns indicating rice monthly production 
 
     Outputs
-    -------
-    - rice_prod_months - Geopandas dataframe of RiceAtlas crop values with minimum and maximum monthly production as fraction of annual production
+        rice_prod_months - Geopandas dataframe of RiceAtlas crop values with minimum and maximum monthly production as fraction of annual production
     """
     rice_prod_months = gpd.read_file(riceatlas_crop_file)
     rice_prod_months['total_prod'] = rice_prod_months[crop_month_fields].sum(axis=1)
@@ -177,15 +175,13 @@ def assign_province_name_id_to_nodes(province_path,nodes_in,province_name_col,pr
         - By finding the province that contains or is nearest to the node 
 
     Parameters
-    ----------
-    - province_path - Path of province shapefile 
-    - nodes_in - Path of nodes shapefile
-    - province_name_col - String name of column containing province names
-    - province_id_col - String name of column containing province ID's that match VITRANSS 2 OD ids
+        province_path - Path of province shapefile 
+        nodes_in - Path of nodes shapefile
+        province_name_col - String name of column containing province names
+        province_id_col - String name of column containing province ID's that match VITRANSS 2 OD ids
 
     Outputs
-    -------
-    - nodes - Geopandas dataframe of nodes with new columns called province_name and od_id
+        nodes - Geopandas dataframe of nodes with new columns called province_name and od_id
     """
 
     # load provinces and get geometry of the right province
@@ -212,14 +208,12 @@ def assign_road_weights(nodes,edges_in,aadt_column):
         - By finding the total AADT counts converging on the node 
 
     Parameters
-    ----------
-    - nodes - Geopandas dataframe of nodes  
-    - edges_in - Path of edges shapefile
-    - aadt_column - String name of column containing AADT values
+        nodes - Geopandas dataframe of nodes  
+        edges_in - Path of edges shapefile
+        aadt_column - String name of column containing AADT values
 
     Outputs
-    -------
-    - nodes - Geopandas dataframe of nodes with new column called weight
+        nodes - Geopandas dataframe of nodes with new column called weight
     """
 
     edges_df = gpd.read_file(edges_in)
@@ -244,14 +238,12 @@ def assign_node_weights_by_commune_population_proximity(commune_path,nodes,commu
         - By finding the communes that intersect with the Voronoi extents of nodes 
 
     Parameters
-    ----------
-    - commune_path - Path of commune shapefile 
-    - nodes_in - Path of nodes shapefile
-    - commune_pop_col - String name of column containing commune population values
+        commune_path - Path of commune shapefile 
+        nodes_in - Path of nodes shapefile
+        commune_pop_col - String name of column containing commune population values
 
     Outputs
-    -------
-    - nodes - Geopandas dataframe of nodes with new column called weight
+        nodes - Geopandas dataframe of nodes with new column called weight
     """
 
     # load provinces and get geometry of the right communes within the provinces
@@ -412,29 +404,27 @@ def assign_crop_od_flows_to_nodes(national_ods_df,province_path,province_name_co
         - Based on VITRANSS 2 OD distributions
 
     Parameters
-    ----------
-    - national_ods_df - List of lists of Pandas dataframes
-    - province_path - Path of province shapefile
-    - province_name_col - String name of column containing province names 
-    - calc_path - Path to store intermediary calculations 
-    - crop_data_path - Path to crop datasets
-    - crop_names - List of string of crop names in IFPRI datasets
-    - rice_prod_months - Geopandas dataframe of RiceAtlas crop values with minimum and maximum monthly production as fraction of annual production
-    - modes_df - List of Geopnadas dataframes with nodes of each transport mode
-    - modes - List of strings of names of transport modes
-    - od_fracs_crops - Pandas dataframe of crop OD distributions and modal splits as per VITRANSS 2 data
-    - o_id_col - String name of Origin province ID column 
-    - d_id_col - String name of Destination province ID column 
+        national_ods_df - List of lists of Pandas dataframes
+        province_path - Path of province shapefile
+        province_name_col - String name of column containing province names 
+        calc_path - Path to store intermediary calculations 
+        crop_data_path - Path to crop datasets
+        crop_names - List of string of crop names in IFPRI datasets
+        rice_prod_months - Geopandas dataframe of RiceAtlas crop values with minimum and maximum monthly production as fraction of annual production
+        modes_df - List of Geopnadas dataframes with nodes of each transport mode
+        modes - List of strings of names of transport modes
+        od_fracs_crops - Pandas dataframe of crop OD distributions and modal splits as per VITRANSS 2 data
+        o_id_col - String name of Origin province ID column 
+        d_id_col - String name of Destination province ID column 
 - 
     Outputs
-    -------
-    national_ods_df - List of Lists of Pandas dataframes with columns:
-        - origin - Origin node ID
-        - o_region - Origin province name
-        - destination - Destination node ID
-        - d_region - Destination province ID
-        - min_crop - Minimum Tonnage values for the named crop
-        - max_crop - Maximum Tonnage values for the named crop 
+        national_ods_df - List of Lists of Pandas dataframes with columns:
+            - origin - Origin node ID
+            - o_region - Origin province name
+            - destination - Destination node ID
+            - d_region - Destination province ID
+            - min_crop - Minimum Tonnage values for the named crop
+            - max_crop - Maximum Tonnage values for the named crop 
     """
     
     # load provinces and get geometry of the right province
