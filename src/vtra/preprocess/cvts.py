@@ -1,4 +1,16 @@
-"""Process CVTS (Commercial Vehicle Tracking System) GPS traces to estimate freight flows
+"""
+Purpose
+-------
+Process CVTS (Commercial Vehicle Tracking System) GPS traces to estimate 
+    - Vehicle counts on roads
+    - OD edge routes on roads 
+
+References
+----------
+1. Pant, R., Koks, E.E., Russell, T., Schoenmakers, R. & Hall, J.W. (2018).
+   Analysis and development of model for addressing climate change/disaster risks in multi-modal transport networks in Vietnam.
+   Final Report, Oxford Infrastructure Analytics Ltd., Oxford, UK.
+2. All input data folders and files referred to in the code below.
 """
 import csv
 import os
@@ -14,8 +26,9 @@ from vtra.utils import load_config
 
 
 def main():
-    # C Incoming data/20170801.zip -> data/raw/cvts/20170801
-    # D Work Processes/Vietnam/data/Roads/ -> data/raw/cvts/Roads
+    """
+    Provide input data
+    """
 
     data_root = load_config()['paths']['data']
 

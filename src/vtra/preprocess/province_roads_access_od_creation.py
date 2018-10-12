@@ -356,13 +356,13 @@ def crop_values_to_province_od_nodes(province_ods_df,province_geom,calc_path,
 
 def main():
     """
-    1. Specify the paths from where you to read and write:
+    1. Specify the paths from where to read and write:
         - Input data
         - Intermediate calcuations data
         - Output results
     
     2. Supply input data and parameters
-        - Names of the three Provinces: ['Lao Cai', 'Binh Dinh', 'Thanh Hoa'] 
+        - Names of the Provinces: List of strings 
         - Exchange rate to convert 2012 Net revenue in million VND values to USD in 2016
         - Names of crops in IFPRI crop data
         - Names of months in Rice Atlas data

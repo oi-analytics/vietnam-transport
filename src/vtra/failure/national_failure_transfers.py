@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
 """
 Python script to assign commodity flows on the road network
-
-TODO DONT THINK THIS SCRIPT IS NEEDED
 """
 import ast
 import copy

@@ -1,5 +1,14 @@
-# -*- coding: utf-8 -*-
-"""Helper functions to create transport networks
+"""
+Purpose
+-------
+Helper functions to create post-processeed networks with attributes from specific types of input datasets
+
+References
+----------
+1. Pant, R., Koks, E.E., Russell, T., Schoenmakers, R. & Hall, J.W. (2018).
+   Analysis and development of model for addressing climate change/disaster risks in multi-modal transport networks in Vietnam.
+   Final Report, Oxford Infrastructure Analytics Ltd., Oxford, UK.
+2. All input data folders and files referred to in the code below.
 """
 import csv
 import os
@@ -14,6 +23,17 @@ from vtra.utils import line_length
 
 
 def assign_province_road_conditions(x):
+    """
+    Assign road conditions as paved or unpaved to Province roads
+
+    Parameters
+        x - Pandas DataFrame of values
+            - code - Numeric code for type of asset
+            - level - Numeric code for level of asset
+
+    Returns
+        String value as paved or unpaved
+    """
     asset_code = x.code
     asset_level = x.level
 
@@ -26,7 +46,8 @@ def assign_province_road_conditions(x):
 
 
 def assign_assumed_width_to_province_roads_from_file(asset_width, width_range_list):
-    """Assign widths to roads assets in Vietnam
+    """
+    Assign widths to Province roads assets in Vietnam
 
     The widths are assigned based on our understanding of:
 
@@ -35,13 +56,11 @@ def assign_assumed_width_to_province_roads_from_file(asset_width, width_range_li
        values
 
     Parameters
-    ----------
-    asset_width - Numeric value for width of asset
-    width_range_list - List of tuples containing (from_width, to_width, assumed_width)
+        - asset_width - Numeric value for width of asset
+        - width_range_list - List of tuples containing (from_width, to_width, assumed_width)
 
-    Outputs
-    -------
-    assumed_width - assigned width of the raod asset based on design specifications
+    Returns
+        assumed_width - assigned width of the raod asset based on design specifications
     """
 
     assumed_width = asset_width
@@ -54,26 +73,14 @@ def assign_assumed_width_to_province_roads_from_file(asset_width, width_range_li
 
 
 def assign_assumed_width_to_province_roads(x):
-    """Assign widths to roads assets in Vietnam
-
-    The widths are assigned based on our understanding of:
-
-    1. The reported width in the data which is not reliable
-    2. A design specification based understanding of the assumed width based on ranges of
-       values
+    """
+    Assign widths to Province roads assets in Vietnam
 
     Parameters
-    ----------
-
-    x : int
-        Numeric value for width of asset
+        x : int value for width of asset
 
     Returns
-    -------
-
-    modified_width : int
-        Assigned width of the road asset based on design specifications
-
+        int assigned width of the road asset based on design specifications
     """
     if x.width == 0:
         return 5.5
@@ -83,17 +90,17 @@ def assign_assumed_width_to_province_roads(x):
 
 def assign_asset_type_to_province_roads_from_file(asset_code, asset_type_list):
     """
-    Assign asset types to roads assets in Vietnam
+    Assign asset types to roads assets in Vietnam based on values in file
+    
     The types are assigned based on our understanding of:
     1. The reported asset code in the data
 
     Parameters
-    ---------
-    asset code - Numeric value for code of asset
+        - asset_code - Numeric value for code of asset
+        - asset_type_list - List of Strings wiht names of asset types 
 
-    Outputs
-    -------
-    asset type - Which is either of (Bridge, Dam, Culvert, Tunnel, Spillway, Road)
+    Returns
+        asset_type - String name of type of asset
     """
     asset_type = 'road'
     for asset in asset_type_list:
@@ -107,16 +114,15 @@ def assign_asset_type_to_province_roads_from_file(asset_code, asset_type_list):
 def assign_asset_type_to_province_roads(x):
     """
     Assign asset types to roads assets in Vietnam
+    
     The types are assigned based on our understanding of:
     1. The reported asset code in the data
 
     Parameters
-    ---------
-    asset code - Numeric value for code of asset
+        x - Pandas DataFrame with numeric asset code 
 
-    Outputs
-    -------
-    asset type - Which is either of (Bridge, Dam, Culvert, Tunnel, Spillway, Road)
+    Returns
+        asset type - Which is either of (Bridge, Dam, Culvert, Tunnel, Spillway, Road)
     """
     if x.code in (12, 25):
         return 'Bridge'
@@ -135,21 +141,22 @@ def assign_asset_type_to_province_roads(x):
 def assign_minmax_travel_speeds_province_roads_apply(x):
     """
     Assign travel speeds to roads assets in Vietnam
+    
     The speeds are assigned based on our understanding of:
+    
     1. The types of assets
     2. The levels of classification of assets: 0-National, 1-Provinical, 2-Local, 3-Other
     3. The terrain where the assets are located: Flat or Mountain or No information
 
     Parameters
-    ---------
-    asset_code - Numeric code for type of asset
-    asset_level - Numeric code for level of asset
-    asset_terrain - String value of the terrain of asset
+        x - Pandas dataframe with values
+            - code - Numeric code for type of asset
+            - level - Numeric code for level of asset
+            - terrain - String value of the terrain of asset
 
-    Outputs
-    -------
-    speed_min - Minimum assigned speed in km/hr
-    speed_max - Maximum assigned speed in km/hr
+    Returns
+        - Float minimum assigned speed in km/hr
+        - Float maximum assigned speed in km/hr
     """
     asset_code = x.code
     asset_level = x.level
@@ -184,6 +191,27 @@ def assign_minmax_travel_speeds_province_roads_apply(x):
 
 def assign_minmax_time_costs_province_roads_apply(x, cost_dataframe):
     """
+    Assign time costs on Province roads in Vietnam
+    
+    The costs are assigned based on our understanding of:
+    
+    1. The types of assets
+    2. The levels of classification of assets: 0-National, 1-Provinical, 2-Local, 3-Other
+    3. The terrain where the assets are located: Flat or Mountain or No information
+
+    Parameters
+        - x - Pandas dataframe with values
+            - code - Numeric code for type of asset
+            - level - Numeric code for level of asset
+            - terrain - String value of the terrain of asset
+            - length - Float length of edge in km
+            - min_speed - Float minimum assigned speed in km/hr
+            - max_speed - Float maximum assigned speed in km/hr
+        - cost_dataframe - Pandas Dataframe with costs
+
+    Returns
+        - min_time_cost - Float minimum assigned cost of time in USD
+        - max_time_cost - Float maximum assigned cost of time in USD
     """
     asset_code = x.code
     asset_level = x.level
@@ -207,23 +235,24 @@ def assign_minmax_time_costs_province_roads_apply(x, cost_dataframe):
 
 def assign_minmax_tariff_costs_province_roads_apply(x, cost_dataframe):
     """
-    Assign travel speeds to roads assets in Vietnam
-    The speeds are assigned based on our understanding of:
+    Assign tariff costs on Province roads in Vietnam
+    
+    The costs are assigned based on our understanding of:
+    
     1. The types of assets
     2. The levels of classification of assets: 0-National, 1-Provinical, 2-Local, 3-Other
     3. The terrain where the assets are located: Flat or Mountain or No information
 
     Parameters
-    ---------
-    asset_code - Numeric code for type of asset
-    asset_level - Numeric code for level of asset
-    asset_terrain - String value of the terrain of asset
+        - x - Pandas dataframe with values
+            - code - Numeric code for type of asset
+            - level - Numeric code for level of asset
+            - terrain - String value of the terrain of asset
+        - cost_dataframe - Pandas Dataframe with costs
 
-    Outputs
-    -------
-    speed_min - Minimum assigned speed in km/hr
-    speed_max - Maximum assigned speed in km/hr
-    tariff_min_usd    tariff_max_usd
+    Returns
+        - min_tariff_cost - Float minimum assigned tariff cost in USD/ton
+        - max_tariff_cost - Float maximum assigned tariff cost in USD/ton
     """
     asset_code = x.code
     asset_level = x.level
@@ -247,11 +276,16 @@ def assign_minmax_tariff_costs_province_roads_apply(x, cost_dataframe):
 
 def province_shapefile_to_dataframe(edges_in, road_terrain, road_properties_file,usage_factors):
     """
-    input parameters:
-        edges_in : string of path to edges file/network file.
+    Create province network dataframe from inputs
 
-    output:
-        SG: connected graph of the shapefile
+    Parameters
+        - edges_in - String path to edges file/network Shapefile
+        - road_terrain - String name of terrain: flat or mountanious
+        - road_properties_file - String path to Excel file with road attributes
+        - usage_factor - Tuple of 2-float values between 0 and 1 
+
+    Returns
+        edges - Geopandas DataFrame with network edge topology and attributes
     """
     add_columns = ['number','name','terrain','level','surface','road_class',
         'road_cond','asset_type','width','length','min_speed','max_speed',
@@ -330,15 +364,35 @@ def province_shapefile_to_dataframe(edges_in, road_terrain, road_properties_file
 
 
 def province_shapefile_to_network(edges_in, road_terrain, road_properties_file,usage_factors):
-    # create network from edge file
+    """
+    Create province igraph network from inputs
+
+    Parameters
+        - edges_in - String path to edges file/network Shapefile
+        - road_terrain - String name of terrain: flat or mountanious
+        - road_properties_file - String path to Excel file with road attributes
+        - usage_factor - Tuple of 2-float values between 0 and 1 
+
+    Returns
+        G - Igraph object with network edge topology and attributes
+    """
     edges = province_shapefile_to_dataframe(edges_in, road_terrain, road_properties_file,usage_factors)
     G = ig.Graph.TupleList(edges.itertuples(index=False), edge_attrs=list(edges.columns)[2:])
 
-    # only keep connected network
     return G
 
 
 def assign_national_road_terrain(x):
+    """
+    Assign terrain as flat or mountain to national roads
+
+    Parameters
+        x - Pandas DataFrame of values
+            - dia_hinh__ - String value of type of terrain
+
+    Returns
+        String value of terrain as flat or mountain
+    """
     terrain_type = x.dia_hinh__
 
     if terrain_type is None:
@@ -352,6 +406,16 @@ def assign_national_road_terrain(x):
 
 
 def assign_national_road_conditions(x):
+    """
+    Assign road conditions as paved or unpaved to national roads
+
+    Parameters
+        x - Pandas DataFrame of values
+            - loai_mat__ - String value of road surface
+
+    Returns
+        String value of road as paved or unpaved
+    """
     road_cond = x.loai_mat__
 
     if road_cond is None:
@@ -365,6 +429,17 @@ def assign_national_road_conditions(x):
 
 
 def assign_national_road_class(x):
+    """
+    Assign road speeds to national roads
+
+    Parameters
+        x - Pandas DataFrame of values
+            - capkth__ca - String value of road class
+            - vehicle_co - Float value of number of vehicles on road 
+
+    Returns
+        - Integer value of road class
+    """
     road_class = x.capkth__ca
     vehicle_numbers = x.vehicle_co
 
@@ -422,20 +497,22 @@ def assign_national_road_class(x):
 
 def assign_assumed_width_to_national_roads_from_file(x, flat_width_range_list, mountain_width_range_list):
     """
-    Assign widths to roads assets in Vietnam
+    Assign widths to national roads assets in Vietnam
+    
     The widths are assigned based on our understanding of:
     1. The class of the road which is not reliable
     2. The number of lanes
     3. The terrain of the road
 
     Parameters
-    ---------
-    x - dataframe row
-    flat_width_range_list - List of tuples containing (from_width, to_width, assumed_width)
+        - x - Pandas DataFrame row with values
+            - road_class - Integer value of road class
+            - lanenum__s - Integer value of number of lanes on road 
+        - flat_width_range_list - List of tuples containing (from_width, to_width, assumed_width)
+        - moiuntain_width_range_list - List of tuples containing (from_width, to_width, assumed_width)
 
-    Outputs
-    -------
-    assumed_width - assigned width of the raod asset based on design specifications
+    Returns
+        assumed_width - Float assigned width of the road asset based on design specifications
     """
 
     road_class = x.road_class
@@ -475,21 +552,23 @@ def assign_min_max_speeds_to_national_roads_from_file(x, flat_width_range_list,
                                                       mountain_width_range_list):
     """
     Assign speeds to national roads in Vietnam
+    
     The speeds are assigned based on our understanding of:
     1. The class of the road
     2. The estimated speed from the CVTS data
     3. The terrain of the road
 
     Parameters
-    ---------
-    x - dataframe row
-    flat_width_range_list - List of tuples containing flat road properties
-    mountain_width_range_list - List of tuples containing mountain road properties
+        x - Pandas DataFrame of values
+            - road_class - Integer value of road class
+            - terrain - String value of road terrain
+            - est_speed - Float value of estimated speed from CVTS data
+        - flat_width_range_list - List of tuples containing design speeds
+        - moiuntain_width_range_list - List of tuples containing design speeds
 
-    Outputs
-    -------
-    min and max speeds - assigned speeds of the road asset based on estimated speeds and
-    design specifications
+    Returns
+        - Float minimum assigned speed in km/hr
+        - Float maximum assigned speed in km/hr
     """
 
     road_class = x.road_class
@@ -533,6 +612,28 @@ def assign_min_max_speeds_to_national_roads_from_file(x, flat_width_range_list,
 
 def assign_minmax_time_costs_national_roads_apply(x, cost_dataframe):
     """
+    Assign time costs on national roads in Vietnam
+    
+    The costs are assigned based on our understanding of:
+    
+    1. The vehicle counts on roads
+    2. The levels of classification of assets: 0-National, 1-Provinical, 2-Local, 3-Other
+    3. The terrain where the assets are located: Flat or Mountain or No information
+
+    Parameters
+        - x - Pandas dataframe with values
+            - vehicle_co - Count of number of vehicles on road
+            - code - Numeric code for type of asset
+            - level - Numeric code for level of asset
+            - terrain - String value of the terrain of asset
+            - length - Float length of edge in km
+            - min_speed - Float minimum assigned speed in km/hr
+            - max_speed - Float maximum assigned speed in km/hr
+        - cost_dataframe - Pandas Dataframe with costs
+
+    Returns
+        - min_time_cost - Float minimum assigned cost of time in USD
+        - max_time_cost - Float maximum assigned cost of time in USD
     """
     if x.vehicle_co > 2000:
         asset_code = 17
@@ -562,46 +663,21 @@ def assign_minmax_time_costs_national_roads_apply(x, cost_dataframe):
 
 def assign_minmax_tariff_costs_national_roads_apply(x, cost_dataframe):
     """
-    Assign travel speeds to roads assets in Vietnam
-    The speeds are assigned based on our understanding of:
-    1. The types of assets
-    2. The levels of classification of assets: 0-National, 1-Provinical, 2-Local, 3-Other
-    3. The terrain where the assets are located: Flat or Mountain or No information
+    Assign tariff costs on national roads in Vietnam
+    
+    The costs are assigned based on our understanding of:
+    
+    1. The vehicle counts on roads
 
     Parameters
-    ---------
-    asset_code - Numeric code for type of asset
-    asset_level - Numeric code for level of asset
-    asset_terrain - String value of the terrain of asset
+        - x - Pandas dataframe with values
+            - vehicle_co - Count of number of vehicles on road
+        - cost_dataframe - Pandas Dataframe with costs
 
-    Outputs
-    -------
-    speed_min - Minimum assigned speed in km/hr
-    speed_max - Maximum assigned speed in km/hr
-    tariff_min_usd    tariff_max_usd
+    Returns
+        - min_tariff_cost - Float minimum assigned tariff cost in USD/ton
+        - max_tariff_cost - Float maximum assigned tariff cost in USD/ton
     """
-    # if x.vehicle_co > 2000:
-    #     asset_code = 17
-    # else:
-    #     asset_code = 1
-
-    # asset_level = 0
-    # asset_terrain= x.terrain
-
-    # min_tariff_cost = 0
-    # max_tariff_cost = 0
-    # cost_list = list(cost_dataframe.itertuples(index=False))
-    # for cost_param in cost_list:
-    #     if (cost_param.code == asset_code) and (cost_param.road_cond == x.road_cond):
-    #         min_tariff_cost = 1.0*cost_param.tariff_min_usd*x.length
-    #         max_tariff_cost = 1.0*cost_param.tariff_max_usd*x.length
-    #         break
-    #     elif (cost_param.level == asset_level) and (cost_param.terrain == asset_terrain) \
-    #            and (cost_param.road_cond == x.road_cond):
-    #         min_tariff_cost = 1.0*cost_param.tariff_min_usd*x.length
-    #         max_tariff_cost = 1.0*cost_param.tariff_max_usd*x.length
-    #         break
-
     min_tariff_cost = 0
     max_tariff_cost = 0
     cost_list = list(cost_dataframe.itertuples(index=False))
@@ -616,13 +692,15 @@ def assign_minmax_tariff_costs_national_roads_apply(x, cost_dataframe):
 
 def national_road_shapefile_to_dataframe(edges_in, road_properties_file,usage_factors):
     """
-    input parameters:
-        edges_in : string of path to edges file/network file.
+    Create national network dataframe from inputs
 
-    output:
-        SG: connected graph of the shapefile
+    Parameters
+        - edges_in - String path to edges file/network Shapefile
+        - road_properties_file - String path to Excel file with road attributes
+        - usage_factor - Tuple of 2-float values between 0 and 1 
 
-        utilization_factors - Tuple of float types for uncertainity in cost function
+    Returns
+        edges: Geopandas DataFrame with network edge topology and attributes
     """
     add_columns = ['number','name','terrain','level','surface','road_class',
         'road_cond','asset_type','width','length','min_speed','max_speed',
@@ -697,13 +775,18 @@ def national_road_shapefile_to_dataframe(edges_in, road_properties_file,usage_fa
     return edges
 
 
-def national_shapefile_to_dataframe():
-    # called from analysis.national_flow_mapping.national_industry_flows
-    raise NotImplementedError()
-
-
 def national_road_shapefile_to_network(edges_in, road_properties_file,usage_factors):
-    # create network from edge file
+    """
+    Create national igraph network from inputs
+
+    Parameters
+        - edges_in - String path to edges file/network Shapefile
+        - road_properties_file - String path to Excel file with road attributes
+        - usage_factor - Tuple of 2-float values between 0 and 1 
+
+    Returns
+        G - Igraph object with network edge topology and attributes
+    """
     edges = national_road_shapefile_to_dataframe(edges_in, road_properties_file,usage_factors)
     G = ig.Graph.TupleList(edges.itertuples(index=False), edge_attrs=list(edges.columns)[2:])
 
@@ -711,23 +794,20 @@ def national_road_shapefile_to_network(edges_in, road_properties_file,usage_fact
     return G
 
 
-
-def add_generalised_costs_network_dataframe(network_dataframe, vehicle_numbers, tonnage):
-    # G.es['max_cost'] = list(cost_param*(np.array(G.es['length'])/np.array(G.es['max_speed'])))
-    # G.es['min_cost'] = list(cost_param*(np.array(G.es['length'])/np.array(G.es['min_speed'])))
-    # print (G.es['max_time'])
-    network_dataframe['max_gcost'] = vehicle_numbers * network_dataframe['max_time_cost'] + \
-        tonnage * network_dataframe['max_tariff_cost']
-    
-    network_dataframe['min_gcost'] = vehicle_numbers * network_dataframe['min_time_cost'] + \
-        tonnage * network_dataframe['min_tariff_cost']
-    
-
-    return network_dataframe
-
-
 def assign_minmax_time_costs_networks_apply(x, cost_dataframe):
     """
+    Assign time costs on networks in Vietnam  
+
+    Parameters
+        - x - Pandas dataframe with values
+            - length - Float length of edge in km
+            - min_speed - Float minimum assigned speed in km/hr
+            - max_speed - Float maximum assigned speed in km/hr
+        - cost_dataframe - Pandas Dataframe with costs
+
+    Returns
+        - min_time_cost - Float minimum assigned cost of time in USD
+        - max_time_cost - Float maximum assigned cost of time in USD
     """
     cost_list = list(cost_dataframe.itertuples(index=False))
     for cost_param in cost_list:
@@ -738,6 +818,18 @@ def assign_minmax_time_costs_networks_apply(x, cost_dataframe):
 
 
 def assign_minmax_tariff_costs_networks_apply(x, cost_dataframe):
+    """
+    Assign tariff costs on networks in Vietnam
+
+    Parameters
+        - x - Pandas dataframe with values
+            - length - Float length of edge in km
+        - cost_dataframe - Pandas Dataframe with costs
+
+    Returns
+        - min_tariff_cost - Float minimum assigned tariff cost in USD/ton
+        - max_tariff_cost - Float maximum assigned tariff cost in USD/ton
+    """
     cost_list = list(cost_dataframe.itertuples(index=False))
     for cost_param in cost_list:
         min_tariff_cost = 1.0*cost_param.tariff_min_usd*x.length
@@ -748,11 +840,18 @@ def assign_minmax_tariff_costs_networks_apply(x, cost_dataframe):
 
 def network_shapefile_to_dataframe(edges_in, mode_properties_file, mode_name, speed_min, speed_max,usage_factors):
     """
-    input parameters:
-        edges_in : string of path to edges file/network file.
+    Create network dataframe from inputs
 
-    output:
-        SG: connected graph of the shapefile
+    Parameters
+        - edges_in - String path to edges file/network Shapefile
+        - mode_properties_file - String path to Excel file with mode attributes
+        - mode_name - String name of mode
+        - speed_min - Float value of minimum assgined speed
+        - speed_max - Float value of maximum assgined speed
+        - usage_factor - Tuple of 2-float values between 0 and 1 
+
+    Returns
+        edges - Geopandas DataFrame with network edge topology and attributes
     """
     add_columns = ['number','name','terrain','level',
         'width','length','min_speed','max_speed',
@@ -817,7 +916,20 @@ def network_shapefile_to_dataframe(edges_in, mode_properties_file, mode_name, sp
 
 
 def network_shapefile_to_network(edges_in, mode_properties_file, mode_name, speed_min, speed_max,utilization_factors):
-    # create network from edge file
+    """
+    Create igraph network from inputs
+
+    Parameters
+        - edges_in - String path to edges file/network Shapefile
+        - mode_properties_file - String path to Excel file with mode attributes
+        - mode_name - String name of mode
+        - speed_min - Float value of minimum assgined speed
+        - speed_max - Float value of maximum assgined speed
+        - usage_factor - Tuple of 2-float values between 0 and 1 
+
+    Returns
+        G - Igraph object with network edge topology and attributes
+    """
     edges = network_shapefile_to_dataframe(
         edges_in, mode_properties_file, mode_name, speed_min, speed_max,utilization_factors)
     G = ig.Graph.TupleList(edges.itertuples(index=False), edge_attrs=list(edges.columns)[2:])
@@ -827,6 +939,21 @@ def network_shapefile_to_network(edges_in, mode_properties_file, mode_name, spee
 
 
 def assign_minmax_tariff_costs_multi_modal_apply(x, cost_dataframe):
+    """
+    Assign tariff costs on multi-modal network links in Vietnam
+
+    Parameters
+        - x - Pandas dataframe with values
+            - port_type - String name of port type
+            - from_mode - String name of mode
+            - to_mode - String name of mode
+            - other_mode - String name of mode 
+        - cost_dataframe - Pandas Dataframe with costs
+
+    Returns
+        - min_tariff_cost - Float minimum assigned tariff cost in USD/ton
+        - max_tariff_cost - Float maximum assigned tariff cost in USD/ton
+    """
     min_tariff_cost = 0
     max_tariff_cost = 0
     cost_list = list(cost_dataframe.itertuples(index=False))
@@ -853,11 +980,17 @@ def assign_minmax_tariff_costs_multi_modal_apply(x, cost_dataframe):
 
 def multi_modal_shapefile_to_dataframe(edges_in, mode_properties_file, mode_name, length_threshold,usage_factors):
     """
-    input parameters:
-        edges_in : string of path to edges file/network file.
+    Create multi-modal network dataframe from inputs
 
-    output:
-        SG: connected graph of the shapefile
+    Parameters
+        - edges_in - String path to edges file/network Shapefile
+        - mode_properties_file - String path to Excel file with mode attributes
+        - mode_name - String name of mode
+        - length_threshold - Float value of threshold in km of length of multi-modal links
+        - usage_factor - Tuple of 2-float values between 0 and 1 
+
+    Returns
+        edges - Geopandas DataFrame with network edge topology and attributes
     """
 
     edges = gpd.read_file(edges_in,encoding='utf-8')
@@ -895,7 +1028,19 @@ def multi_modal_shapefile_to_dataframe(edges_in, mode_properties_file, mode_name
 
 
 def multi_modal_shapefile_to_network(edges_in, mode_properties_file, mode_name, length_threshold,utilization_factors):
-    # create network from edge file
+    """
+    Create multi-modal igraph network dataframe from inputs
+
+    Parameters
+        - edges_in - String path to edges file/network Shapefile
+        - mode_properties_file - String path to Excel file with mode attributes
+        - mode_name - String name of mode
+        - length_threshold - Float value of threshold in km of length of multi-modal links
+        - usage_factor - Tuple of 2-float values between 0 and 1 
+
+    Returns
+        G - Igraph object with network edge topology and attributes
+    """
     edges = multi_modal_shapefile_to_dataframe(
         edges_in, mode_properties_file, mode_name, length_threshold,utilization_factors)
     G = ig.Graph.TupleList(edges.itertuples(index=False), edge_attrs=list(edges.columns)[2:])
@@ -905,6 +1050,19 @@ def multi_modal_shapefile_to_network(edges_in, mode_properties_file, mode_name, 
 
 
 def create_port_names(x,port_names_df):
+    """
+    Add port names in Vietnamese to port data
+
+    Parameters
+        - x - Pandas DataFrame with values
+            - port_type - String type of port
+            - cangbenid - Integer ID of inland port
+            - objectid - Integer ID of sea port
+        - port_names_df - Pandas DataFrame with port names 
+
+    Returns
+        name - Vietnamese name of port
+    """
     name = ''
     for iter_,port_names in port_names_df.iterrows():
         if (x.port_type == 'inland') and (port_names.port_type == 'inland') and (x.cangbenid == port_names.cangbenid):
@@ -915,6 +1073,16 @@ def create_port_names(x,port_names_df):
     return name
 
 def read_waterway_ports(ports_file_with_ids, ports_file_with_names):
+    """
+    Create port data with attributes 
+
+    Parameters
+        - ports_file_with_ids - String path of GeoDataFrame with port IDs
+        - ports_file_with_names - String path of GeoDataFrame with port names
+
+    Returns
+        ports_with_id - GeoPandas DataFrame with port attributes
+    """
     # load data
     ports_with_name = gpd.read_file(ports_file_with_names, encoding='utf-8')
     ports_with_id = gpd.read_file(ports_file_with_ids, encoding='utf-8')
@@ -930,6 +1098,16 @@ def read_waterway_ports(ports_file_with_ids, ports_file_with_names):
     return ports_with_id
 
 def read_setor_nodes(node_file_with_ids,sector):
+    """
+    Create port data with attributes 
+
+    Parameters
+        - ports_file_with_ids - String path of GeoDataFrame with port IDs
+        - sector - String path of sector
+
+    Returns
+        ports_with_id - GeoPandas DataFrame with port attributes
+    """
     # load data
     add_columns = [('name',''),('tons',0),('population',0),('capacity',1e9)]
     ports_with_id = gpd.read_file(node_file_with_ids, encoding='utf-8')

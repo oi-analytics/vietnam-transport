@@ -528,7 +528,7 @@ def assign_crop_od_flows_to_nodes(national_ods_df,province_path,province_name_co
 
 def main():
     """
-    1. Specify the paths from where you to read and write:
+    1. Specify the paths from where to read and write:
         - Input data
         - Intermediate calcuations data
         - Output results

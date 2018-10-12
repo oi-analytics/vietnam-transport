@@ -100,7 +100,7 @@ from vtra.utils import *
 
 def main():
     """
-    1. Specify the paths from where you want to read and write:
+    1. Specify the paths from where to read and write:
         - Input data
         - Intermediate calcuations data
         - Output results
