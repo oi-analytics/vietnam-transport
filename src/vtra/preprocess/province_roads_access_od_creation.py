@@ -49,7 +49,7 @@ Input data requirements
 Results
 -------
 
-1. Excel workbook with sheet of mode-wise and total OD flows
+1. Excel workbook with sheet of province-wise OD flows
     - origin - String node ID of origin node
     - destination - String node ID of destination node
     - crop_names - Float values of daily tonnages of IFPRI crops (except rice) between OD nodes

@@ -13,13 +13,13 @@ Input data requirements
 2. Single-band GeoTiff hazard raster files with:
     - values - between 0 and 1000
     - raster grid geometry
-    - projection systems: Default assumed = EPSG: 32648
+    - projection systems: Default assumed = EPSG:32648
 
 3. Multi-band GeoTiff hazard raster files with:
     - 3-bands
     - values - in each band between 0 and 255
     - raster grid geometry
-    - projection systems: Default assumed = EPSG: 32648
+    - projection systems: Default assumed = EPSG:32648
 
 Results
 -------
