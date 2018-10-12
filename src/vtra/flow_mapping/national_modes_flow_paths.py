@@ -53,6 +53,7 @@ Results
     - min_vehicle_nums - Float values of estimated vehicle numbers for paths with minimum generalised cost flows
     - max_vehicle_nums - Float values of estimated vehicle numbers for paths with maximum generalised cost flows
     - industry_columns - All daily tonnages of industry columns given in the OD matrix data
+
 2. Shapefiles
     - edge_id - String/Integer/Float Edge ID
     - geometry - Shapely LineString geomtry of edges
@@ -89,29 +90,27 @@ def network_od_paths_assembly_national(points_dataframe,
     Assembles estimates of OD paths, distances, times, costs and tonnages on networks 
 
     Parameters
-    ---------
-    - points_dataframe - Pandas DataFrame of OD nodes and their tonnages
-    - graph - igraph network structure 
-    - vehicle_wt - Float unit weight of vehicle
-    - transport_mode - String name of modes
-    - excel_writer - Name of the excel writer to save Pandas dataframe to Excel file     
+        - points_dataframe - Pandas DataFrame of OD nodes and their tonnages
+        - graph - igraph network structure 
+        - vehicle_wt - Float unit weight of vehicle
+        - transport_mode - String name of modes
+        - excel_writer - Name of the excel writer to save Pandas dataframe to Excel file
 
     Outputs
-    -------
-    save_paths_df - Pandas DataFrame with columns:
-        - origin - String node ID of Origin
-        - destination - String node ID of Destination
-        - min_edge_path - List of string of edge ID's for paths with minimum generalised cost flows
-        - max_edge_path - List of string of edge ID's for paths with maximum generalised cost flows
-        - min_distance - Float values of estimated distance for paths with minimum generalised cost flows
-        - max_distance - Float values of estimated distance for paths with maximum generalised cost flows
-        - min_time - Float values of estimated time for paths with minimum generalised cost flows
-        - max_time - Float values of estimated time for paths with maximum generalised cost flows
-        - min_gcost - Float values of estimated generalised cost for paths with minimum generalised cost flows
-        - max_gcost - Float values of estimated generalised cost for paths with maximum generalised cost flows
-        - min_vehicle_nums - Float values of estimated vehicle numbers for paths with minimum generalised cost flows
-        - max_vehicle_nums - Float values of estimated vehicle numbers for paths with maximum generalised cost flows
-        - industry_columns - All tonnages of industry columns given in the OD matrix data
+        save_paths_df - Pandas DataFrame with columns:
+            - origin - String node ID of Origin
+            - destination - String node ID of Destination
+            - min_edge_path - List of string of edge ID's for paths with minimum generalised cost flows
+            - max_edge_path - List of string of edge ID's for paths with maximum generalised cost flows
+            - min_distance - Float values of estimated distance for paths with minimum generalised cost flows
+            - max_distance - Float values of estimated distance for paths with maximum generalised cost flows
+            - min_time - Float values of estimated time for paths with minimum generalised cost flows
+            - max_time - Float values of estimated time for paths with maximum generalised cost flows
+            - min_gcost - Float values of estimated generalised cost for paths with minimum generalised cost flows
+            - max_gcost - Float values of estimated generalised cost for paths with maximum generalised cost flows
+            - min_vehicle_nums - Float values of estimated vehicle numbers for paths with minimum generalised cost flows
+            - max_vehicle_nums - Float values of estimated vehicle numbers for paths with maximum generalised cost flows
+            - industry_columns - All tonnages of industry columns given in the OD matrix data
     """
     save_paths = []
     for iter_, row in points_dataframe.iterrows():
