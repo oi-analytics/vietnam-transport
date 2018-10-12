@@ -2,14 +2,10 @@
 Data Assembly
 =============
 
-
-.. todo::
-    Brief description of data requirements, format, expected location in data folder
-
-
 Networks
 --------
-.. All finalised networks data are:: 
+.. Specifications::
+	All finalised networks data are 
 
 	1. In the file path - /data/post_processed_networks/
 	2. As Excel sheets with post-processed network nodes and edges 
