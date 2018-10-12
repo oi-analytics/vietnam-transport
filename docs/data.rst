@@ -4,7 +4,7 @@ Data Assembly
 
 Networks
 --------
-.. Specifications::
+.. Note::
 	All finalised networks data are 
 
 	1. In the file path - /data/post_processed_networks/
