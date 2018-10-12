@@ -57,56 +57,58 @@ All networks created should have the attributes listed below
 
 Origin-Destination matrices
 ---------------------------
-All finalised OD matrices are stored 
+All finalised OD matrices are stored
 
 1. In the path - results/flow_ods/
 2. As Excel sheets
-3. All node-level national OD matrices contain mode-wise and total OD flows with attributes:
+
+The essential attributes in these OD matrices are listed below. See the data for all attributes
+
+3. All node-level national OD matrices contain mode-wise and total OD flows should have attributes:
     - origin - String node ID of origin node
     - destination - String node ID of destination node
     - o_region - String names of origin Province
     - d_region - String names of destination Province
-    - min_rice - Float values of minimum daily tonnages of rice between OD nodes
-    - max_rice - Float values of maximum daily tonnages of rice between OD nodes
     - min_tons - Float values of minimum daily tonnages between OD nodes
     - max_tons - Float values of maximum daily tonnages between OD nodes
-    - commodity_names - Float values of daily tonnages of commodities/industries between OD nodes: here based on VITRANSS2 and IFPRI data
+    - commodity_names - Float values of daily min-max tonnages of commodities/industries between OD nodes: here based on VITRANSS2 and IFPRI data
 
-4. All aggregated province-level national OD matrices contain mode-wise and total OD flows with attributes:
+4. All aggregated province-level national OD matrices contain mode-wise and total OD flows should have attributes:
     - o_region - String names of origin Province
     - d_region - String names of destination Province
-    - min_rice - Float values of minimum daily tonnages of rice between OD nodes
-    - max_rice - Float values of maximum daily tonnages of rice between OD nodes
     - min_tons - Float values of minimum daily tonnages between OD nodes
     - max_tons - Float values of maximum daily tonnages between OD nodes
-    - commodity_names - Float values of daily tonnages of commodities/industries between OD nodes: here based on VITRANSS2 and IFPRI data
+    - commodity_names - Float values of daily min-max tonnages of commodities/industries between OD nodes: here based on VITRANSS2 and IFPRI data
 
-5. All province OD matrices contain province-wise OD flows
+5. All province OD matrices contain province-wise OD flows should have attributes:
     - origin - String node ID of origin node
     - destination - String node ID of destination node
-    - min_rice - Float values of minimum daily tonnages of rice between OD nodes
-    - max_rice - Float values of maximum daily tonnages of rice between OD nodes
     - min_croptons - Float values of minimum daily tonnages of crops between OD nodes
     - max_croptons - Float values of maximum daily tonnages of crops between OD nodes
-    - min_agrirev - Float value of Minimum daily revenue of agriculture firms between OD nodes
-    - max_agrirev - Float value of Maximum daily revenue of agriculture firms between OD nodes
-    - min_noagrirev - Float value of Minimum daily revenue of non-agriculture firms between OD nodes
-    - max_noagrirev - Float value of Maximum daily revenue of non-agriculture firms between OD nodes
-    - min_netrev - Float value of Minimum daily revenue of all firms between OD nodes
-    - max_netrev - Float value of Maximum daily revenue of all firms between OD nodes
-    - crop_names - Float values of daily tonnages of crops between OD nodes: here based on IFPRI crops
+    - min_netrev - Float value of minimum daily revenue of all firms between OD nodes
+    - max_netrev - Float value of maximum daily revenue of all firms between OD nodes
 
 
 Hazards
 -------
+1. All hazard datasets are stored in sub-folders in the path - /data/hazard_data
+2. See '/data/hazard_data/hazard_data_folder_data_info.xlsx' for deatils of all hazard files
+3. All hazard files should be GeoTiff files with single-bands or multi-bands (3-bands)
+4. All single-band GeoTiff hazard raster files should have attributes:
+    - values - between 0 and 1000
+    - raster grid geometry
+    - projection systems: Default assumed = EPSG:32648
+
+5. Multi-band GeoTiff hazard raster files should have attributes:
+    - 3-bands
+    - values - in each band between 0 and 255
+    - raster grid geometry
+    - projection systems: Default assumed = EPSG:32648
 
 
-Administrative Areas
---------------------
+Administrative Areas with Statistics
+------------------------------------
 
-
-Census Data
------------
 
 
 Macroeconomic Data
