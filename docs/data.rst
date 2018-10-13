@@ -5,6 +5,7 @@ Processed Data Assembly
 	- This section describes processed datasets that are used as inputs in the Vietnam Transport Risk Analysis (VTRA)
 	- The formats and attributes created in these datasets form the essential inputs for implmenting the rest of the VTRA model
 	- To implement the VTRA without any changes in existing codes, all data described here should be created and stored exactly as indicated below  
+
 Networks
 --------
 .. Note::
@@ -55,30 +56,30 @@ Origin-Destination matrices
 ---------------------------
 .. Note::
 	1. All finalised OD matrices are stored:
-		- In the path - results/flow_ods/
+		- In the path - /results/flow_ods/
 		- As Excel sheets
 
 	The essential attributes in these OD matrices are listed below. See the data for all attributes
 
 	2. All node-level national OD matrices contain mode-wise and total OD flows and should have attributes:
-	    - origin - String node ID of origin node
-	    - destination - String node ID of destination node
-	    - o_region - String names of origin Province
-	    - d_region - String names of destination Province
+	    - origin - String node IDs of origin nodes
+	    - destination - String node IDs of destination nodes
+	    - o_region - String names of origin Provincse
+	    - d_region - String names of destination Provinces
 	    - min_tons - Float values of minimum daily tonnages between OD nodes
 	    - max_tons - Float values of maximum daily tonnages between OD nodes
 	    - commodity_names - Float values of daily min-max tonnages of commodities/industries between OD nodes: here based on VITRANSS2 and IFPRI data
 
 	3. All aggregated province-level national OD matrices contain mode-wise and total OD flows and should have attributes:
-	    - o_region - String names of origin Province
-	    - d_region - String names of destination Province
-	    - min_tons - Float values of minimum daily tonnages between OD nodes
-	    - max_tons - Float values of maximum daily tonnages between OD nodes
-	    - commodity_names - Float values of daily min-max tonnages of commodities/industries between OD nodes: here based on VITRANSS2 and IFPRI data
+	    - o_region - String names of origin Provinces
+	    - d_region - String names of destination Provinces
+	    - min_tons - Float values of minimum daily tonnages between OD Provinces
+	    - max_tons - Float values of maximum daily tonnages between OD Provinces
+	    - commodity_names - Float values of daily min-max tonnages of commodities/industries between OD Provinces: here based on VITRANSS2 and IFPRI data
 
 	4. All province OD matrices contain province-wise OD flows and should have attributes:
-	    - origin - String node IDs of origin node
-	    - destination - String node IDs of destination node
+	    - origin - String node IDs of origin nodes
+	    - destination - String node IDs of destination nodes
 	    - min_croptons - Float values of minimum daily tonnages of crops between OD nodes
 	    - max_croptons - Float values of maximum daily tonnages of crops between OD nodes
 	    - min_netrev - Float values of minimum daily revenue of all firms between OD nodes
@@ -89,11 +90,11 @@ Hazards
 -------
 .. Note::
 	1. All hazard datasets are stored:
-		- In sub-folders in the path - /data/Hazard_data
+		- In sub-folders in the path - /data/Hazard_data/
 		- As GeoTiff files
-		- See '/data/hazard_data/hazard_data_folder_data_info.xlsx' for details of all hazard files
+		- See /data/hazard_data/hazard_data_folder_data_info.xlsx for details of all hazard files
 	
-	2. All single-band GeoTiff hazard raster files should have attributes:
+	2. Single-band GeoTiff hazard raster files should have attributes:
 	    - values - between 0 and 1000
 	    - raster grid geometry
 	    - projection systems: Default assumed = EPSG:32648
@@ -109,12 +110,12 @@ Administrative Areas with Statistics
 ------------------------------------
 .. Note::
 	1. Vietnam boundary datasets are stored:
-		- In the path /data/Vietnam_boundaries/who_boundaries
-		- In the path /data/Vietnam_boundaries/boundaries_stats
+		- In the path - /data/Vietnam_boundaries/who_boundaries/
+		- In the path - /data/Vietnam_boundaries/boundaries_stats/
 		- As Shapefiles
 
 	2. Global boundary dataset for map plotting are stored:
-		- In the path /data/Global_boundaries/Natural_Earth 
+		- In the path - /data/Global_boundaries/Natural_Earth/ 
 
 	The essential attributes in the Vietnam boundary datasets are listed below. See the data for all attributes
 
@@ -151,7 +152,7 @@ Adaptation Options
 ------------------
 .. Note::
 	1. All adaptation options input datasets are stored:
-		- In the path data/Adaptation_options
+		- In the path - /data/Adaptation_options/
 		- As Excel files
 
 	2. Following adaptation options attributes should be collected:

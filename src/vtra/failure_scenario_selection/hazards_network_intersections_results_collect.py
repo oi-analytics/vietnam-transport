@@ -26,14 +26,14 @@ Input data requirements
     - geometry - Shapely geometry of boundary Polygon 
 
 4. Excel sheet of hazard attributes with attributes:
-    - azard_type - String name of hazard type
-    - odel - String name of hazard model
-    - ear - String name of hazard year
-    - limate_scenario - String name of hazard scenario
-    - robability - Float/String value of hazard probability
-    - and_num - Integer value of hazard band
-    - in_val - Integer value of minimum value of hazard threshold
-    - ax_val - Integer value of maximum value of hazard threshold
+    - hazard_type - String name of hazard type
+    - model - String name of hazard model
+    - year - String name of hazard year
+    - climate_scenario - String name of hazard scenario
+    - probability - Float/String value of hazard probability
+    - band_num - Integer value of hazard band
+    - min_val - Integer value of minimum value of hazard threshold
+    - max_val - Integer value of maximum value of hazard threshold
 
 Results
 -------
