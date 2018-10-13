@@ -2,9 +2,9 @@
 Pre-Processed Data
 ==================
 .. Important::
-	- This section describes pre-processed datasets that are used as inputs in the Vietnam Transport Risk Analysis (VTRA)
-	- The datasets listed here are specfic to Vietnam and are used as inputs to data in the Processed Data Assembly step
-	- To implement the VTRA pre-processing without any changes in existing codes, all data described here should be stored exactly as indicated below
+	- This section describes pre-processed datasets that are used to create data for the Vietnam Transport Risk Analysis (VTRA)
+	- The datasets listed here are specfic to Vietnam and are used as inputs to data in the Processed Data Assembly steps
+	- To implement the VTRA pre-processing without any changes in existing codes, all data described here should be created and stored exactly as indicated below
 
 Networks
 --------
@@ -103,12 +103,11 @@ RiceAltas data
 	    - geometry - Shapely Polygon geometries of Provinces
 
 Points of interest data
-----------------------
+-----------------------
 .. Note::
 	1. Locations of populations, commune, district, province center committee points datasets are stored:
 		- In the path - data/Points_of_interest/
 		- As Shapefiles
-		- Only the file 'commune_committees_points.shp' and 'population_points.shp' are used
 
 	2. The essential attributes in all the dataset are listed below. See the data for all attributes:
 	    - geomtery - Shapely Point geometry with projection ESPG:4326
