@@ -1,6 +1,6 @@
-===========================
-Pre-Processed Data Assembly
-===========================
+==================
+Pre-Processed Data
+==================
 .. Important::
 	- This section describes pre-processed datasets that are used as inputs in the Vietnam Transport Risk Analysis (VTRA)
 	- The datasets listed here are specfic to Vietnam and are used as inputs to data in the Processed Data Assembly step
@@ -30,7 +30,7 @@ Networks
 
 Cost attributes
 ---------------
-.. Notes::
+.. Note::
 	1. Data to assign transport costs to network edges are stored:
 		- In the file in path - /data/pre_processed_networks_data/mode_costs.xlsx
 		- As Excel sheets
@@ -45,7 +45,7 @@ Cost attributes
 
 Road design attributes
 ----------------------
-.. Notes::
+.. Note::
 	1. Data to assign characteristics to roads are stored:
 		- In the file in path - /data/pre_processed_networks_data/road_properties.xlsx
 		- As Excel sheets
