@@ -3,7 +3,6 @@ Analysis and Results
 ====================
 .. Important::
     - This section describes the steps Analysis and Results steps of the Vietnam Transport Risk Analysis (VTRA)
-    - The formats and attributes created in these datasets form the essential inputs for implmenting the rest of the VTRA model
     - To implement the VTRA without any changes in existing codes, all data described here should be created and stored exactly as indicated below
 
 Preparing Network Data
