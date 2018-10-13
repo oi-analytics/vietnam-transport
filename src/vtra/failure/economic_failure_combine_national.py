@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-"""Assign commodity flows on the road network
+"""Combine national-scale macroeconomic loss estimates with rerouting losses
 """
 import ast
 import copy

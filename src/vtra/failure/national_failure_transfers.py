@@ -1,5 +1,5 @@
 """
-Python script to assign commodity flows on the road network
+Estimate tonnage shifts from one mode onto others
 """
 import ast
 import copy

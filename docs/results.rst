@@ -83,8 +83,9 @@ Mapping Flows onto Networks
         - For Provinces OD matrices run script vtra.flow_mapping.province_roads_access_flow_paths.py
 
     Result:
-        - Store flow outputs in /results/flow_mapping_paths/
+        - Store flow excel outputs in /results/flow_mapping_paths/
         - Store flow shapefiles in /results/flow_mapping_shapefiles/
+        - Store flow csv files in /results/flow_mapping_combined/
         - National-scale excel sheets results of flow mapping based contain attributes:
             - origin - String node ID of Origin
             - destination - String node ID of Destination
@@ -179,10 +180,10 @@ Failure Analysis
             - To estimate changing accessibility to commune points
     
     Execution:
-        - Load network and flow data as described in `Networks <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#networks>`_, `Mapping Flows onto Networks <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/results.html#mapping-flows-onto-networks>`_, and failure scenarios from `Hazard exposure <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/results.html#hazard-exposure>`_ 
-        - For National networks failure analysis run script vtra.failure_estimation_national.py
-        - For National networks failure analysis with multi-modal options run script vtra.failure_multi_modal_options.py
-        - For Provinces roads failure analysis run script vtra.flow_mapping.failure_estimation_provinces.py
+        - Load network and flow excel data as described in `Networks <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#networks>`_, `Mapping Flows onto Networks <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/results.html#mapping-flows-onto-networks>`_, and failure scenarios from `Hazard exposure <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/results.html#hazard-exposure>`_ 
+        - For National networks failure analysis run script vtra.failure.failure_estimation_national.py
+        - For National networks failure analysis with multi-modal options run script vtra.failure.failure_multi_modal_options.py
+        - For Provinces roads failure analysis run script vtra.flow_mapping.failures.failure_estimation_provinces.py
 
     Result:
         - Store csv outputs in the directory /results/failure_results/
@@ -226,7 +227,7 @@ Failure Analysis
             - edge_id - String name or list of failed edges
             - no_access - Boolean 1 (no reroutng) or 0 (rerouting)
             - min/max_tr_loss - Float values of change in rerouting cost
-            - min/max_tons - Float values of total daily tonnages affted by disrupted edge
+            - min/max_tons - Float values of total daily tonnages affected by disrupted edge
 
         - National-scale shapefile min-max combined scenarios
             - edge_id - String name or list of failed edges
@@ -287,21 +288,42 @@ Processing failure results
 --------------------------
 .. Note::
     Purpose:
-        - 
+        - Combine national-scale macroeconomic loss estimates with rerouting losses
+        - Estimate tonnage shifts from one mode onto others
+        - Combine economic impacts of partial multi-modal rerouting split
 
+    Execution:
+        - Load data described in `Failure Analysis <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/results.html#failure-analysis>`_ and `Macroeconomic loss analysis <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/results.html#macroeconomic-loss-analysis>`_
+        - Run script vtra.failure.economic_failure_combine_national.py
+        - Run script vtra.failure.national_failure_transfers.py
+        - Run script vtra.failure.transfer_costs_modes.py
+
+    Result:
+        - Store csv files in /results/failure_results/minmax_combined_scenarios/
+        - Files with names 'single_edge_failures_transfers_national_{mode}_{x}_percent_shift.csv' contain
+            - edge_id - String IDs of edges of all multi-modal options for flow transfer  
+            - min_tons - Float values of minimum tons shifted to edges
+            - max_tons - Float values of maximum tons shifted to edges
+        - Files with names 'single_edge_failures_minmax_national_{mode}_{x}_percent_disrupt.csv' or 'single_edge_failures_minmax_national_{mode}_{x}_percent_disrupt_multi_modal.csv' or 'single_edge_failures_minmax_national_{mode}_{x}_percent_modal_shift.csv' contain
+            - edge_id - String name or list of failed edges
+            - no_access - Boolean 1 (no reroutng) or 0 (rerouting)
+            - min/max_tr_loss - Float values of change in rerouting cost
+            - min/max_tons - Float values of total daily tonnages affected by disrupted edge
+            - min/max_econ_loss - Float values of total daily economic losses
+            - min/max_econ_impact - Float values of sum of transport loss and macroeconomic loss
 
 Adaptation
---------
+----------
+.. Note::
+    Purpose:
+        - Generate adaption scenarios/strategies
+        - 
+        - summarise/plot
 
-.. todo::
-    Brief description of process:
+    Execution:
+        - Load data described in `Adaptation Options <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#adaptation-options>`_ 
+        - For national-scale roads run script
+        - For province-scale roads run script
 
-    - generate adaption scenarios/strategies
-    - impact assessment of failure scenarios (run_mria)
-    - summarise/plot
-
-    Including:
-
-    - which data files are used
-    - which scripts to run in what order
-    - output files
+    Result:
+        - get results

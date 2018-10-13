@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-"""Assign commodity flows on the road network
+"""Combine economic impacts of partial multi-modal rerouting split
 """
 import ast
 import copy
