@@ -52,7 +52,7 @@ Networks
 		- road_cond - String value: paved or unpaved 
 		- asset_type - String name of type of asset
 
-Origin-Destination matrices
+OD matrices
 ---------------------------
 .. Note::
 	1. All finalised OD matrices are stored:

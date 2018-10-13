@@ -52,8 +52,8 @@ Road design attributes
 		- See /data/pre_processed_networks_data/road_properties.xlsx for data description
 
 
-VITRANNS2 Origin-Destination data
----------------------------------
+VITRANNS2 OD data
+-----------------
 .. Note::
 	1. VITRANSS2 province-level OD matrices are stored:
 		- In the path - data/OD_data/

@@ -10,14 +10,14 @@ Pre-processing and Preparing Network Data
 -----------------------------------------
 .. Note::
     Purpose:
-        - Creating post-processed transport networks with attributes
+        - Create post-processed transport networks with attributes
         - From pre-processed input Shapefiles and collected network attributes data
         - For all Province road networks
         - For all transport modes at national scale
     
     Execution:
         - Load data as described in `Collected Data <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/predata.html>`_ `Networks <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/predata.html#networks>`_, `Cost attributes <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/predata.html#cost-attributes>`_ and `Road design attributes <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/predata.html#road-design-attributes>`_  
-        - run script vtra/preprocess/create_transport_networks.py
+        - Run script vtra/preprocess/create_transport_networks.py
 
     Result:
         - Create networks with formats and attributes described in `Processed Data Assembly <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html>`_ `Networks <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#networks>`_
@@ -27,11 +27,41 @@ Pre-processing and Preparing Network Data
 Pre-processing and Preparing Hazard Data
 ----------------------------------------
 .. Note::
+    Purpose:
+        - Convert GeoTiff raster hazard datasets to shapefiles based on masking and selecting values from
+            - Single-band raster files
+            - Multi-band (3-bands) raster files
+    
+    Execution:
+        - Load data as described in `Processed Data Assembly <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html>`_ `Hazards <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#hazards>`_ 
+        - Run script vtra/preprocess/convert_hazard_data.py
+
+    Result:
+        - Create hazard shapefiles with names described in excel sheet in `Processed Data Assembly <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html>`_ `Hazards <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#hazards>`_ and attributes:
+            - ID - equal to 1 
+            - geometry - Shapely Polygon outline of selected hazard
+        - Store outputs in same paths in directory /data/Hazard_data/
 
 
 Pre-processing and Preparing OD matrix Data
 -------------------------------------------
-.. Note::    
+.. Note::
+    Purpose:
+        - Create national scale OD matrices at node and province levels from: 
+            - VITRANSS2 province-scale OD data
+            - IFPRI crop data at 1km resolution
+        - Create province scale OD matrices between roads connecting villages to nearest communes: 
+            - Net revenue estimates of commune villages
+            - IFPRI crop data at 1km resolution
+    
+    Execution:
+        - Load data as described in `Networks <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#networks>`_, `VITRANSS2 OD data <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/predata.html#vitranns2-od-data>`_,`IFPRI crop data <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/predata.html#ifpri-crop-data>`_,`RiceAtlas data <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/predata.html#ricealtas-data>`_, `Points of interest data <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/predata.html#points-of-interest-data>`_, and `Administrative Areas with Statistics <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#administrative-areas-with-statistics>`_  
+        - For National OD matrices run script vtra/preprocess/national_modes_od_creation.py
+        - For Provinces OD matrices run script vtra/preprocess/province_roads_access_od_creation.py
+
+    Result:
+        - Create OD matrices with attributes described in `Processed Data Assembly <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html>`_ `OD matrices <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#od-matrices>`_
+        - Store outputs in /results/flow_ods/
 
 
 Mapping Flows onto Networks
