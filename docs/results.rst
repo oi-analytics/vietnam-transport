@@ -10,18 +10,18 @@ Pre-processing and Preparing Network Data
 -----------------------------------------
 .. Note::
     Purpose:
-    - Creating post-processed transport networks with attributes
-    - From pre-processed input Shapefiles and collected network attributes data
-    - For all Province road networks
-    - For all transport modes at national scale
+        - Creating post-processed transport networks with attributes
+        - From pre-processed input Shapefiles and collected network attributes data
+        - For all Province road networks
+        - For all transport modes at national scale
     
     Execution:
-    - Load data as described in [Pre-Processed Data](https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/predata.html)
-    - run script vtra/preprocess/create_transport_networks.py
+        - Load data as described in `Pre-Processed Data`_
+        - run script vtra/preprocess/create_transport_networks.py
 
     Result:
-    - Create networks with formats and attributes described in [Processed Data Assembly](https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html) 
-    - Sotred outputs in /data/post_processed_networks/
+        - Create networks with formats and attributes described in `Processed Data Assembly'
+        - Sotred outputs in /data/post_processed_networks/
 
 
 Pre-processing and Preparing Hazard Data
