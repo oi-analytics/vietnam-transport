@@ -16,12 +16,12 @@ Pre-processing and Preparing Network Data
         - For all transport modes at national scale
     
     Execution:
-        - Load data as described in `Pre-Processed Data`_
+        - Load data as described in `Collected Data <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/predata.html>`_ `Networks <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/predata.html#networks>`_, `Cost attributes <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/predata.html#cost-attributes>`_ and `Road design attributes <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/predata.html#road-design-attributes>`_  
         - run script vtra/preprocess/create_transport_networks.py
 
     Result:
-        - Create networks with formats and attributes described in `Processed Data Assembly'
-        - Sotred outputs in /data/post_processed_networks/
+        - Create networks with formats and attributes described in `Processed Data Assembly <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html>`_ `Networks <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#networks>`_
+        - Store outputs in /data/post_processed_networks/
 
 
 Pre-processing and Preparing Hazard Data

@@ -1,8 +1,8 @@
-==================
-Pre-Processed Data
-==================
+==============
+Collected Data
+==============
 .. Important::
-	- This section describes pre-processed datasets that are used to create data for the Vietnam Transport Risk Analysis (VTRA)
+	- This section describes collected datasets that are used to create data for the Vietnam Transport Risk Analysis (VTRA)
 	- The datasets listed here are specfic to Vietnam and are used as inputs to data in the Processed Data Assembly steps
 	- To implement the VTRA pre-processing without any changes in existing codes, all data described here should be created and stored exactly as indicated below
 

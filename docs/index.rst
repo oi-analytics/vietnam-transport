@@ -10,7 +10,7 @@ Contents
    :maxdepth: 3
 
     Installation <requirements>
-    Pre-Processed Data <predata>
+    Collected Data <predata>
     Processed Data Assembly <data>
     Analysis and Results <results>
     API Reference <api/vtra>
