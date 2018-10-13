@@ -5,67 +5,65 @@ Input data requirements
 -----------------------
 1. Correct paths to all files and correct input parameters
 2. Excel sheets with results of flow mapping based on MIN-MAX generalised costs estimates:
-    origin - String node ID of Origin
-    destination - String node ID of Destination
-    min_edge_path - List of string of edge ID's for paths with minimum generalised cost flows
-    max_edge_path - List of string of edge ID's for paths with maximum generalised cost flows
-    min_distance - Float values of estimated distance for paths with minimum generalised cost flows
-    max_distance - Float values of estimated distance for paths with maximum generalised cost flows
-    min_time - Float values of estimated time for paths with minimum generalised cost flows
-    max_time - Float values of estimated time for paths with maximum generalised cost flows
-    min_gcost - Float values of estimated generalised cost for paths with minimum generalised cost flows
-    max_gcost - Float values of estimated generalised cost for paths with maximum generalised cost flows
-    min_vehicle_nums - Float values of estimated vehicle numbers for paths with minimum generalised cost flows
-    max_vehicle_nums - Float values of estimated vehicle numbers for paths with maximum generalised cost flows
-    industry_columns - All daily tonnages of industry columns given in the OD matrix data
+    - origin - String node ID of Origin
+    - destination - String node ID of Destination
+    - min_edge_path - List of string of edge ID's for paths with minimum generalised cost flows
+    - max_edge_path - List of string of edge ID's for paths with maximum generalised cost flows
+    - min_distance - Float values of estimated distance for paths with minimum generalised cost flows
+    - max_distance - Float values of estimated distance for paths with maximum generalised cost flows
+    - min_time - Float values of estimated time for paths with minimum generalised cost flows
+    - max_time - Float values of estimated time for paths with maximum generalised cost flows
+    - min_gcost - Float values of estimated generalised cost for paths with minimum generalised cost flows
+    - max_gcost - Float values of estimated generalised cost for paths with maximum generalised cost flows
+    - min_vehicle_nums - Float values of estimated vehicle numbers for paths with minimum generalised cost flows
+    - max_vehicle_nums - Float values of estimated vehicle numbers for paths with maximum generalised cost flows
+    - industry_columns - All daily tonnages of industry columns given in the OD matrix data
 3. Shapefiles
-    edge_id - String/Integer/Float Edge ID
-    geometry - Shapely LineString geomtry of edges
+    - edge_id - String/Integer/Float Edge ID
+    - geometry - Shapely LineString geomtry of edges
         
 Results
 -------
 Csv sheets with results of failure analysis:
 
 1. All failure scenarios
-    edge_id - String name or list of failed edges
-    origin - String node ID of Origin of disrupted OD flow
-    destination - String node ID of Destination of disrupted OD flow
-    o_region - String name of Province of Origin node ID of disrupted OD flow
-    d_region - String name of Province of Destination node ID of disrupted OD flow
-    no_access - Boolean 1 (no reroutng) or 0 (rerouting)     
-    min/max_distance - Float value of estimated distance of OD journey before disruption   
-    min/max_time - Float value of estimated time of OD journey before disruption     
-    min/max_gcost - Float value of estimated travel cost of OD journey before disruption    
-    min/max_vehicle_nums - Float value of estimated vehicles of OD journey before disruption       
-    new_cost - Float value of estimated cost of OD journey after disruption 
-    new_distance - Float value of estimated distance of OD journey after disruption    
-    new_path - List of string edge ID's of estimated new route of OD journey after disruption   
-    new_time - Float value of estimated time of OD journey after disruption      
-    dist_diff - Float value of Post disruption minus per-disruption distance  
-    time_diff - Float value Post disruption minus per-disruption timee  
-    min/max_tr_loss - Float value of estimated change in rerouting cost
-    min/max_netrev - Float values of total daily net revenues along disrupted OD pairs
-    min/max_tons - Float values of total daily crop tonnages along disrupted OD pairs
-    min_max_econ_impact - Float values of total daily economic impact of disrupted OD pairs
+    - edge_id - String name or list of failed edges
+    - origin - String node ID of Origin of disrupted OD flow
+    - destination - String node ID of Destination of disrupted OD flow
+    - o_region - String name of Province of Origin node ID of disrupted OD flow
+    - d_region - String name of Province of Destination node ID of disrupted OD flow
+    - no_access - Boolean 1 (no reroutng) or 0 (rerouting)     
+    - min/max_distance - Float value of estimated distance of OD journey before disruption   
+    - min/max_time - Float value of estimated time of OD journey before disruption     
+    - min/max_gcost - Float value of estimated travel cost of OD journey before disruption    
+    - min/max_vehicle_nums - Float value of estimated vehicles of OD journey before disruption       
+    - new_cost - Float value of estimated cost of OD journey after disruption 
+    - new_distance - Float value of estimated distance of OD journey after disruption    
+    - new_path - List of string edge ID's of estimated new route of OD journey after disruption   
+    - new_time - Float value of estimated time of OD journey after disruption      
+    - dist_diff - Float value of Post disruption minus per-disruption distance  
+    - time_diff - Float value Post disruption minus per-disruption timee  
+    - min/max_tr_loss - Float value of estimated change in rerouting cost
+    - min/max_netrev - Float values of total daily net revenues along disrupted OD pairs
+    - min/max_tons - Float values of total daily crop tonnages along disrupted OD pairs
+    - min_max_econ_impact - Float values of total daily economic impact of disrupted OD pairs
 
 2. Min-max combined scenarios - Combined min-max results of total network impacts of each edge
-    edge_id - String name or list of failed edges
-    no_access - Boolean 1 (no reroutng) or 0 (rerouting)
-    min/max_tr_loss - Float values of estimated change in rerouting cost
-    min/max_tons - Float values of total daily tonnages along edge
-    min/max_netrev - Float values of total daily net revenues along edge
-    min/max_econ_impact - Float value of total daily economic impact of edge 
+    - edge_id - String name or list of failed edges
+    - no_access - Boolean 1 (no reroutng) or 0 (rerouting)
+    - min/max_tr_loss - Float values of estimated change in rerouting cost
+    - min/max_tons - Float values of total daily tonnages along edge
+    - min/max_netrev - Float values of total daily net revenues along edge
+    - min/max_econ_impact - Float value of total daily economic impact of edge 
 
-Shapefiles
-
-5. Min-max combined scenarios - Combined min-max reults of total network impacts of each edge
-    edge_id - String name or list of failed edges
-    no_access - Boolean 1 (no reroutng) or 0 (rerouting)
-    min/max_tr_loss - Float values of estimated change in rerouting cost
-    min/max_tons - Float values of total daily tonnages along edge
-    min/max_netrev - Float values of total daily net revenues along edge
-    min/max_econ_impact - Float value of total daily economic impact of edge     
-    geometry - Shapely LineString geomtry of edges
+3. Shapefiles - Combined min-max reults of total network impacts of each edge
+    - edge_id - String name or list of failed edges
+    - no_access - Boolean 1 (no reroutng) or 0 (rerouting)
+    - min/max_tr_loss - Float values of estimated change in rerouting cost
+    - min/max_tons - Float values of total daily tonnages along edge
+    - min/max_netrev - Float values of total daily net revenues along edge
+    - min/max_econ_impact - Float value of total daily economic impact of edge     
+    - geometry - Shapely LineString geomtry of edges
 
 """
 import ast

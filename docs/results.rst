@@ -6,8 +6,8 @@ Analysis and Results
     - The formats and attributes created in these datasets form the essential inputs for implmenting the rest of the VTRA model
     - To implement the VTRA without any changes in existing codes, all data described here should be created and stored exactly as indicated below
 
-Pre-processing and Preparing Network Data
------------------------------------------
+Preparing Network Data
+----------------------
 .. Note::
     Purpose:
         - Create post-processed transport networks with attributes
@@ -17,15 +17,15 @@ Pre-processing and Preparing Network Data
     
     Execution:
         - Load data as described in `Collected Data <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/predata.html>`_ `Networks <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/predata.html#networks>`_, `Cost attributes <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/predata.html#cost-attributes>`_ and `Road design attributes <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/predata.html#road-design-attributes>`_  
-        - Run script vtra/preprocess/create_transport_networks.py
+        - Run script vtra.preprocess.create_transport_networks.py
 
     Result:
         - Create networks with formats and attributes described in `Processed Data Assembly <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html>`_ `Networks <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#networks>`_
         - Store outputs in /data/post_processed_networks/
 
 
-Pre-processing and Preparing Hazard Data
-----------------------------------------
+Preparing Hazard Data
+---------------------
 .. Note::
     Purpose:
         - Convert GeoTiff raster hazard datasets to shapefiles based on masking and selecting values from
@@ -34,7 +34,7 @@ Pre-processing and Preparing Hazard Data
     
     Execution:
         - Load data as described in `Processed Data Assembly <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html>`_ `Hazards <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#hazards>`_ 
-        - Run script vtra/preprocess/convert_hazard_data.py
+        - Run script vtra.preprocess.convert_hazard_data.py
 
     Result:
         - Create hazard shapefiles with names described in excel sheet in `Processed Data Assembly <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html>`_ `Hazards <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#hazards>`_ and attributes:
@@ -43,21 +43,21 @@ Pre-processing and Preparing Hazard Data
         - Store outputs in same paths in directory /data/Hazard_data/
 
 
-Pre-processing and Preparing OD matrix Data
--------------------------------------------
+Preparing OD matrix Data
+------------------------
 .. Note::
     Purpose:
         - Create national scale OD matrices at node and province levels from: 
             - VITRANSS2 province-scale OD data
             - IFPRI crop data at 1km resolution
-        - Create province scale OD matrices between roads connecting villages to nearest communes: 
+        - Create province scale OD matrices between roads connecting villages to nearest communes from: 
             - Net revenue estimates of commune villages
             - IFPRI crop data at 1km resolution
     
     Execution:
-        - Load data as described in `Networks <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#networks>`_, `VITRANSS2 OD data <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/predata.html#vitranns2-od-data>`_,`IFPRI crop data <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/predata.html#ifpri-crop-data>`_,`RiceAtlas data <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/predata.html#ricealtas-data>`_, `Points of interest data <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/predata.html#points-of-interest-data>`_, and `Administrative Areas with Statistics <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#administrative-areas-with-statistics>`_  
-        - For National OD matrices run script vtra/preprocess/national_modes_od_creation.py
-        - For Provinces OD matrices run script vtra/preprocess/province_roads_access_od_creation.py
+        - Load data as described in `Networks <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#networks>`_, `VITRANSS2 OD data <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/predata.html#vitranns2-od-data>`_, `IFPRI crop data <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/predata.html#ifpri-crop-data>`_, `RiceAtlas data <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/predata.html#ricealtas-data>`_, `Points of interest data <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/predata.html#points-of-interest-data>`_, and `Administrative Areas with Statistics <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#administrative-areas-with-statistics>`_  
+        - For National OD matrices run script vtra.preprocess.national_modes_od_creation.py
+        - For Provinces OD matrices run script vtra.preprocess.province_roads_access_od_creation.py
 
     Result:
         - Create OD matrices with attributes described in `Processed Data Assembly <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html>`_ `OD matrices <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#od-matrices>`_
@@ -66,93 +66,231 @@ Pre-processing and Preparing OD matrix Data
 
 Mapping Flows onto Networks
 ---------------------------
+.. Note::
+    Purpose:
+        - Map the national-scale OD node level matrix values to network paths
+            - For all transport modes at national scale
+            - Estimate 2 values - A MIN and a MAX value of flows between each selected OD node pair
+            - Based on MIN-MAX generalised costs estimates
+        - Map the commune access OD node level matrix values to road network paths in Provinces
+            - For all roads in the Provinces
+            - Estimate 2 values - A MIN and a MAX value of flows between each selected OD node pair
+            - Based on MIN-MAX generalised costs estimates
+    
+    Execution:
+        - Load data as described in `Networks <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#networks>`_ and `OD matrices <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#od-matrices>`_  
+        - For National OD matrices run script vtra.flow_mapping.national_modes_flow_paths.py
+        - For Provinces OD matrices run script vtra.flow_mapping.province_roads_access_flow_paths.py
 
-.. todo::
-    Brief description of process:
+    Result:
+        - Store flow outputs in /results/flow_mapping_paths/
+        - Store flow shapefiles in /results/flow_mapping_shapefiles/
+        - National-scale excel sheets results of flow mapping based contain attributes:
+            - origin - String node ID of Origin
+            - destination - String node ID of Destination
+            - o_region - String name of Province of Origin node ID
+            - d_region - String name of Province of Destination node ID
+            - min_edge_path - List of string of edge ID's for paths with minimum generalised cost flows
+            - max_edge_path - List of string of edge ID's for paths with maximum generalised cost flows
+            - min_distance - Float values of estimated distance for paths with minimum generalised cost flows
+            - max_distance - Float values of estimated distance for paths with maximum generalised cost flows
+            - min_time - Float values of estimated time for paths with minimum generalised cost flows
+            - max_time - Float values of estimated time for paths with maximum generalised cost flows
+            - min_gcost - Float values of estimated generalised cost for paths with minimum generalised cost flows
+            - max_gcost - Float values of estimated generalised cost for paths with maximum generalised cost flows
+            - min_vehicle_nums - Float values of estimated vehicle numbers for paths with minimum generalised cost flows
+            - max_vehicle_nums - Float values of estimated vehicle numbers for paths with maximum generalised cost flows
+            - industry_columns - All daily tonnages of industry columns given in the OD matrix data
 
-    - load flows (regional/origin-only...)
-    - load network, candidate o-d points
-    - weighted assignment, least-cost routing
-
-    Including:
-
-    - which data files are used
-    - which scripts to run in what order
-    - output files
-
+        - Province-scale excel sheets with results of flow mapping based contain attributes:
+            - origin - String node ID of Origin
+            - destination - String node ID of Destination
+            - min_edge_path - List of string of edge ID's for paths with minimum generalised cost flows
+            - max_edge_path - List of string of edge ID's for paths with maximum generalised cost flows
+            - min_netrev - Float values of estimated daily Net Revenue for paths with minimum generalised cost flows
+            - max_netrev - Float values of estimated daily Net Revenue for paths with maximum generalised cost flows
+            - min_croptons - Float values of estimated daily crop tonnage for paths with minimum generalised cost flows
+            - max_croptons - Float values of estimated daily crop tonnage for paths with maximum generalised cost flows
+            - min_distance - Float values of estimated distance for paths with minimum generalised cost flows
+            - max_distance - Float values of estimated distance for paths with maximum generalised cost flows
+            - min_time - Float values of estimated time for paths with minimum generalised cost flows
+            - max_time - Float values of estimated time for paths with maximum generalised cost flows
+            - min_gcost - Float values of estimated generalised cost for paths with minimum generalised cost flows
+            - max_gcost - Float values of estimated generalised cost for paths with maximum generalised cost flows
+            - min_vehicle_nums - Float values of estimated vehicle numbers for paths with minimum generalised cost flows
+            - max_vehicle_nums - Float values of estimated vehicle numbers for paths with maximum generalised cost flows
 
 Hazard Exposure
 ---------------
+.. Note::
+    Purpose:
+        - Intersect hazards and network line and point geometries with hazatd polygons
+            - Write final results to Shapefiles
+        - Collect network-hazard intersection attributes 
+            - Combine with boundary Polygons to collect network-hazard-boundary intersection attributes 
+            - Write final results to an Excel sheet
+    
+    Execution:
+        - Load shapefiles data as described in `Networks <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#networks>`_ and `Hazards <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#hazards>`_ 
+        - Run script vtra.failure_scenario_selection.hazards_networks_intersections.py
+        - Run script vtra.failure_scenario_selection.hazards_network_intersections_results_collect.py
 
-.. todo::
-    Brief description of process:
+    Result:
+        - Store shapefile outputs in the directory /results/networks_hazards_intersection_shapefiles/
+        - All hazard-edge intersection shapefiles with attributes:
+            - edge_id - String name of intersecting edge ID
+            - length - Float length of intersection of edge LineString and hazard Polygon
+            - geometry - Shapely LineString geometry of intersection of edge LineString and hazard Polygon
 
-    - load networks, hazards
-    - intersection
-
-    Including:
-
-    - which data files are used
-    - which scripts to run in what order
-    - output files
+        - All hazard-node intersection shapefile with attributes:
+            - node_id - String name of intersecting node ID
+            - geometry - Shapely Point geometry of intersecting node ID
+        
+        - Store summarised results in /results/hazard_scenarios/
+        - Generate excel sheet of network-hazard-boundary intersection with attributes:
+            - edge_id/node_id - String name of intersecting edge ID or node ID
+            - length - Float length of intersection of edge LineString and hazard Polygon: Only for edges 
+            - province_id - String/Integer ID of Province
+            - province_name - String name of Province in English
+            - district_id - String/Integer ID of District
+            - district_name - String name of District in English
+            - commune_id - String/Integer ID of Commune
+            - commune_name - String name of Commune in English
+            - sector - String name of transport mode
+            - hazard_type - String name of hazard type
+            - model - String name of hazard model
+            - year - String name of hazard year
+            - climate_scenario - String name of hazard scenario
+            - probability - Float/String value of hazard probability
+            - band_num - Integer value of hazard band
+            - min_val - Integer value of minimum value of hazard threshold
+            - max_val - Integer value of maximum value of hazard threshold
 
 
 Failure Analysis
 ----------------
+.. Note::
+    Purpose:
+        - Failure analysis of edges in invidiual national-scale networks
+            - To estimate flow isolations and rerouting effects on same network
+        - Failure analysis of edges in national-scale networks with multi-modal options
+            - To estimate flow isolations and rerouting effects with multi-modal options
+        - Failure analysis of edges in province-scale road networks
+            - To estimate changing accessibility to commune points
+    
+    Execution:
+        - Load network and flow data as described in `Networks <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#networks>`_, `Mapping Flows onto Networks <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/results.html#mapping-flows-onto-networks>`_, and failure scenarios from `Hazard exposure <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/results.html#hazard-exposure>`_ 
+        - For National networks failure analysis run script vtra.failure_estimation_national.py
+        - For National networks failure analysis with multi-modal options run script vtra.failure_multi_modal_options.py
+        - For Provinces roads failure analysis run script vtra.flow_mapping.failure_estimation_provinces.py
 
-.. todo::
-    Brief description of process:
+    Result:
+        - Store csv outputs in the directory /results/failure_results/
+        - Store shapefile outputs in /results/failure_shapefiles/ 
+        - National-scale All failure scenarios results in /results//failure_results/all_fail_scenarios/
+            - edge_id - String name or list of failed edges
+            - origin - String node ID of Origin of disrupted OD flow
+            - destination - String node ID of Destination of disrupted OD flow
+            - o_region - String name of Province of Origin node ID of disrupted OD flow
+            - d_region - String name of Province of Destination node ID of disrupted OD flow
+            - no_access - Boolean 1 (no reroutng) or 0 (rerouting)     
+            - min/max_distance - Float value of estimated distance of OD journey before disruption   
+            - min/max_time - Float value of estimated time of OD journey before disruption     
+            - min/max_gcost - Float value of estimated travel cost of OD journey before disruption    
+            - min/max_vehicle_nums - Float value of estimated vehicles of OD journey before disruption       
+            - new_cost - Float value of estimated cost of OD journey after disruption 
+            - new_distance - Float value of estimated distance of OD journey after disruption    
+            - new_path - List of string edge ID's of estimated new route of OD journey after disruption   
+            - new_time - Float value of estimated time of OD journey after disruption      
+            - dist_diff - Float value of Post disruption minus per-disruption distance  
+            - time_diff - Float value Post disruption minus per-disruption timee  
+            - min/max_tr_loss - Float value of estimated change in rerouting cost
+            - industry_columns - Float values of all daily tonnages of industry columns along disrupted OD pairs
+            - min/max_tons - Float values of total daily tonnages along disrupted OD pairs
 
-    - load networks, hazards
-    - intersection
+        - National-scale Isolated OD scenarios - OD flows with no rerouting options in /results//failure_results/isolated_od_scenarios/
+            - edge_id - String name or list of failed edges
+            - o_region - String name of Province of Origin node ID of disrupted OD flow
+            - d_region - String name of Province of Destination node ID of disrupted OD flow
+            - industry_columns - Float values of all daily tonnages of industry columns along disrupted OD pairs
+            - min/max_tons - Float values of total daily tonnages along disrupted OD pairs
 
-    Including:
+        - National-scale rerouting scenarios - OD flows with rerouting options in /results//failure_results/rerouting_scenarios/
+            - edge_id - String name or list of failed edges
+            - o_region - String name of Province of Origin node ID of disrupted OD flow
+            - d_region - String name of Province of Destination node ID of disrupted OD flow
+            - min/max_tr_loss - Float value of change in rerouting cost
+            - min/max_tons - Float values of total daily tonnages along disrupted OD pairs
 
-    - which data files are used
-    - which scripts to run in what order
-    - output files
+        - National-scale min-max combined scenarios - Combined min-max results along each edge in /results/failure_results/minmax_combined_scenarios/
+            - edge_id - String name or list of failed edges
+            - no_access - Boolean 1 (no reroutng) or 0 (rerouting)
+            - min/max_tr_loss - Float values of change in rerouting cost
+            - min/max_tons - Float values of total daily tonnages affted by disrupted edge
 
-Input data requirements
-~~~~~~~~~~~~~~~~~~~~~~~
+        - National-scale shapefile min-max combined scenarios
+            - edge_id - String name or list of failed edges
+            - no_access - Boolean 1 (no reroutng) or 0 (rerouting)
+            - min/max_tr_loss - Float values of change in rerouting cost
+            - min/max_tons - Float values of total daily tonnages affted by disrupted edge    
+            - geometry - Shapely LineString geomtry of edges
 
-1. Correct paths to all files and correct input parameters
-2. Excel sheets with results of flow mapping based on MIN-MAX generalised costs estimates:
-    - origin - String node ID of Origin
-    - destination - String node ID of Destination
-    - o_region - String name of Province of Origin node ID
-    - d_region - String name of Province of Destination node ID
-    - min_edge_path - List of string of edge ID's for paths with minimum generalised cost flows
-    - max_edge_path - List of string of edge ID's for paths with maximum generalised cost flows
-    - min_distance - Float values of estimated distance for paths with minimum generalised cost flows
-    - max_distance - Float values of estimated distance for paths with maximum generalised cost flows
-    - min_time - Float values of estimated time for paths with minimum generalised cost flows
-    - max_time - Float values of estimated time for paths with maximum generalised cost flows
-    - min_gcost - Float values of estimated generalised cost for paths with minimum generalised cost flows
-    - max_gcost - Float values of estimated generalised cost for paths with maximum generalised cost flows
-    - min_vehicle_nums - Float values of estimated vehicle numbers for paths with minimum generalised cost flows
-    - max_vehicle_nums - Float values of estimated vehicle numbers for paths with maximum generalised cost flows
-    - industry_columns - All daily tonnages of industry columns given in the OD matrix data
-3. Shapefiles
-    - edge_id - String/Integer/Float Edge ID
-    - geometry - Shapely LineString geomtry of edges
+        - Province-scale all failure scenarios results in /results//failure_results/all_fail_scenarios/
+            - edge_id - String name or list of failed edges
+            - origin - String node ID of Origin of disrupted OD flow
+            - destination - String node ID of Destination of disrupted OD flow
+            - o_region - String name of Province of Origin node ID of disrupted OD flow
+            - d_region - String name of Province of Destination node ID of disrupted OD flow
+            - no_access - Boolean 1 (no reroutng) or 0 (rerouting)     
+            - min/max_distance - Float value of estimated distance of OD journey before disruption   
+            - min/max_time - Float value of estimated time of OD journey before disruption     
+            - min/max_gcost - Float value of estimated travel cost of OD journey before disruption    
+            - min/max_vehicle_nums - Float value of estimated vehicles of OD journey before disruption       
+            - new_cost - Float value of estimated cost of OD journey after disruption 
+            - new_distance - Float value of estimated distance of OD journey after disruption    
+            - new_path - List of string edge ID's of estimated new route of OD journey after disruption   
+            - new_time - Float value of estimated time of OD journey after disruption      
+            - dist_diff - Float value of Post disruption minus per-disruption distance  
+            - time_diff - Float value Post disruption minus per-disruption timee  
+            - min/max_tr_loss - Float value of estimated change in rerouting cost
+            - min/max_netrev - Float values of total daily net revenues along disrupted OD pairs
+            - min/max_tons - Float values of total daily crop tonnages along disrupted OD pairs
+            - min_max_econ_impact - Float values of total daily economic impact of disrupted OD pairs
+
+        - Province-scale min-max combined scenarios - Combined min-max results oalong each edge in /results/failure_results/minmax_combined_scenarios/
+            - edge_id - String name or list of failed edges
+            - no_access - Boolean 1 (no reroutng) or 0 (rerouting)
+            - min/max_tr_loss - Float values of estimated change in rerouting cost
+            - min/max_tons - Float values of total daily tonnages along edge
+            - min/max_netrev - Float values of total daily net revenues along edge
+            - min/max_econ_impact - Float value of total daily economic impact of edge 
+
+        - Min-max combined scenarios - Combined min-max reults of total network impacts of each edge
+            - edge_id - String name or list of failed edges
+            - no_access - Boolean 1 (no reroutng) or 0 (rerouting)
+            - min/max_tr_loss - Float values of estimated change in rerouting cost
+            - min/max_tons - Float values of total daily tonnages along edge
+            - min/max_netrev - Float values of total daily net revenues along edge
+            - min/max_econ_impact - Float value of total daily economic impact of edge     
+            - geometry - Shapely LineString geomtry of edges
 
 
-Economic Impact Assessment
+Macroeconomic loss analysis
+---------------------------
+.. Note::
+    Purpose:
+        - Macroeconomic losses analysis due to edge failures in national-scale networks
+            - To estimate economic impacts of flow isolations
+
+
+Processing failure results
 --------------------------
+.. Note::
+    Purpose:
+        - 
 
-.. todo::
-    Brief description of process:
 
-    - disaggregate IO table (run_mrio)
-    - impact assessment of failure scenarios (run_mria)
-
-    Including:
-
-    - which data files are used
-    - which scripts to run in what order
-    - output files
-
-Adaption
+Adaptation
 --------
 
 .. todo::
