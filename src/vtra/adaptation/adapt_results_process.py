@@ -17,11 +17,6 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 import pandas as pd
-import psycopg2
-from sqlalchemy import create_engine
-from vtra.transport_network_creation import (add_igraph_generalised_costs_province_roads,
-                                             province_shapefile_to_dataframe,
-                                             province_shapefile_to_network)
 from vtra.utils import load_config
 
 

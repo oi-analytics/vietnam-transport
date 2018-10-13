@@ -16,19 +16,7 @@ import igraph as ig
 import networkx as nx
 import numpy as np
 import pandas as pd
-import psycopg2
-from sqlalchemy import create_engine
-from vtra.transport_network_creation import *
 from vtra.utils import *
-
-
-def swap_min_max(x, min_col, max_col):
-    """
-    """
-    if abs(x[min_col]) > abs(x[max_col]):
-        return x[max_col], x[min_col]
-    else:
-        return x[min_col], x[max_col]
 
 
 def network_failure_assembly(edge_failure_dataframe, transport_mode, gdf_edges, save_edges=True, output_path=''):

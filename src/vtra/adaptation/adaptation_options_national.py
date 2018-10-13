@@ -16,7 +16,6 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 from vtra.utils import *
-from vtra.transport_flow_and_failure_functions import *
 from vtra.adaptation.adaptation_options_functions import *
 
 

@@ -20,7 +20,6 @@ import pandas as pd
 from matplotlib import cm
 from scipy.spatial import Voronoi
 from shapely.geometry import Point, Polygon
-from vtra.transport_network_creation import *
 from vtra.utils import *
 
 mpl.style.use('ggplot')
