@@ -15,7 +15,7 @@ Documentation is available at
 
 ### Python and libraries
 
-Python is required to run the scripts in this project. We suggest using
+Python version 3.6 is required to run the scripts in this project. We suggest using
 [miniconda](https://conda.io/miniconda.html) to set up an environment and manage library
 dependencies.
 
