@@ -46,7 +46,6 @@ def main():
 
     fail_scenarios_data = os.path.join(
         output_path, 'hazard_scenarios', 'national_scale_hazard_intersections.xlsx')
-    rd_prop_file = os.path.join(data_path, 'mode_properties', 'road_properties.xlsx')
 
     duration_max = [10, 15, 20, 25, 30]
     length_thr = 500.0

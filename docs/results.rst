@@ -232,7 +232,7 @@ Failure Analysis
             - edge_id - String name or list of failed edges
             - no_access - Boolean 1 (no reroutng) or 0 (rerouting)
             - min/max_tr_loss - Float values of change in rerouting cost
-            - min/max_tons - Float values of total daily tonnages affted by disrupted edge    
+            - min/max_tons - Float values of total daily tonnages affted by disrupted edge
             - geometry - Shapely LineString geomtry of edges
 
         - Province-scale all failure scenarios results in /results//failure_results/all_fail_scenarios/
@@ -241,15 +241,15 @@ Failure Analysis
             - destination - String node ID of Destination of disrupted OD flow
             - o_region - String name of Province of Origin node ID of disrupted OD flow
             - d_region - String name of Province of Destination node ID of disrupted OD flow
-            - no_access - Boolean 1 (no reroutng) or 0 (rerouting)     
-            - min/max_distance - Float value of estimated distance of OD journey before disruption   
-            - min/max_time - Float value of estimated time of OD journey before disruption     
-            - min/max_gcost - Float value of estimated travel cost of OD journey before disruption    
-            - min/max_vehicle_nums - Float value of estimated vehicles of OD journey before disruption       
-            - new_cost - Float value of estimated cost of OD journey after disruption 
-            - new_distance - Float value of estimated distance of OD journey after disruption    
-            - new_path - List of string edge ID's of estimated new route of OD journey after disruption   
-            - new_time - Float value of estimated time of OD journey after disruption      
+            - no_access - Boolean 1 (no reroutng) or 0 (rerouting)
+            - min/max_distance - Float value of estimated distance of OD journey before disruption
+            - min/max_time - Float value of estimated time of OD journey before disruption
+            - min/max_gcost - Float value of estimated travel cost of OD journey before disruption
+            - min/max_vehicle_nums - Float value of estimated vehicles of OD journey before disruption
+            - new_cost - Float value of estimated cost of OD journey after disruption
+            - new_distance - Float value of estimated distance of OD journey after disruption
+            - new_path - List of string edge ID's of estimated new route of OD journey after disruption
+            - new_time - Float value of estimated time of OD journey after disruption
             - dist_diff - Float value of Post disruption minus per-disruption distance  
             - time_diff - Float value Post disruption minus per-disruption timee  
             - min/max_tr_loss - Float value of estimated change in rerouting cost
@@ -271,7 +271,7 @@ Failure Analysis
             - min/max_tr_loss - Float values of estimated change in rerouting cost
             - min/max_tons - Float values of total daily tonnages along edge
             - min/max_netrev - Float values of total daily net revenues along edge
-            - min/max_econ_impact - Float value of total daily economic impact of edge     
+            - min/max_econ_impact - Float value of total daily economic impact of edge
             - geometry - Shapely LineString geomtry of edges
 
 
@@ -315,14 +315,48 @@ Adaptation
 ----------
 .. Note::
     Purpose:
-        - Generate adaption scenarios/strategies
-        - 
-        - summarise/plot
+        - Generate adaption scenarios/strategies and examine their costs, benefits, net present values and benefit-cost ratios 
+        - For national-scale roads
+        - For province-scale roads
+        - Based on different types of hazards, road assets and climate-change conditions
 
     Execution:
         - Load data described in `Adaptation Options <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#adaptation-options>`_ 
-        - For national-scale roads run script
-        - For province-scale roads run script
+        - For national-scale roads run script vtra.adaptation.adaptation_options_national.py
+        - For province-scale roads run script vtra.adaptation.adaptation_options_provinces.py
 
     Result:
-        - get results
+        - Store results as excel sheets in /results/adaptation_results/
+        - All adaptation resylts have the follwing attributes:
+            - edge_id - String edge IDs
+            - hazard_type - String names of hazard types
+            - model - String names of hazard models
+            - climate_scenario - String names of climate scenarios
+            - year - Integer values of year of hazard climate models
+            - road_cond - String names of road conditions
+            - width - Float values of edge widths
+            - road_length - Float values of edge lengths
+            - min_daily_loss_2016  - Float values of current minimum daily economic losses
+            - max_daily_loss_2016 - Float values of current maximum daily economic losses
+            - min_band - Integer values of minimum hazard bands
+            - max_band - Integer values of maximum hazard bands
+            - min_height - Float values of minimum height of hazard exposure - if flooding
+            - max_height - Float values of maximum height of hazard exposure - if flooding
+            - min_exposure_percent - Float values of minimum percent of edge length exposed to hazard
+            - max_exposure_percent - Float values of maximum percent of edge length exposed to hazard
+            - min_duration - Float values of minimum duration of disruption of edge
+            - max_duration - Float values of maximum duration of disruption of edge
+            - min_exposure_length - Float values of minimum edge length exposed to hazard 
+            - max_exposure_length - Float values of maximum edge length exposed to hazard
+            - risk_wt - Float values of risk weight
+            - adapt_strategy - String names of adaptation strategy
+            - min_initial_cost - Float values of minimum intiial cost of adaptation
+            - max_initial_cost - Float values of maximum intiial cost of adaptation 
+            - min_benefit_npv - Float values of minimum benefit of adaptation
+            - max_benefit_npv - Float values of maximum benefit of adaptation
+            - min_cost_npv - Float values of minimum net present value of cost of adaptation
+            - max_cost_npv - Float values of maximum net present value of cost of adaptation
+            - min_adapt_npv - Float values of minimum net present value of adaptation
+            - max_adapt_npv - Float values of maxiimum net present value of adaptation
+            - min_bc_ratio - Float values of minimum benefit-cost ratio of adaptation
+            - max_bc_ratio - Float values of maximum benefit-cost ratio of adaptation
