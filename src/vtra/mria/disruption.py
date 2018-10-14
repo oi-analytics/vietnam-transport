@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
+Create disruption files to be used in the MRIA loss estimations.
 """
 import os
-import sys
 
 import numpy as np
 import pandas as pd
@@ -10,8 +10,19 @@ from vtra.utils import load_config
 
 pd.options.mode.chained_assignment = None
 
-
 def create_disruption(input_file, output_dir, min_rice=True, single_point=True):
+    """
+    Create disruption file for the economic analysis. The input for this disruption 
+    file is the outcome of the flow analysis. This function translate the failure in transport flows into impacts to the economic sectors.
+
+    Parameters
+        - input_file - String name of the path to a flow failure scenario file
+        - output_dir - String name for output directory for mapper file.
+        - min_rice - Boolean to determine whether you want to use the minimal rice value or the maximum rice value from the flow analysis. You should make here the same decision as when making the MRIO table. The default is set to **True**.
+        - single_point - Boolean to determine whether you are converting a single-point or multi-point failure analaysis to a disruption file. The default is set to **True**. 
+    Outputs
+        - event_dict - Dictionary of all unique failure events, in terms of percentage disruption per sector in each directly affected region due to the flow failure.
+    """
 
      # Define current directory and data directory
     data_path = load_config()['paths']['data']
@@ -44,21 +55,16 @@ def create_disruption(input_file, output_dir, min_rice=True, single_point=True):
 
     return event_dict
 
-
-def create_events(scenario_list, flow_data, ind_des):
-
-    events = {}
-
-    for event in scenario_list:
-        get_event = flow_data.loc[event]
-        get_event = get_event.merge(ind_des, left_index=True, right_index=True)
-        get_event['tonnage'] = get_event['tonnage'].div(get_event['total_daily_tonnage'])
-        events[event] = get_event['tonnage']
-
-    return pd.DataFrame(events).fillna(0).T
-
-
 def map_comm_ind(x):
+    """
+    Map the goods from the flow failure analysis to economic sectors.
+
+    Parameters
+        - x - row in the disruption dataframe.
+
+    Outputs
+        - x - mapped good to sector for the specific row in the disruption dataframe
+    """
 
     comm_ind_map = {
         'acof': 'Agriculture',
@@ -87,6 +93,16 @@ def map_comm_ind(x):
 
 
 def map_ind(x):
+    """
+    Map the abbreviated names for the industries to their full name.
+
+    Parameters
+        - x - row in the disruption dataframe.
+
+    Outputs
+        - x - mapped abbrevation to full name for the specific row in the disruption dataframe.
+
+   """
 
     ind_map = {'secA': 'Agriculture',
                'secB': 'Mining',
@@ -102,6 +118,17 @@ def map_ind(x):
 
 
 def df_com_to_ind(comm_des, min_rice=True):
+    """
+    Converts the national Origin-Destination matrix from goods to sectors.
+    
+    Parameters
+        - comm_dess - national Origin-Destination matrix, showing origin and destination of goods.
+        - min_rice - Boolean to determine whether you want to use the minimal rice value or the maximum rice value from the flow analysis. You should make here the same decision as when making the MRIO table. The default is set to **True**.
+
+    Outputs
+        - df_od_ind - a Pandas dataframe of the national OD matrix on a sector level.
+        
+    """
     comm_des.o_region = comm_des.o_region.apply(
         lambda x: x.replace(' ', '_').replace('-', '_'))
     comm_des.d_region = comm_des.d_region.apply(

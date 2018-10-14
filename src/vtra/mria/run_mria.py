@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 """
+Run the MRIA Model for a given set of disruptions.
 """
-import os
-import sys
 
-import geopandas as gpd
+import os
 import numpy as np
 import pandas as pd
-from pathos.multiprocessing import Pool, cpu_count
 from vtra.mria.disruption import create_disruption
 from vtra.mria.model import MRIA_IO as MRIA
 from vtra.mria.table import io_basic
@@ -15,10 +13,20 @@ from vtra.utils import load_config
 
 
 def estimate_losses(input_file):
+    """
+    Estimate the economic losses for a given set of failure scenarios
+
+    Parameters
+        - input_file - String name of input file to failure scenarios
+
+    Outputs
+        - .csv file with total losses per failure scenario
+        
+    """
 
     print('{} started!'.format(input_file))
 
-    data_path, calc_path, output_path = load_config()['paths']['data'], load_config()[
+    data_path, output_path = load_config()['paths']['data'], load_config()[
         'paths']['calc'], load_config()['paths']['output']
 
     """ Set booleans"""
@@ -79,8 +87,7 @@ def estimate_losses(input_file):
             disrupt[['region', 'sector']] = disrupt['index'].apply(pd.Series)
 
             """Create model"""
-            MRIA_RUN = MRIA(DATA.name, DATA.countries, DATA.sectors,
-                            EORA=False, list_fd_cats=['FinDem'])
+            MRIA_RUN = MRIA(DATA.name, DATA.countries, DATA.sectors, list_fd_cats=['FinDem'])
 
             """Define sets and alias"""
             # CREATE SETS
@@ -190,9 +197,6 @@ if __name__ == '__main__':
         get_all_input_files = [os.path.join(
             output_path,'failure_results','isolated_od_scenarios','single_mode', x) 
             for x in os.listdir(os.path.join(output_path,'failure_results','isolated_od_scenarios','single_mode')) if x.endswith(".csv")]
-
-    # with Pool(int(cpu_count())-2) as pool:
-    #     pool.map(estimate_losses, get_all_input_files, chunksize=1)
 
     for gi in get_all_input_files:
         estimate_losses(gi)
