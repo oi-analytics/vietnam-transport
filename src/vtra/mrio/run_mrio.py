@@ -5,13 +5,26 @@ import os
 import subprocess
 
 import pandas as pd
-from vtra.mrio.functions import (create_proxies, estimate_gva, load_config,
+from vtra.mrio.functions import (create_proxies, estimate_gva,
                                  load_output, load_provincial_stats)
 from vtra.mrio.ras_method import ras_method
+from vtra.utils import load_config
 
 
-def run_mrio_disaggregate(notrade=False, min_rice=True, own_production_ratio=0.9):
+def run_mrio_disaggregate(notrade=False, min_rice=True, own_production_ratio=0.8):
+    """
+    This function will disaggregate the (single-region) national Input-Output table to a provincial multiregional Input-Output table
 
+    Parameters
+        - notrade - Boolean to specify whether we should include trade in the disaggregation. This should be set to **True** in the first step of the disaggregation. The default is set to **False**
+        - min_rice - Boolean to determine whether you want to use the minimal rice value or the maximum rice value from the flow analysis. The default is set to **True**
+        - own_production_ratio - Specify how much supply and demand is locally supplied and used, and how much is imported/exported. The default is set to **0.8**
+
+    Outputs
+        - .csv file containing the new multiregional Input-Output table.
+        - pandas DataFrame with a multiregional Input-Output table
+        
+    """
     data_path = load_config()['paths']['data']
 
     # load provincial shapefile
@@ -78,7 +91,17 @@ def run_mrio_disaggregate(notrade=False, min_rice=True, own_production_ratio=0.9
 
 
 def mrio_to_excel(Xin, min_rice=True):
+    """
+    Save the newly created multiregional Input-Output table to Excel, in the format required for the MRIA calculation.
+    
+    Parameters
+        - Xin - pandas DataFrame of the new multiregional Input-Output table
+        - min_rice - Boolean to determine whether you want to use the minimal rice value or the maximum rice value from the flow analysis. The default is set to **True**
 
+    Outputs
+        - .xlsx file with the multiregional Input-Output table
+        
+    """
     data_path = load_config()['paths']['data']
 
     Xnew = Xin.copy()

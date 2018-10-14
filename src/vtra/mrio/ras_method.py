@@ -38,28 +38,40 @@ References
 3) Temurshoev, U., R.E. Miller and M.C. Bouwmeester (2013), A note on the
    GRAS method, Economic Systems Research, 25, pp. 361-367.
 
-Note from the author
---------------------
-
-If you use this program and publish the results in
-the form of working/discussion papers, journal articles etc., you are
-kindly asked to cite the third paper mentioned above (as this code is the
-online Appendix to that paper).
-
-Written by: Umed Temurshoev, 07/10/2010 with later adjustments
-Current e-mail: umed.temurshoev@ec.europa.eu
 """
 
 import numpy as np
 
 
 def invd(x):
+    """
+    Extract projection, data bands numbers and valuees from raster
+
+    Parameters
+        - file_path - String name of input GeoTff file path
+
+    Outputs
+        - counts - Number of bans in raster
+        - crs - Projection system of raster
+        - data_vals - Numpy array of raster values 
+    """
     invd = 1./x
     invd[x == 0] = 1
     return np.diag(invd)
 
 
 def ras_method(X0, u, v, eps=1e-5):
+    """
+    Extract projection, data bands numbers and valuees from raster
+
+    Parameters
+        - file_path - String name of input GeoTff file path
+
+    Outputs
+        - counts - Number of bans in raster
+        - crs - Projection system of raster
+        - data_vals - Numpy array of raster values 
+    """
 
     m, n = np.shape(X0)
     N = np.zeros((m, n))
