@@ -275,7 +275,7 @@ Failure Analysis
             - geometry - Shapely LineString geomtry of edges
 
 
-Macroeconomic loss analysis
+Macroeconomic loss Analysis
 ---------------------------
 .. Note::
     Purpose:
@@ -283,7 +283,7 @@ Macroeconomic loss analysis
             - To estimate economic impacts of flow isolations
 
 
-Processing failure results
+Processing Failure Results
 --------------------------
 .. Note::
     Purpose:
@@ -321,7 +321,7 @@ Adaptation
         - Based on different types of hazards, road assets and climate-change conditions
 
     Execution:
-        - Load data described in `Adaptation Options <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#adaptation-options>`_ 
+        - Load data described in `Networks <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#networks>`_, `Processing Failure Results <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/results.html#processing-failure-results>`_,and `Adaptation Options <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#adaptation-options>`_ 
         - For national-scale roads run script vtra.adaptation.adaptation_options_national.py
         - For province-scale roads run script vtra.adaptation.adaptation_options_provinces.py
 
