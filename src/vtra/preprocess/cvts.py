@@ -1,9 +1,31 @@
 """
 Purpose
 -------
-Process CVTS (Commercial Vehicle Tracking System) GPS traces to estimate 
-    - Vehicle counts on roads
-    - OD edge routes on roads 
+Process CVTS (Commercial Vehicle Tracking System) GPS traces. The script first reduces
+the number of Cvts points by removing standstill and minimal movement from the dataset.
+Each GPS trace is then mapped on the road network and  processed into a route (a list 
+of road edge id's). The sum of vehicles passing a each edge is added it the road 
+network shapefile.
+
+Input data requirements
+-----------------------
+Correct paths to all files and correct input parameter
+
+1) All Cvts data files must be defined as csv-files with column positions holding the following data:
+- Position 3: Lattitude
+- Position 4: Longitude
+- Position 9: Timestamp
+
+2) Road edge shapefile must contain valid LineString geometries with the following attributes
+- G_ID: A unique ID that identifies the road edge
+
+Results
+-------
+1) Each Cvts trace is processed into a route
+- A list of road edge id's 
+
+2) The road edge shapefile is appended with the following properties:
+- vehicle_count: The total number of vehicles that passed this edge
 
 References
 ----------
@@ -33,9 +55,8 @@ def main():
     data_root = load_config()['paths']['data']
 
     dir_raw_cvts = os.path.join(data_root, 'Cvts', 'raw', '20170801')
-    dir_raw_roads = os.path.join(data_root, 'Roads', 'national_roads')
+    dir_raw_roads = os.path.join(data_root, 'pre_processed_networks_data', 'Roads', 'national_roads')
     dir_inter_reduse = os.path.join(data_root, 'Cvts', 'intermediate', 'reduse')
-    dir_inter_clip = os.path.join(data_root, 'Cvts', 'intermediate', 'clip')
     dir_results_routes = os.path.join(data_root, 'Cvts', 'results', 'routes')
     dir_results_routes_collected = os.path.join(
         data_root, 'Cvts', 'results', 'routes_collected')
@@ -45,13 +66,9 @@ def main():
     print('Reduce dataset size')
     reduse_dataset(dir_raw_cvts, dir_inter_reduse)
 
-    # # Read road network in memory
+    # Read road network in memory
     print('Read road network')
     geojson_road_network = read_shapefile(dir_raw_roads, 'national_network_edges.shp')
-
-    # # Remove points that are not covered by the road network
-    # print('Clip gps points')
-    # clip_gps_points(geojson_road_network, dir_inter_reduse, dir_inter_clip)
 
     # Generate routes by mapping gps points on the road network
     print('Generate routes')
@@ -267,11 +284,6 @@ def add_traffic_count_to_road_network(road_network, routes_folder, results_folde
     for road in road_network:
         road_network_lut[int(road['properties']['G_ID'])] = road
         road_network_lut[int(road['properties']['G_ID'])]['properties']['vehicle_count'] = 0
-        #  ## Temp fix
-        # del road_network_lut[int(road['properties']['G_ID'])]['properties']['NAME']
-        # del road_network_lut[int(road['properties']['G_ID'])]['properties']['NAMEBASE']
-        # del road_network_lut[int(road['properties']['G_ID'])]['properties']['PARENTGUID']
-        # ----
 
     # Add vehicle count attribute to road network
     for root, dirs, files in os.walk(routes_folder):
