@@ -145,9 +145,11 @@ Administrative Areas with Statistics
 Macroeconomic Data
 ------------------
 .. Note::
-	1. All macroeconomic datasets are stored:
-		-  
-
+	1. For the macroeconomic analysis we use the national IO table for Vietnam:
+		- In the file in path - data/economic_IO_tables/IO Table 2012 English.xlsx 
+		- We use the sheet 'IO Core' in our analysis.
+		
+    
 Adaptation Options
 ------------------
 .. Note::

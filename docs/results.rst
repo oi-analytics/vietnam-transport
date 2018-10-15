@@ -280,7 +280,36 @@ Macroeconomic loss Analysis
 .. Note::
     Purpose:
         - Macroeconomic losses analysis due to edge failures in national-scale networks
-            - To estimate economic impacts of flow isolations
+            - To estimate economic impacts of flow isolations/disruptions
+            - To understand the wider economic impacts of these disruptions
+        
+    Execution:
+        - Load data described in `Macroeconomic Data <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#macroeconomic-data>`_ and `OD matrices <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#od-matrices>`_ 
+        - To create the multiregional input-output table for Vietnam, run script vtra.mrio.run_mrio.py
+        - To perform the loss analysis, run vtra.mria.run_mria.py
+
+    Result:
+        - Store the new multiregional input-output table in /data/input_data/
+            - files starting with IO_VIETNAM_*.xlsx contain:
+                - Sheetname **T** with the full multiregional table
+                - Sheetname **labels_T** with the column and row labels of matrix **T**
+                - Sheetname **FD** with the final demand columns of the new table
+                - Sheetname **labels_FD** with the column labels of matrix **FD**
+                - Sheetname **ExpROW** with the export to the Rest of the World columns of the new table
+                - Sheetname **labels_ExpROW** with the column labels of matrix **ExpROW**                
+                - Sheetname **VA** with the value added rows of the new table
+                - Sheetname **labels_VA** with the row labels of matrix **VA**       
+        - Store csv files in /results/economic_failure_losses/summarized/
+        - All summarized files have the following attributes: 
+            - edge_id - String edge IDs
+            - total_losses - Value of the total economic losses due to the disruption of the corresponding edge ID
+        - Store csv files in /results/economic_failure_losses/od_region_losses/
+        - All od_losses file have the following attributes:
+            - edge_id - String edge IDs
+            - region - String name of the region
+            - dir_losses - Value of the direct losses due to the diruption of the corresponding edge ID in the corresponding region             
+            - total_losses - Value of the total losses due to the diruption of the corresponding edge ID in the corresponding region             
+            - ind_losses - Value of the indirect losses due to the diruption of the corresponding edge ID in the corresponding region             
 
 
 Processing Failure Results

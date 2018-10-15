@@ -110,11 +110,4 @@ Points of interest data
 		- As Shapefiles
 
 	2. The essential attributes in all the dataset are listed below. See the data for all attributes:
-	    - geomtery - Shapely Point geometry with projection ESPG:4326
-
-
-Macroeconomic Data
-------------------
-.. Note::
-	1. All macroeconomic datasets are stored:
-		-  
+	    - geometry - Shapely Point geometry with projection ESPG:4326
