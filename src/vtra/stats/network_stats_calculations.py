@@ -33,7 +33,6 @@ mpl.rcParams['ytick.labelsize'] = 13.
 Create the database connection
 """
 
-
 def main():
     data_path, calc_path, output_path, figure_path = load_config()['paths']['data'], load_config(
     )['paths']['calc'], load_config()['paths']['output'], load_config()['paths']['figures']

@@ -82,10 +82,10 @@ def assign_assumed_width_to_province_roads(x):
     Returns
         int assigned width of the road asset based on design specifications
     """
-    if x.width == 0:
-        return 5.5
+    if float(x.width) == 0:
+        return 4.5
     else:
-        return x.width
+        return float(x.width)
 
 
 def assign_asset_type_to_province_roads_from_file(asset_code, asset_type_list):
@@ -318,12 +318,14 @@ def province_shapefile_to_dataframe(edges_in, road_terrain, road_properties_file
 
     # correct the widths of the road assets
     # get the width of edges
-    width_range_list = [
-        tuple(x) for x in
-        pd.read_excel(road_properties_file, sheet_name='widths').values
-    ]
-    edges['width'] = edges.width.apply(
-        lambda x: assign_assumed_width_to_province_roads_from_file(x, width_range_list))
+    # width_range_list = [
+    #     tuple(x) for x in
+    #     pd.read_excel(road_properties_file, sheet_name='widths').values
+    # ]
+    # edges['width'] = edges.width.apply(
+    #     lambda x: assign_assumed_width_to_province_roads_from_file(x, width_range_list))
+
+    edges['width'] = edges.apply(assign_assumed_width_to_province_roads,axis=1)
 
     # assign minimum and maximum speed to network
     edges['speed'] = edges.apply(assign_minmax_travel_speeds_province_roads_apply, axis=1)

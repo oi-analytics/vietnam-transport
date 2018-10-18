@@ -139,7 +139,7 @@ def main():
     speeds = [(0, 0), (40, 60), (700, 800), (9, 20), (9, 20), (0,0)]
     multi_md_len = 3.0
     province_results = 'Yes'
-    national_results = 'Yes'
+    national_results = 'No'
     
     """Give the paths to the input data files
     """

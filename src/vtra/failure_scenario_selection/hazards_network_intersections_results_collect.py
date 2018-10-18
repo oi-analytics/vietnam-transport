@@ -109,9 +109,9 @@ def spatial_scenario_selection(network_shapefile, polygon_shapefile, hazard_dict
             intersected_polys = poly_gpd.iloc[list(
                 poly_sindex.intersection(lines.geometry.bounds))]
             for p_index, poly in intersected_polys.iterrows():
-                if (lines['geometry'].intersects(poly['geometry']) is True) and (poly.geometry.is_valid is True):
+                if (lines['geometry'].intersects(poly['geometry']) is True) and (poly.geometry.is_valid is True) and (lines.geometry.is_valid is True):
                     if network_type == 'edges':
-                        value_dictionary = {'edge_id': lines['edge_id'], 'length': lines['length'],
+                        value_dictionary = {'edge_id': lines['edge_id'], 'length': 1000.0*line_length(lines['geometry'].intersection(poly['geometry'])),
                                             'province_id': poly['province_i'], 'province_name': poly['pro_name_e'],
                                             'district_id': poly['district_i'], 'district_name': poly['dis_name_e'],
                                             'commune_id': poly['commune_id'], 'commune_name': poly['name_eng']}
