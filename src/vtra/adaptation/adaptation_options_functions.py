@@ -22,7 +22,7 @@ from vtra.transport_flow_and_failure_functions import *
 def net_present_value(adaptation_options_file,
                       min_economic_loss,
                       max_economic_loss, start_year, end_year,
-                      growth_rate, discount_rate, edge_width=1.0, edge_length=1.0):
+                      growth_rate, discount_rate,road_class,road_width,road_terrain='flat',edge_width=1.0, edge_length=1.0):
    
     """Find min-max economic losses
     """
@@ -41,37 +41,119 @@ def net_present_value(adaptation_options_file,
         total_discount_ratio.append(
             1.0/math.pow(1.0 + 1.0*discount_rate/100.0, year - start_year))
 
-    min_ead = 
-    # total_discount_ratio = sum(total_discount_ratio_list)
 
-    df_path = os.path.join(data_path, 'Adaptation_options', 'adaptation_options.xlsx')
-    adaptation_df = pd.read_excel(df_path, sheet_name='adapt_options')
+    rehab_costs_df = pd.read_excel(adaptation_options_file,sheet_name='baseline_costs',thousands=',').fillna(0)
+    rehab_costs = list(rehab_costs_df.itertuples(index=False))
+    del rehab_costs_df
+    for rc in rehab_costs:
+        if road_terrain in rc.terrain and rc.road_class == road_class:
+            min_ead = sum((1.0*road_width/rc.design_width)*float(rc.basic_cost)*np.array(total_discount_ratio))
+            max_ead = min_ead
+            break
 
-    adaptation_df['total_discount_ratio'] = sum(total_discount_ratio)
+    del rehab_costs
 
-    min_maintain_discount_ratio_list = []
-    max_maintain_discount_ratio_list = []
+    """Get the rehab costs
+    """
+    rehab_costs = list(rehab_costs_df.itertuples(index=False))
+    del rehab_costs_df
+    for rc in rehab_costs:
+        if road_terrain in rc.terrain and rc.road_class == road_class:
+            min_ead = sum((1.0*road_width/rc.design_width)*float(rc.basic_cost)*np.array(total_discount_ratio))
+            max_ead = min_ead
+            break
 
-    for iter_, row in adaptation_df.iterrows():
-        min_maintain_schedule = row['maintenance_times_min']
-        max_maintain_schedule = row['maintenance_times_max']
+    del rehab_costs
 
-        min_maintain_discount_ratio = 0
-        max_maintain_discount_ratio = 0
+    """Create options lists
+    """
+    options_df = pd.read_excel(adaptation_options_file,sheet_name='options',thousands=',').fillna(0)
+    options_list = []
+    """Look at pavement options and their fractions
+    """
+    options_codes = options_df.loc[options_df['adaption_group'] == 'Pavement','option_code'].values.tolist()
+    if road_cond == 'paved':
+        options_frac = [0] + list(np.random.dirichlet(np.ones(3)))
+    else:
+        options_frac = list(np.random.dirichlet(np.ones(4)))
 
-        max_maintain_discount_years = np.arange(start_year, end_year, min_maintain_schedule)
-        min_maintain_discount_years = np.arange(start_year, end_year, max_maintain_schedule)
-        for year in max_maintain_discount_years[1:]:
-            max_maintain_discount_ratio += 1.0 / \
-                math.pow(1.0 + 1.0*discount_rate/100.0, year - start_year)
-
-        for year in min_maintain_discount_years[1:]:
-            min_maintain_discount_ratio += 1.0 / \
-                math.pow(1.0 + 1.0*discount_rate/100.0, year - start_year)
-
-        min_maintain_discount_ratio_list.append(min_maintain_discount_ratio)
-        max_maintain_discount_ratio_list.append(max_maintain_discount_ratio)
+    options_list += list(zip(options_codes,options_frac))
     
+    """Look at pavement drainage options
+    """
+    options_codes = options_df.loc[options_df['adaption_group'] == 'Pavement Drain','option_code'].values.tolist()
+    DL = np.random.uniform(low=0,high=1)
+    DR = np.random.uniform(low=0,high=1)
+    DT = DL + DR
+    options_frac = [DT,DR,DT]
+    options_list += list(zip(options_codes,options_frac))
+
+    """Look at Earthwork
+    """
+    options_codes = options_df.loc[options_df['adaption_group'] == 'Earthwork','option_code'].values.tolist()
+    EW1 = np.random.uniform(low=0,high=1)
+    EW2 = np.random.uniform(low=0,high=1)
+    options_frac = [EW1,EW2]
+    options_list += list(zip(options_codes,options_frac))
+
+    """Look at Slope Protection
+    """
+    options_codes = options_df.loc[options_df['adaption_group'] == 'Slope Protection','option_code'].values.tolist()
+    for oc in options_codes:
+        if oc == 'SS5':
+            options_list.append((oc,np.random.uniform(low=0,high=3)))
+        else:
+            options_list.append((oc,np.random.uniform(low=0,high=1)))
+
+    """Look at culverts
+    """
+    options_codes = options_df.loc[options_df['adaption_group'] == 'Culverts','option_code'].values.tolist()
+    for oc in options_codes:
+        if oc == 'CV1':
+            options_list.append((oc,np.ceil(1.0*edge_length/200)))
+        if oc == 'CV2':
+            options_list.append((oc,np.ceil(1.0*edge_length/1000)))
+
+    options_df = pd.DataFrame(options_list,columns=['option_code','frac'])
+    """Maintenance schedule
+    """
+    maintain_times_df = pd.read_excel(adaptation_options_file,sheet_name='maintenance_schedule',thousands=',').fillna(0)
+    maintain_times_df = pd.merge(maintain_times_df,options_df,on=['option_code'], how='left').fillna(0)
+    maintain_times_df['min_maintain_time'] = np.ceil(maintain_times_df['frac'])*maintain_times_df['min_maintain_time']
+    maintain_times_df['max_maintain_time'] = np.ceil(maintain_times_df['frac'])*maintain_times_df['max_maintain_time']
+
+    
+    maintain_times = list(maintain_times_df.itertuples(index=False))
+    del maintain_times_df
+    for mt in maintain_times:
+        for 
+        if road_terrain in rc.terrain and rc.road_class == road_class:
+            min_ead = sum((1.0*road_width/rc.design_width)*float(rc.basic_cost)*np.array(total_discount_ratio))
+            max_ead = min_ead
+            break
+
+    del rehab_costs
+
+    min_maintain_schedule = 8
+    min_maintain_schedule = 8
+
+    min_maintain_discount_ratio = 0
+    max_maintain_discount_ratio = 0
+
+    max_maintain_discount_years = np.arange(start_year, end_year, min_maintain_schedule)
+    min_maintain_discount_years = np.arange(start_year, end_year, min_maintain_schedule)
+    for year in max_maintain_discount_years[1:]:
+        max_maintain_discount_ratio += 1.0 / \
+            math.pow(1.0 + 1.0*discount_rate/100.0, year - start_year)
+
+    for year in min_maintain_discount_years[1:]:
+        min_maintain_discount_ratio += 1.0 / \
+            math.pow(1.0 + 1.0*discount_rate/100.0, year - start_year)
+
+
+    """Cost of inital investment
+    """
+    adaptation_df = pd.read_excel(df_path, sheet_name='adapt_options')    
     for param_val in parameter_value_list:
 
         st = adaptation_options_dataframe.loc[adaptation_options_dataframe[strategy_parameter]
