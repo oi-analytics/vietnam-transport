@@ -1,4 +1,4 @@
-"""Admin map
+"""Maps of admin boundaries in Vietnam
 """
 import os
 import sys

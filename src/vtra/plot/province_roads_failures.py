@@ -4,6 +4,8 @@ import os
 import sys
 from collections import OrderedDict
 
+import geopandas as gpd
+import pandas as pd
 import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
 import matplotlib.pyplot as plt
@@ -76,41 +78,73 @@ def main():
 
     plot_set = [
         {
-            'column': 'min_adapt_',
-            'title': 'Min NPV of adaptation over time',
-            'legend_label': "NPV(USD million)",
-            'divisor': 1000000,
-            'significance': 0
-        },
-        {
-            'column': 'max_adapt_',
-            'title': 'Max NPV of adaptation over time',
-            'legend_label': "NPV(USD million)",
-            'divisor': 1000000,
-            'significance': 0
-        },
-        {
-            'column': 'min_bc_rat',
-            'title': 'Min BCR of adaptation over time',
-            'legend_label': "BCR",
+            'column': 'min_tr_loss',
+            'title': 'Min Rerouting loss',
+            'legend_label': "Rerouting Loss (USD/day)",
             'divisor': 1,
             'significance': 0
         },
         {
-            'column': 'max_bc_rat',
-            'title': 'Max BCR of adaptation over time',
-            'legend_label': "BCR",
+            'column': 'max_tr_loss',
+            'title': 'Max Rerouting loss',
+            'legend_label': "Rerouting Loss (USD/day)",
+            'divisor': 1,
+            'significance': 0
+        },
+        {
+            'column': 'min_netrev',
+            'title': 'Min Net revenue disrupted',
+            'legend_label': "Net revenue disrupted ('000 USD/day)",
+            'divisor': 1000,
+            'significance': 0
+        },
+        {
+            'column': 'max_netrev',
+            'title': 'Max Net revenue disrupted',
+            'legend_label': "Net revenue disrupted ('000 USD/day)",
+            'divisor': 1000,
+            'significance': 0
+        },
+        {
+            'column': 'min_econ_impact',
+            'title': 'Min Economic loss',
+            'legend_label': "Economic Loss ('000 USD/day)",
+            'divisor': 1000,
+            'significance': 0
+        },
+        {
+            'column': 'max_econ_impact',
+            'title': 'Max Economic loss',
+            'legend_label': "Economic Loss ('000 USD/day)",
+            'divisor': 1000,
+            'significance': 0
+        },
+        {
+            'column': 'min_croptons',
+            'title': 'Min Daily Crop Tons disrupted',
+            'legend_label': "Crops transport disrupted (tons/day)",
+            'divisor': 1,
+            'significance': 0
+        },
+        {
+            'column': 'max_croptons',
+            'title': 'Max Daily Crop Tons disrupted',
+            'legend_label': "Crops trasnport disrupted (tons/day)",
             'divisor': 1,
             'significance': 0
         }
     ]
 
-    # for region in regions:
-    for re in range(0, 1):
-        region = regions[re]
+    for region in regions:
+        region_file_path = os.path.join(config['paths']['data'], 'post_processed_networks',
+                                   '{}_roads_edges.shp'.format(region.lower().replace(' ', '')))
+        flow_file_path = os.path.join(config['paths']['output'], 'failure_results','minmax_combined_scenarios',
+                                   'single_edge_failures_minmax_{}_5_tons_100_percent_disrupt.csv'.format(region.lower().replace(' ', '')))
 
-        region_file = os.path.join(config['paths']['data'], 'Results', 'Failure_shapefiles',
-                                   'weighted_edges_commune_center_failures_' + region.lower().replace(' ', '') + '_5_tons.shp')
+        region_file = gpd.read_file(region_file_path,encoding='utf-8')
+        flow_file = pd.read_csv(flow_file_path)
+        region_file = pd.merge(region_file,flow_file,how='left', on=['edge_id']).fillna(0)
+
         plot_settings = get_region_plot_settings(region)
 
         for c in range(len(plot_set)):
@@ -128,23 +162,25 @@ def main():
 
             # generate weight bins
             column = plot_set[c]['column']
-            if column in ('min_adapt_', 'max_adapt_'):
-                weights = [
-                    record.attributes[column]
-                    for record in shpreader.Reader(region_file).records()
-                    if record.attributes[column] > 0 and record.attributes['max_econ_l'] > 0
-                ]
-            elif column in ('min_bc_rat', 'max_bc_rat'):
-                weights = [
-                    record.attributes[column]
-                    for record in shpreader.Reader(region_file).records()
-                    if record.attributes[column] > 1 and record.attributes['max_econ_l'] > 0
-                ]
-            else:
-                weights = [
-                    record.attributes[column]
-                    for record in shpreader.Reader(region_file).records()
-                ]
+            weights = [record[column] for iter_, record in region_file.iterrows()]
+            # if column in ('min_adapt_', 'max_adapt_'):
+            #     weights = [
+            #         record.attributes[column]
+            #         for record in shpreader.Reader(region_file).records()
+            #         if record.attributes[column] > 0 and record.attributes['max_econ_l'] > 0
+            #     ]
+            # elif column in ('min_bc_rat', 'max_bc_rat'):
+            #     weights = [
+            #         record.attributes[column]
+            #         for record in shpreader.Reader(region_file).records()
+            #         if record.attributes[column] > 1 and record.attributes['max_econ_l'] > 0
+            #     ]
+            # else:
+            #     weights = [
+            #         record.attributes[column]
+            #         record[column]
+            #     for iter_, record in region_file.iterrows()
+            #     ]
 
             max_weight = max(weights)
             if column in ('min_bc_rat', 'max_bc_rat') and region == 'Lao Cai':
@@ -158,33 +194,39 @@ def main():
                 region: []
             }
 
+            # styles = OrderedDict([
+            #     (region,  Style(color='black', zindex=6, label='No access'))
+            # ])
             styles = OrderedDict([
-                (region,  Style(color='#ba0f03', zindex=6, label=region))
+                ('1',  Style(color='#252525', zindex=6, label='No access')),  # black
+                ('2', Style(color='#f1605d', zindex=8, label='Reroutiing possible')),  # orange
+                ('3', Style(color='#969696', zindex=7, label='No effect')) # grey
             ])
 
-            if column in ('min_adapt_', 'max_adapt_'):
-                rec_set = [
-                    record
-                    for record in shpreader.Reader(region_file).records()
-                    if record.attributes[column] > 0 and record.attributes['max_econ_l'] > 0
-                ]
-            elif column in ('min_bc_rat', 'max_bc_rat'):
-                rec_set = [
-                    record
-                    for record in shpreader.Reader(region_file).records()
-                    if record.attributes[column] > 1 and record.attributes['max_econ_l'] > 0
-                ]
-            else:
-                rec_set = [
-                    record
-                    for record in shpreader.Reader(region_file).records()
-                ]
+            # if column in ('min_adapt_', 'max_adapt_'):
+            #     rec_set = [
+            #         record
+            #         for record in shpreader.Reader(region_file).records()
+            #         if record.attributes[column] > 0 and record.attributes['max_econ_l'] > 0
+            #     ]
+            # elif column in ('min_bc_rat', 'max_bc_rat'):
+            #     rec_set = [
+            #         record
+            #         for record in shpreader.Reader(region_file).records()
+            #         if record.attributes[column] > 1 and record.attributes['max_econ_l'] > 0
+            #     ]
+            # else:
+            #     rec_set = [
+            #         record
+            #         for record in shpreader.Reader(region_file).records()
+            #     ]
 
-            for record in rec_set:
+            for iter_, record in region_file.iterrows():
                 cat = region
                 geom = record.geometry
+                access = record.no_access
 
-                val = record.attributes[column]
+                val = record[column]
 
                 buffered_geom = None
                 for (nmin, nmax), line_style in width_by_range.items():
@@ -192,14 +234,35 @@ def main():
                         buffered_geom = geom.buffer(line_style[1])
 
                         if buffered_geom is not None:
-                            ax.add_geometries(
-                                [buffered_geom],
-                                crs=proj_lat_lon,
-                                linewidth=0,
-                                facecolor=str(line_style[2]),
-                                edgecolor='none',
-                                zorder=3 + line_style[0]
-                            )
+                            if val == 0 and access == 0:
+                                ax.add_geometries(
+                                    [buffered_geom],
+                                    crs=proj_lat_lon,
+                                    linewidth=0,
+                                    facecolor='#969696',
+                                    edgecolor='none',
+                                    zorder=3 + line_style[0]
+                                )
+
+                            elif access == 0:
+                                ax.add_geometries(
+                                    [buffered_geom],
+                                    crs=proj_lat_lon,
+                                    linewidth=0,
+                                    facecolor=str(line_style[2]),
+                                    edgecolor='none',
+                                    zorder=3 + line_style[0]
+                                )
+                            else:
+                                ax.add_geometries(
+                                    [buffered_geom],
+                                    crs=proj_lat_lon,
+                                    linewidth=0,
+                                    facecolor='#252525',
+                                    edgecolor='none',
+                                    zorder=3 + line_style[0]
+                                )
+
                         else:
                             print("Feature was outside range to plot", record.attributes)
 
@@ -257,10 +320,11 @@ def main():
             title = '{} ({})'.format(region, plot_set[c]['title'])
             print(" * Plotting", title)
             plt.title(title, fontsize=14)
+            legend_from_style_spec(ax, styles,loc='upper right')
 
             # output
             output_file = os.path.join(
-                config['paths']['figures'], 'commune_center-{}-{}-failures_2.png'.format(region.lower().replace(' ', ''), column))
+                config['paths']['figures'], 'commune_center-{}-{}-failures.png'.format(region.lower().replace(' ', ''), column))
             save_fig(output_file)
             plt.close()
 

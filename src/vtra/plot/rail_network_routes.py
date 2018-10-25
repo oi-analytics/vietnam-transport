@@ -6,6 +6,7 @@ import sys
 from collections import OrderedDict, defaultdict
 from pprint import pprint
 
+import pandas as pd
 import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
 import matplotlib.pyplot as plt
@@ -16,13 +17,12 @@ def main():
     config = load_config()
     output_file = os.path.join(config['paths']['figures'], 'rail-map-routes.png')
     rails_file = os.path.join(
-        config['paths']['data'], 'Results',
-        'Flow_shapefiles', 'weighted_edges_flows_national_rail.shp')
+        config['paths']['data'], 'post_processed_networks', 'rail_edges.shp')
     rail_descriptions = os.path.join(
-        config['paths']['data'], 'Results', 'network_stats', 'national_rail_routes2.csv')
+        config['paths']['output'], 'network_stats', 'national_rail_routes.xlsx')
 
     ax = get_axes()
-    plot_basemap(ax, config['paths']['data'])
+    plot_basemap(ax, config['paths']['data'],highlight_region=[])
     scale_bar(ax, location=(0.8, 0.05))
     plot_basemap_labels(ax, config['paths']['data'])
     proj_lat_lon = ccrs.PlateCarree()
@@ -30,7 +30,7 @@ def main():
     rail_geoms_by_category = defaultdict(list)
 
     for record in shpreader.Reader(rails_file).records():
-        cat = record.attributes['railwaylin']
+        cat = record.attributes['name']
         geom = record.geometry
         rail_geoms_by_category[cat].append(geom)
 
@@ -41,11 +41,9 @@ def main():
 
     styles = OrderedDict([])
 
-    with open(rail_descriptions, encoding='utf-8') as csvfile:
-        reader = csv.reader(csvfile, delimiter=',')
-        next(reader)
-        for idx, row in enumerate(reader):
-            styles.update({row[0]: Style(color=colours[idx], zindex=4, label=row[1])})
+    reader = pd.read_excel(rail_descriptions,encoding='utf-8')
+    for idx, row in reader.iterrows():
+        styles.update({row[0]: Style(color=colours[idx], zindex=4, label=row[1])})
 
     for cat, geoms in rail_geoms_by_category.items():
         cat_style = styles[cat]

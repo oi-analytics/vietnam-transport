@@ -4,6 +4,8 @@ import os
 import sys
 from collections import OrderedDict
 
+import pandas as pd
+import geopandas as gpd
 import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
 import matplotlib.pyplot as plt
@@ -14,40 +16,47 @@ from vtra.utils import *
 
 def main():
     config = load_config()
-    rail_edge_file = os.path.join(
-        config['paths']['data'], 'Results', 'Flow_shapefiles', 'weighted_edges_flows_national_rail.shp')
+    mode_file_path = os.path.join(config['paths']['data'], 'post_processed_networks',
+                                   'rail_edges.shp')
+    flow_file_path = os.path.join(config['paths']['output'], 'flow_mapping_combined',
+                                   'weighted_flows_national_rail_100_percent.csv')
+
+
+    mode_file = gpd.read_file(mode_file_path,encoding='utf-8')
+    flow_file = pd.read_csv(flow_file_path)
+    mode_file = pd.merge(mode_file,flow_file,how='left', on=['edge_id']).fillna(0)
 
     color = '#006d2c'
     color_by_type = {'Rail Line': color}
 
     crop_cols = ['max_rice', 'max_cash', 'max_cass', 'max_teas', 'max_maiz',
                  'max_rubb', 'max_swpo', 'max_acof', 'max_rcof', 'max_pepp']
-    ind_cols = ['max_sugar', 'max_wood', 'max_steel', 'max_constr', 'max_cement', 'max_fertil',
-                'max_coal', 'max_petrol', 'max_manufa', 'max_fisher', 'max_meat', 'max_tons']
+    ind_cols = ['max_sugar', 'max_wood', 'max_steel', 'max_constructi', 'max_cement',
+                'max_fertilizer', 'max_coal', 'max_petroluem', 'max_manufactur', 'max_fishery',
+                'max_meat', 'max_tons']
 
     columns = crop_cols + ind_cols
     column_label_divisors = {c: 1000 for c in columns}
 
     legend_label = "AADF ('000 tons/day)"
-    title_cols = [
-        'Rice', 'Cashew', 'Cassava', 'Teas', 'Maize', 'Rubber', 'Sweet Potatoes',
-        'Coffee Arabica', 'Coffee Robusta', 'Pepper', 'Sugar', 'Wood', 'Steel',
-        'Construction materials', 'Cement', 'Fertilizer', 'Coal', 'Petroleum', 'Manufacturing',
-        'Fishery', 'Meat', 'Total tonnage']
+    title_cols = ['Rice', 'Cashew', 'Cassava', 'Teas', 'Maize', 'Rubber',
+                'Sweet Potatoes', 'Coffee Arabica', 'Coffee Robusta',
+                'Pepper', 'Sugar', 'Wood', 'Steel', 'Construction materials',
+                'Cement', 'Fertilizer', 'Coal', 'Petroleum', 'Manufacturing',
+                'Fishery', 'Meat', 'Total tonnage']
 
     for c in range(len(columns)):
         ax = get_axes()
-        plot_basemap(ax, config['paths']['data'])
+        plot_basemap(ax, config['paths']['data'],highlight_region=[])
         scale_bar(ax, location=(0.8, 0.05))
         plot_basemap_labels(ax, config['paths']['data'])
         proj_lat_lon = ccrs.PlateCarree()
 
         column = columns[c]
         weights = [
-            record.attributes['max_tons']
-            for record
-            in shpreader.Reader(rail_edge_file).records()
-        ]
+                record['max_tons']
+                for iter_, record in mode_file.iterrows()
+            ]
         max_weight = max(weights)
         width_by_range = generate_weight_bins(weights)
 
@@ -55,8 +64,8 @@ def main():
         for value_range in width_by_range:
             geoms_by_range[value_range] = []
 
-        for record in shpreader.Reader(rail_edge_file).records():
-            val = record.attributes[column]
+        for iter_, record in mode_file.iterrows():
+            val = record[column]
             geom = record.geometry
             for nmin, nmax in geoms_by_range:
                 if nmin <= val and val < nmax:

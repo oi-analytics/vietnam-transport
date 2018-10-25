@@ -15,6 +15,65 @@ import numpy as np
 import pandas as pd
 from vtra.utils import *
 
+def spatial_scenario_selection(network_shapefile, polygon_shapefile, hazard_dictionary, data_dictionary, network_type ='nodes',name_province =''):
+    """
+    Intersect network edges/nodes and boundary Polygons to collect boundary and hazard attributes  
+
+    Parameters
+        - network_shapefile - Shapefile of edge LineStrings or node Points 
+        - polygon_shapefile - Shapefile of boundary Polygons
+        - hazard_dictionary - Dictionary of hazard attributes
+        - data_dictionary - Dictionary of network-hazard-boundary intersection attributes
+        - network_type - String value -'edges' or 'nodes' - Default = 'nodes'
+        - name_province - String name of province if needed - Default = ''    
+
+    Outputs
+        data_dictionary - Dictionary of network-hazard-boundary intersection attributes:
+            - edge_id/node_id - String name of intersecting edge ID or node ID
+            - length - Float length of intersection of edge LineString and hazard Polygon: Only for edges 
+            - province_id - String/Integer ID of Province
+            - province_name - String name of Province in English
+            - district_id - String/Integer ID of District
+            - district_name - String name of District in English
+            - commune_id - String/Integer ID of Commune
+            - commune_name - String name of Commune in English
+            - hazard_attributes - Dictionary of all attributes from hazard dictionary   
+    """
+    line_gpd = gpd.read_file(network_shapefile)
+    poly_gpd = gpd.read_file(polygon_shapefile)
+
+
+    if len(line_gpd.index) > 0 and len(poly_gpd.index) > 0:
+        line_gpd.columns = map(str.lower, line_gpd.columns)
+        poly_gpd.columns = map(str.lower, poly_gpd.columns)
+        if name_province != '':
+            poly_gpd = poly_gpd[poly_gpd['pro_name_e'] == name_province]
+
+        # create spatial index
+        poly_sindex = poly_gpd.sindex
+
+        poly_sindex = poly_gpd.sindex
+        for l_index, lines in line_gpd.iterrows():
+            intersected_polys = poly_gpd.iloc[list(
+                poly_sindex.intersection(lines.geometry.bounds))]
+            for p_index, poly in intersected_polys.iterrows():
+                if (lines['geometry'].intersects(poly['geometry']) is True) and (poly.geometry.is_valid is True) and (lines.geometry.is_valid is True):
+                    if network_type == 'edges':
+                        value_dictionary = {'edge_id': lines['edge_id'], 'length': 1000.0*line_length(lines['geometry'].intersection(poly['geometry'])),
+                                            'province_id': poly['province_i'], 'province_name': poly['pro_name_e'],
+                                            'district_id': poly['district_i'], 'district_name': poly['dis_name_e'],
+                                            'commune_id': poly['commune_id'], 'commune_name': poly['name_eng']}
+                    elif network_type == 'nodes':
+                        value_dictionary = {'node_id': lines['node_id'],
+                                            'province_id': poly['province_i'], 'province_name': poly['pro_name_e'],
+                                            'district_id': poly['district_i'], 'district_name': poly['dis_name_e'],
+                                            'commune_id': poly['commune_id'], 'commune_name': poly['name_eng']}
+
+                    data_dictionary.append({**value_dictionary, **hazard_dictionary})
+
+    del line_gpd, poly_gpd
+    return data_dictionary
+
 def swap_min_max(x, min_col, max_col):
     """
     """

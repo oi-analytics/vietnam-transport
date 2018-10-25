@@ -4,6 +4,8 @@ import os
 import sys
 from collections import OrderedDict
 
+import pandas as pd
+import geopandas as gpd
 import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
 import matplotlib.pyplot as plt
@@ -13,11 +15,17 @@ from vtra.utils import *
 def main():
     config = load_config()
     output_file = os.path.join(config['paths']['figures'], 'inland-map.png')
-    inland_edge_file = os.path.join(
-        config['paths']['data'], 'Results', 'Flow_shapefiles',
-        'weighted_edges_flows_national_inland.shp')
-    inland_node_file = os.path.join(
-        config['paths']['data'], 'Waterways', 'waterways', 'ports_nodes.shp')
+    inland_edge_file_path = os.path.join(
+        config['paths']['data'], 'post_processed_networks', 'inland_edges.shp')
+    inland_flow_file_path = os.path.join(config['paths']['output'], 'flow_mapping_combined',
+                                   'weighted_flows_national_inland_100_percent.csv')
+    inland_node_file = os.path.join(config['paths']['data'],
+                                 'post_processed_networks', 'inland_nodes.shp')
+
+
+    inland_edge_file = gpd.read_file(inland_edge_file_path,encoding='utf-8')
+    inland_flow_file = pd.read_csv(inland_flow_file_path)
+    inland_edge_file = pd.merge(inland_edge_file,inland_flow_file,how='left', on=['edge_id']).fillna(0)
 
     remove_routes_ids = [
         ('watern_149', 'watern_429'),
@@ -34,30 +42,35 @@ def main():
 
     color_by_type = {'Inland route': '#0689d7', 'Inland port': '#d95f0e'}
     ax = get_axes()
-    plot_basemap(ax, config['paths']['data'])
+    plot_basemap(ax, config['paths']['data'],highlight_region=[])
     scale_bar(ax, location=(0.8, 0.05))
     plot_basemap_labels(ax, config['paths']['data'])
     proj_lat_lon = ccrs.PlateCarree()
 
-    for record in shpreader.Reader(inland_edge_file).records():
-        flow = record.attributes['max_tons']
-        edge_id = (record.attributes['from_node'], record.attributes['to_node'])
+
+    geoms = []
+    for iter_,record in inland_edge_file.iterrows():
+        flow = record['max_tons']
+        edge_id = (record['from_node'],record['to_node'])
         if flow > 0 and (edge_id not in remove_routes_ids):
             geom = record.geometry
-            ax.add_geometries(
-                geom,
-                crs=proj_lat_lon,
-                linewidth=1.5,
-                edgecolor='#0689d7',
-                facecolor='none',
-                zorder=3
-            )
+            geoms.append(geom)
+
+
+    ax.add_geometries(
+        geoms,
+        crs=proj_lat_lon,
+        linewidth=1.5,
+        edgecolor='#0689d7',
+        facecolor='none',
+        zorder=3
+    )
 
     # Stations
     xs = []
     ys = []
     for record in shpreader.Reader(inland_node_file).records():
-        port_type = record.attributes['PORT_TYPE']
+        port_type = record.attributes['port_type']
         if port_type == 'inland':
             geom = record.geometry
             x = geom.x

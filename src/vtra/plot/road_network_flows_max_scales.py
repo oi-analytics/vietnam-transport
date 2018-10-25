@@ -4,6 +4,8 @@ import os
 import sys
 from collections import OrderedDict
 
+import geopandas as gpd
+import pandas as pd
 import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
 import matplotlib.pyplot as plt
@@ -13,9 +15,15 @@ from vtra.utils import *
 
 def main():
     config = load_config()
-    flows_file = os.path.join(
-        config['paths']['data'], 'Results', 'Flow_shapefiles',
-        'weighted_edges_flows_national_road.shp')
+    mode_file_path = os.path.join(config['paths']['data'], 'post_processed_networks',
+                                   'road_edges.shp')
+    flow_file_path = os.path.join(config['paths']['output'], 'flow_mapping_combined',
+                                   'weighted_flows_national_road_100_percent.csv')
+
+
+    mode_file = gpd.read_file(mode_file_path,encoding='utf-8')
+    flow_file = pd.read_csv(flow_file_path)
+    mode_file = pd.merge(mode_file,flow_file,how='left', on=['edge_id']).fillna(0)
 
     plot_sets = [
         {
@@ -31,8 +39,8 @@ def main():
             'divisor': 1000,
             'columns': ['max_rice', 'max_cash', 'max_cass', 'max_teas', 'max_maiz',
                         'max_rubb', 'max_swpo', 'max_acof', 'max_rcof', 'max_pepp',
-                        'max_sugar', 'max_wood', 'max_steel', 'max_constr', 'max_cement',
-                        'max_fertil', 'max_coal', 'max_petrol', 'max_manufa', 'max_fisher',
+                        'max_sugar', 'max_wood', 'max_steel', 'max_constructi', 'max_cement',
+                        'max_fertilizer', 'max_coal', 'max_petroluem', 'max_manufactur', 'max_fishery',
                         'max_meat', 'max_tons'],
             'title_cols': ['Rice', 'Cashew', 'Cassava', 'Teas', 'Maize', 'Rubber',
                            'Sweet Potatoes', 'Coffee Arabica', 'Coffee Robusta',
@@ -45,7 +53,7 @@ def main():
     for plot_set in plot_sets:
         for c in range(len(plot_set['columns'])):
             ax = get_axes()
-            plot_basemap(ax, config['paths']['data'])
+            plot_basemap(ax, config['paths']['data'],highlight_region=[])
             scale_bar(ax, location=(0.8, 0.05))
             plot_basemap_labels(ax, config['paths']['data'])
             proj_lat_lon = ccrs.PlateCarree()
@@ -57,8 +65,8 @@ def main():
                 column = 'max_tons'
 
             weights = [
-                record.attributes[column]
-                for record in shpreader.Reader(flows_file).records()
+                record[column]
+                for iter_, record in mode_file.iterrows()
             ]
             max_weight = max(weights)
             width_by_range = generate_weight_bins(weights)
@@ -73,13 +81,13 @@ def main():
             }
 
             column = plot_set['columns'][c]
-            for record in shpreader.Reader(flows_file).records():
-                cat = str(record.attributes['road_class'])
+            for iter_, record in mode_file.iterrows():
+                cat = str(record['road_class'])
                 if cat not in road_geoms_by_category:
                     raise Exception
                 geom = record.geometry
 
-                val = record.attributes[column]
+                val = record[column]
 
                 buffered_geom = None
                 for (nmin, nmax), width in width_by_range.items():

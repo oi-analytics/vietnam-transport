@@ -4,6 +4,8 @@ import os
 import sys
 from collections import OrderedDict
 
+import geopandas as gpd
+import pandas as pd
 import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
 import matplotlib.pyplot as plt
@@ -31,14 +33,14 @@ def main():
             'significance': 0
         },
         {
-            'column': 'min_tons',
+            'column': 'min_croptons',
             'title': 'Min Tons',
             'legend_label': "MT (tons/day)",
             'divisor': 1,
             'significance': 0
         },
         {
-            'column': 'max_tons',
+            'column': 'max_croptons',
             'title': 'Max Tons',
             'legend_label': "MT (tons/day)",
             'divisor': 1,
@@ -48,8 +50,15 @@ def main():
 
     for region in regions:
 
-        region_file = os.path.join(config['paths']['data'], 'Results', 'Flow_shapefiles',
-                                   'weighted_edges_commune_center_flows_' + region.lower().replace(' ', '') + '_5_tons.shp')
+        region_file_path = os.path.join(config['paths']['data'], 'post_processed_networks',
+                                   '{}_roads_edges.shp'.format(region.lower().replace(' ', '')))
+        flow_file_path = os.path.join(config['paths']['output'], 'flow_mapping_combined',
+                                   'weighted_edges_commune_center_access_flows_{}_5_tons_100_percent.csv'.format(region.lower().replace(' ', '')))
+
+        region_file = gpd.read_file(region_file_path,encoding='utf-8')
+        flow_file = pd.read_csv(flow_file_path)
+        region_file = pd.merge(region_file,flow_file,how='left', on=['edge_id']).fillna(0)
+
         plot_settings = get_region_plot_settings(region)
 
         for c in range(len(plot_set)):
@@ -68,8 +77,8 @@ def main():
             # generate weight bins
             column = plot_set[c]['column']
             weights = [
-                record.attributes[column]
-                for record in shpreader.Reader(region_file).records()
+                record[column]
+                for iter_, record in region_file.iterrows()
             ]
             max_weight = max(weights)
             width_by_range = generate_weight_bins_with_colour_gradient(
@@ -83,11 +92,11 @@ def main():
                 (region,  Style(color='#ba0f03', zindex=6, label=region))
             ])
 
-            for record in shpreader.Reader(region_file).records():
+            for iter_, record in region_file.iterrows():
                 cat = region
                 geom = record.geometry
 
-                val = record.attributes[column]
+                val = record[column]
 
                 buffered_geom = None
                 for (nmin, nmax), line_style in width_by_range.items():
@@ -104,7 +113,7 @@ def main():
                                 zorder=3 + line_style[0]
                             )
                         else:
-                            print("Feature was outside range to plot", record.attributes)
+                            print("Feature was outside range to plot", iter_)
 
             x_l = plot_settings['weight_legend']['x_l']
             x_r = plot_settings['weight_legend']['x_r']
