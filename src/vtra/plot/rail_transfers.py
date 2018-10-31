@@ -4,6 +4,9 @@ import os
 import sys
 from collections import OrderedDict
 
+import numpy as np
+import geopandas as gpd
+import pandas as pd
 import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
 import matplotlib.pyplot as plt
@@ -14,10 +17,6 @@ from vtra.utils import *
 
 def main():
     config = load_config()
-    flows_file = os.path.join(
-        config['paths']['data'], 'Results', 'Failure_shapefiles',
-        'weighted_edges_failures_national_rail_transfer_from_road_10_shift.shp')
-
     plot_sets = [
         {
             'file_tag': 'commodities',
@@ -32,6 +31,18 @@ def main():
     color = '#006d2c'
     color_by_type = {'Rail Line': color}
 
+    region_file_path = os.path.join(config['paths']['data'], 'post_processed_networks',
+                               'rail_edges.shp')
+    flow_file_path = os.path.join(config['paths']['output'], 'failure_results','minmax_combined_scenarios',
+                               'single_edge_failures_transfers_national_road_10_percent_shift.csv')
+
+    region_file = gpd.read_file(region_file_path,encoding='utf-8')
+    flow_file = pd.read_csv(flow_file_path)
+    region_file = pd.merge(region_file,flow_file,how='left', on=['edge_id']).fillna(0)
+    del flow_file
+
+    region_file = region_file[region_file['edge_id'] != 0]
+
     for plot_set in plot_sets:
         for c in range(len(plot_set['columns'])):
             ax = get_axes()
@@ -42,8 +53,8 @@ def main():
 
             column = plot_set['columns'][c]
             weights = [
-                record.attributes[column]
-                for record in shpreader.Reader(flows_file).records()
+                record[column]
+                for iter_,record in region_file.iterrows()
             ]
 
             max_weight = max(weights)
@@ -53,8 +64,8 @@ def main():
             for value_range in width_by_range:
                 geoms_by_range[value_range] = []
 
-            for record in shpreader.Reader(flows_file).records():
-                val = record.attributes[column]
+            for iter_,record in region_file.iterrows():
+                val = record[column]
                 geom = record.geometry
                 for nmin, nmax in geoms_by_range:
                     if nmin <= val and val < nmax:
@@ -108,6 +119,7 @@ def main():
                     size=10)
 
             plt.title(plot_set['title_cols'][c], fontsize=14)
+            print ('* Plotting ',plot_set['title_cols'][c])
             output_file = os.path.join(
                 config['paths']['figures'],
                 'rail_failure-map-transfer-road-10-shift-{}-{}.png'.format(

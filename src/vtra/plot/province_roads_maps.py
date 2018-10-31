@@ -25,10 +25,8 @@ def main():
 
     for region in regions:
 
-        region_file = os.path.join(
-            config['paths']['data'], 'Results', 'Flow_shapefiles',
-            'weighted_edges_commune_center_flows_' + region.lower().replace(' ', '') +
-            '_5_tons.shp')
+        region_file_path = os.path.join(config['paths']['data'], 'post_processed_networks',
+            '{}_roads_edges.shp'.format(region.lower().replace(' ', '')))
         plot_settings = get_region_plot_settings(region)
 
         ax = get_axes(plot_settings['bbox'], figsize=plot_settings['figure_size'])

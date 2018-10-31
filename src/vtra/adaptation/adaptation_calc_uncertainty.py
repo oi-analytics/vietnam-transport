@@ -14,6 +14,7 @@ from tqdm import tqdm
 from dask import dataframe as dd
 from dask.multiprocessing import get
 from multiprocessing import cpu_count
+from vtra.utils import *
 
 nCores = cpu_count()
 
@@ -45,21 +46,20 @@ def calculate_discounting_arrays(discount_rate=12,growth_rate=6):
                                                          2016)/math.pow(1.0 + 1.0*discount_rate/100.0, year - 2016))
 
     min_maintain_discount_years = np.arange(2016, 2050, 4)
-    maintain_discount_ratio = 0
     maintain_discount_ratio_list = []
     for year in min_maintain_discount_years[1:]:
-        maintain_discount_ratio += 1.0 / math.pow(1.0 + 1.0*discount_rate/100.0, year - 2016)
-        maintain_discount_ratio_list.append(maintain_discount_ratio)
-
-    min_main_dr = np.array(maintain_discount_ratio_list)
-
-    max_maintain_discount_years = np.arange(2016, 2050, 8)
-    maintain_discount_ratio = 0
-    for year in max_maintain_discount_years[1:]:
-        maintain_discount_ratio += 1.0 / math.pow(1.0 + 1.0*discount_rate/100.0, year - 2016)
+        maintain_discount_ratio = 1.0 / math.pow(1.0 + 1.0*discount_rate/100.0, year - 2016)
         maintain_discount_ratio_list.append(maintain_discount_ratio)
 
     max_main_dr = np.array(maintain_discount_ratio_list)
+
+    maintain_discount_ratio_list = []
+    max_maintain_discount_years = np.arange(2016, 2050, 8)
+    for year in max_maintain_discount_years[1:]:
+        maintain_discount_ratio = 1.0 / math.pow(1.0 + 1.0*discount_rate/100.0, year - 2016)
+        maintain_discount_ratio_list.append(maintain_discount_ratio)
+
+    min_main_dr = np.array(maintain_discount_ratio_list)
     
     return np.array(discount_rate_norm),np.array(discount_rate_growth),min_main_dr,max_main_dr
 
@@ -73,9 +73,9 @@ def max_tuples(l):
     return list(np.max(x) for x in zip(*l))
 
 
-def calc_costs(x,param_values,mnt_dis_cost,mnt_nat_cost,cst_dis_cost,cst_nat_cost,
+def calc_costs(x,param_values,mnt_dis_cost,mnt_nat_cost,cst_dis_cost,cst_nat_cost,brdg_cost,
                pavement,mnt_main_cost,cst_main_cost,discount_rates,discount_growth_rates,
-               rehab_costs,min_main_dr,max_main_dr,min_exp=True,national=False,min_loss=True):
+               rehab_costs,min_main_dr,max_main_dr,duration_max=10,min_exp=True,national=False,min_loss=True):
     """
     Estimate the total cost and benfits for a road segment. This function is used within a pandas apply
     
@@ -106,12 +106,14 @@ def calc_costs(x,param_values,mnt_dis_cost,mnt_nat_cost,cst_dis_cost,cst_nat_cos
         - bc_ratio - list of benefit cost ratios for this road segment
     
     """
-  
     # Identify terrain type of the road
-    if x.terrain == 'mountain':
+    if x.terrain.lower().strip() == 'mountain' or x.asset_type == 'Bridge':
         main_cost = mnt_main_cost
-    elif x.terrain == 'flat':
+        ter_type = 'mountain'
+    elif x.terrain.lower().strip() == 'flat':
         main_cost = cst_main_cost
+        ter_type = 'flat'
+
 
     # Set which exposure length to use
     if min_exp == True:
@@ -122,24 +124,38 @@ def calc_costs(x,param_values,mnt_dis_cost,mnt_nat_cost,cst_dis_cost,cst_nat_cos
     # Set which loss to use
     if min_loss == True:
         loss = x.min_econ_impact
-        duration = x.min_duration_wt
+        duration = duration_max*x.min_duration_wt
     else:
         loss = x.max_econ_impact
-        duration = x.max_duration_wt
+        duration = duration_max*x.max_duration_wt
 
     # Identify asset type, which is the main driver of the costs
     if (x.asset_type == 'Expressway') | ((national == True) & (x.road_class == 1)):
-        rehab_cost = rehab_costs.loc[('Expressway',x['terrain']),'rate_m']
-    elif (x.asset_type == 'National roads') | ((national == True) & (x.road_class == 1)):
-        rehab_cost = rehab_costs.loc[('National  2x Carriageway',x['terrain']),'rate_m']
-    elif (x.asset_type == 'Provincial roads') | ((national == True) & (x.road_class == 1)):
-        rehab_cost = rehab_costs.loc[('Provincial',x['terrain']),'rate_m']
-    elif ((x.asset_type == 'Urban roads/Named roads') | (x.asset_type == 'Boulevard')) | ((national == True) & (x.road_class == 1)):
-        rehab_cost = rehab_costs.loc[('District',x['terrain']),'rate_m']
-    elif (x.asset_type == 'Other roads') | ((national == True) & (x.road_class == 1)):
-        rehab_cost = rehab_costs.loc[('District',x['terrain']),'rate_m']        
+        rehab_cost = rehab_costs.loc[('Expressway',ter_type),'rate_m']
+        rehab_corr = rehab_costs.loc[('Expressway',ter_type),'design_width']
+    elif (x.asset_type == 'National roads') | ((national == True) & (x.road_class == 2)):
+        rehab_cost = rehab_costs.loc[('National  2x Carriageway',ter_type),'rate_m']
+        rehab_corr = rehab_costs.loc[('National  2x Carriageway',ter_type),'design_width']
+    elif (x.asset_type == 'National roads') | ((national == True) & (x.road_class == 3)):
+        rehab_cost = rehab_costs.loc[('National  1x Carriageway',ter_type),'rate_m']
+        rehab_corr = rehab_costs.loc[('National  1x Carriageway',ter_type),'design_width']
+    elif (x.asset_type == 'Provincial roads') | ((national == True) & (x.road_class == 4)):
+        rehab_cost = rehab_costs.loc[('Provincial',ter_type),'rate_m']
+        rehab_corr = rehab_costs.loc[('Provincial',ter_type),'design_width']
+    elif ((x.asset_type == 'Urban roads/Named roads') | (x.asset_type == 'Boulevard')) | ((national == True) & (x.road_class == 5)):
+        rehab_cost = rehab_costs.loc[('District',ter_type),'rate_m']
+        rehab_corr = rehab_costs.loc[('District',ter_type),'design_width']
+    elif (x.asset_type == 'Other roads') | ((national == True) & (x.road_class == 6)):
+        rehab_cost = rehab_costs.loc[('Commune',ter_type),'rate_m']
+        rehab_corr = rehab_costs.loc[('Commune',ter_type),'design_width']       
+    elif x.asset_type == 'Bridge':
+        rehab_cost = rehab_costs.rate_m.max()
+        rehab_corr = rehab_costs.design_width.max()
     else:
         rehab_cost = rehab_costs.rate_m.min()
+        rehab_corr = rehab_costs.design_width.min()
+
+    rehab_cost = (rehab_cost*x.width)/rehab_corr
         
     if (x.asset_type in ['Urban roads/Named roads','Other roads',
                          'Boulevard','Provincial roads']) & (x.terrain == 'mountain'):
@@ -155,20 +171,42 @@ def calc_costs(x,param_values,mnt_dis_cost,mnt_nat_cost,cst_dis_cost,cst_nat_cos
     elif ((x.asset_type in ['National roads', 'Expressway']) | (national == True)) & (x.terrain == 'flat'):
         costs = cst_nat_cost
         width_corr = 15
+    elif x.asset_type == 'Bridge':
+        # 'bridges'
+        costs = brdg_cost
+        width_corr = 4.5
     else:
-        return 0,[0]*len(param_values),[0]*len(param_values),[0]*len(param_values),[0]*len(param_values),[0]*len(param_values),[0]*len(param_values)
+        costs = mnt_dis_cost
+        width_corr = 4.5
+
     
     # Identify costs for paved roads
     pav_rates = costs.loc['Pavement','rate_m']
     
     # Identify costs for drainage
-    if x.terrain == 'mountain':
+    if x.terrain == 'mountain' or x.asset_type == 'Bridge':
         drain_rates = costs.loc[('Pavement Drain','DT'),'rate_m']
     else:
         drain_rates = 0
 
-    # Identify all other costs, mainly dependent on whether it is a mountain or a flat road 
-    if x.terrain == 'mountain':
+    # Identify all other costs, mainly dependent on whether it is a mountain or a flat road
+    if x.asset_type == 'Bridge':
+        EW1_rates = costs.loc[('Earthwork','EW1'),'rate_m']*2
+        EW2_rates = costs.loc[('Earthwork','EW2'),'rate_m']*0
+        SS1_rates = costs.loc[('Slope Protection','SS1'),'rate_m']*2
+        SS2_rates = costs.loc[('Slope Protection','SS2'),'rate_m']*0
+        concr_rates = costs.loc[('Slope Protection','SS3'),'rate_m']*0
+        riverb_rates = costs.loc[('Slope Protection','SS4'),'rate_m']*2
+
+    elif x.asset_type == 'Culvert':
+        EW1_rates = 0
+        EW2_rates = 0
+        SS1_rates = 0
+        SS2_rates = 0
+        concr_rates = 0
+        riverb_rates = 0
+
+    elif x.terrain == 'mountain':
         EW1_rates = costs.loc[('Earthwork','EW1'),'rate_m']/2
         EW2_rates = costs.loc[('Earthwork','EW2'),'rate_m']/2
         SS1_rates = costs.loc[('Slope Protection','SS1'),'rate_m']*2
@@ -184,11 +222,17 @@ def calc_costs(x,param_values,mnt_dis_cost,mnt_nat_cost,cst_dis_cost,cst_nat_cos
         concr_rates = costs.loc[('Slope Protection','SS3'),'rate_m']*2
         riverb_rates = costs.loc[('Slope Protection','SS4'),'rate_m']/5
 
-    face_dr_rates = costs.loc[('Slope Protection','S55'),'estimated _amount_ fraction']*costs.loc[('Slope Protection','S55'),'rate_m']
-    bioeng_rates = costs.loc[('Slope Protection','SS6'),'estimated _amount_ fraction']*costs.loc[('Slope Protection','SS6'),'rate_m']
+
+    if x.asset_type == 'Culvert':
+        face_dr_rates = 0
+        bioeng_rates = 0
+    else:
+        face_dr_rates = costs.loc[('Slope Protection','S55'),'estimated _amount_ fraction']*costs.loc[('Slope Protection','S55'),'rate_m']
+        bioeng_rates = costs.loc[('Slope Protection','SS6'),'estimated _amount_ fraction']*costs.loc[('Slope Protection','SS6'),'rate_m']
      
     costs_culvert = (np.ceil(exp_length/200)*costs.loc[('Culverts','CV1'),'rate_m']+
                      np.ceil(exp_length/1000)*costs.loc[('Culverts','CV2'),'rate_m'])
+    
     
     drain_recur = main_cost.loc[('Pavement Drain','DT'),'rec_rate_m']
     pav_recur = main_cost.loc[('Pavement'),'rec_rate_m']
@@ -214,7 +258,7 @@ def calc_costs(x,param_values,mnt_dis_cost,mnt_nat_cost,cst_dis_cost,cst_nat_cos
 
     
     # Estimate benefit
-    benefit = (sum(loss*discount_growth_rates*x.risk_wt*duration)+x.dam_wt*rehab_cost)
+    benefit = (sum(loss*discount_growth_rates*x.risk_wt*duration)+sum(discount_rates*x.dam_wt*rehab_cost))
     
     # Prepare lists for output
     uncer_output = []
@@ -226,19 +270,19 @@ def calc_costs(x,param_values,mnt_dis_cost,mnt_nat_cost,cst_dis_cost,cst_nat_cos
     
     # Loop through all parameter combinations for the uncertainty and sensitivity analysis
     for param in param_values:
-        if  x.road_cond == 'Paved':
+        if  x.road_cond.lower() == 'paved':
             cost_pav = sum(pav_rates*np.array([0]+list(pavement[int(param[7]-1)][1:]))*exp_length)
             tot_cost_pav = (sum(pav_rates*np.array([0]+list(pavement[int(param[7]-1)][1:]))*exp_length)
-                        + sum(discount_rates*exp_length*x.width*pav_recur[0])
+                        + sum(discount_rates*exp_length*pav_recur[0])
                         + sum(min_main_dr*exp_length*x.width*pav_period[0])
-                        + sum(sum([discount_rates*z*exp_length*x.width for z in pav_recur[1:]]))
+                        + sum(sum([discount_rates*z*exp_length for z in pav_recur[1:]]))
                         + sum(sum([max_main_dr*z*exp_length*x.width for z in pav_period[1:]])))
         else:
             cost_pav = sum(pav_rates*pavement[int(param[7]-1)]*exp_length)
             tot_cost_pav = (sum(pav_rates*pavement[int(param[7]-1)]*exp_length)
-                        + sum(discount_rates*exp_length*x.width*pav_recur[0]*pavement[int(param[7]-1)][0])
+                        + sum(discount_rates*exp_length*pav_recur[0]*pavement[int(param[7]-1)][0])
                         + sum(min_main_dr*exp_length*x.width*pav_period[0]*pavement[int(param[7]-1)][0])
-                        + sum(sum([discount_rates*z*exp_length*x.width for z in pav_recur[1:]]))
+                        + sum(sum([discount_rates*z*exp_length for z in pav_recur[1:]]))
                         + sum(sum([max_main_dr*z*exp_length*x.width for z in pav_period[1:]])))
                         
         # Calculate the initial adaptation cost
@@ -274,15 +318,15 @@ def calc_costs(x,param_values,mnt_dis_cost,mnt_nat_cost,cst_dis_cost,cst_nat_cos
 
         # Sum everything
         tot_cost_sum = (tot_cost_pav+tot_cost_drain+tot_cost_EW1+tot_cost_EW2
-                            +tot_cost_SS1+tot_cost_SS2+tot_cost_concr+tot_cost_riverb+tot_cost_face_drain+tot_cost_bioeng)/width_corr*x.width
+                            +tot_cost_SS1+tot_cost_SS2+tot_cost_concr+tot_cost_riverb+tot_cost_face_drain+tot_cost_bioeng+costs_culvert)/width_corr*x.width
         tot_uncer_output.append(tot_cost_sum)
         cost_sum = (costs_culvert+cost_pav+cost_drain+cost_EW1+cost_EW2
                             +cost_SS1+cost_SS2+cost_concr+cost_riverb+cost_face_drain+cost_bioeng)/width_corr*x.width
         uncer_output.append(cost_sum)
-        rel_share.append(list([costs_culvert,cost_pav,cost_drain,cost_EW1,cost_EW2,
-                            cost_SS1,cost_SS2,cost_concr,cost_riverb,cost_face_drain,cost_bioeng]))
+        rel_share.append(list([cost_pav,cost_drain,cost_EW1,cost_EW2,
+                            cost_SS1,cost_SS2,cost_concr,cost_riverb,cost_face_drain,cost_bioeng,costs_culvert]))
         tot_rel_share.append(list([tot_cost_pav,tot_cost_drain,tot_cost_EW1,tot_cost_EW2,
-                            tot_cost_SS1,tot_cost_SS2,tot_cost_concr,tot_cost_riverb,tot_cost_face_drain,tot_cost_bioeng]))
+                            tot_cost_SS1,tot_cost_SS2,tot_cost_concr,tot_cost_riverb,tot_cost_face_drain,tot_cost_bioeng,costs_culvert]))
 
         # Calculate the benefit cost ratio
         bc_ratio.append(benefit/tot_cost_sum)
@@ -293,71 +337,99 @@ def calc_costs(x,param_values,mnt_dis_cost,mnt_nat_cost,cst_dis_cost,cst_nat_cos
     
     return benefit,uncer_output,tot_uncer_output,rel_share,tot_rel_share,bc_ratio,bc_diff
 
-def run_file(file_id,data_path,discount_rate=12,growth_rate=6):
+def run_file(file_id,data_path,output_path,duration_max=10,discount_rate=12,growth_rate=6):
     
     print('{} started!'.format(file_id))
     
     # load cost file
-    mnt_dis_cost = pd.read_excel(os.path.join(data_path,'adaptation_costs_road_types.xlsx'),sheet_name='costs_district_mountain',
+    adapt_path = os.path.join(data_path,'Adaptation_options')
+    mnt_dis_cost = pd.read_excel(os.path.join(adapt_path,'adaptation_costs_road_types.xlsx'),sheet_name='costs_district_mountain',
                                  usecols=7,index_col=[0,1]).fillna(0)
+    mnt_dis_cost.columns = map(str.lower, mnt_dis_cost.columns)
     mnt_dis_cost['rate_m'] = mnt_dis_cost.factor*mnt_dis_cost.rate
-    mnt_nat_cost = pd.read_excel(os.path.join(data_path,'adaptation_costs_road_types.xlsx'),sheet_name='costs_national_mountain',
+
+    mnt_nat_cost = pd.read_excel(os.path.join(adapt_path,'adaptation_costs_road_types.xlsx'),sheet_name='costs_national_mountain',
                                  usecols=7,index_col=[0,1]).fillna(0)
-    mnt_nat_cost['rate_m'] = mnt_nat_cost.Factor*mnt_nat_cost.Rate
-    cst_dis_cost = pd.read_excel(os.path.join(data_path,'adaptation_costs_road_types.xlsx'),sheet_name='costs_district_flat',
+    mnt_nat_cost.columns = map(str.lower, mnt_nat_cost.columns)
+    mnt_nat_cost['rate_m'] = mnt_nat_cost.factor*mnt_nat_cost.rate
+
+    cst_dis_cost = pd.read_excel(os.path.join(adapt_path,'adaptation_costs_road_types.xlsx'),sheet_name='costs_district_flat',
                                  usecols=7,index_col=[0,1]).fillna(0)
-    cst_dis_cost['rate_m'] = cst_dis_cost.Factor*cst_dis_cost.rate
-    cst_nat_cost = pd.read_excel(os.path.join(data_path,'adaptation_costs_road_types.xlsx'),sheet_name='costs_national_flat',
+    cst_dis_cost.columns = map(str.lower, cst_dis_cost.columns)
+    cst_dis_cost['rate_m'] = cst_dis_cost.factor*cst_dis_cost.rate
+
+    cst_nat_cost = pd.read_excel(os.path.join(adapt_path,'adaptation_costs_road_types.xlsx'),sheet_name='costs_national_flat',
                                  usecols=10,index_col=[0,1]).fillna(0)
-    cst_nat_cost['rate_m'] = cst_nat_cost.Factor*cst_nat_cost.Rate
+    cst_nat_cost.columns = map(str.lower, cst_nat_cost.columns)
+    cst_nat_cost['rate_m'] = cst_nat_cost.factor*cst_nat_cost.rate
+
+    brdg_cost = pd.read_excel(os.path.join(adapt_path,'adaptation_costs_road_types.xlsx'),sheet_name='bridges',
+                                 usecols=10,index_col=[0,1]).fillna(0)
+    brdg_cost.columns = map(str.lower, brdg_cost.columns)
+    brdg_cost['rate_m'] = brdg_cost.factor*brdg_cost.rate
+
     
     # load maintenance costs
-    mnt_main_cost = pd.read_excel(os.path.join(data_path,'adaptation_costs_road_types.xlsx'),sheet_name='periodic_maintenance_mountain',
+    mnt_main_cost = pd.read_excel(os.path.join(adapt_path,'adaptation_costs_road_types.xlsx'),sheet_name='maintenance_mountain',
                                  usecols=10,index_col=[0,1]).fillna(0)
     mnt_main_cost['rec_rate_m'] = mnt_main_cost.recurrent_cost*mnt_main_cost.recurrent_factor
-    cst_main_cost = pd.read_excel(os.path.join(data_path,'adaptation_costs_road_types.xlsx'),sheet_name='periodic_maintenance_flat',
+    cst_main_cost = pd.read_excel(os.path.join(adapt_path,'adaptation_costs_road_types.xlsx'),sheet_name='maintenance_flat',
                                  usecols=10,index_col=[0,1]).fillna(0)
     cst_main_cost['rec_rate_m'] = cst_main_cost.recurrent_cost*cst_main_cost.recurrent_factor
     
     # load rehab costs
-    rehab_costs = pd.read_excel(os.path.join(data_path,'adaptation_costs_road_types.xlsx'),sheet_name='rehabilitation_costs',
+    rehab_costs = pd.read_excel(os.path.join(adapt_path,'adaptation_costs_road_types.xlsx'),sheet_name='rehabilitation_costs',
                                  usecols=4,index_col=[0,1]).fillna(0)
     rehab_costs['rate_m'] = rehab_costs.basic_cost*0.001
 
     # load param values
-    param_values = [np.fromfile(os.path.join(data_path,'param_values.pkl'))[x:x+8] for x in range(0, len(np.fromfile(os.path.join(data_path,'param_values.pkl'))), 8)]
+    param_values = [np.fromfile(os.path.join(adapt_path,'param_values.pkl'))[x:x+8] for x in range(0, len(np.fromfile(os.path.join(adapt_path,'param_values.pkl'))), 8)]
 
     pavement = np.array([[1,0,0,0],[0,0.75,0.2,0.05],[0,0.9,0,0.1],[0,2,0,0]])
     
     # load provinces
-    prov_roads = pd.read_csv(os.path.join(data_path,'roads_hazard_intersections_{}_risks.csv'.format(file_id)))
-    loss_roads = pd.read_csv(os.path.join(data_path,'single_edge_failures_minmax_{}_5_tons_100_percent_disrupt.csv'.format(file_id)))[['edge_id','min_econ_impact','max_econ_impact']]
-    
+    if file_id == 'national_road':
+        nat = True
+        prov_roads = pd.read_csv(os.path.join(output_path,'hazard_scenarios','{}_hazard_intersections_risks.csv'.format(file_id)))
+        loss_roads = pd.read_csv(os.path.join(output_path,'failure_results','minmax_combined_scenarios','single_edge_failures_minmax_{}_100_percent_disrupt.csv'.format(file_id)))[['edge_id','min_econ_impact','max_econ_impact']]
+    else:
+        prov_roads = pd.read_csv(os.path.join(output_path,'hazard_scenarios','roads_hazard_intersections_{}_risks.csv'.format(file_id))) 
+        loss_roads = pd.read_csv(os.path.join(output_path,'failure_results','minmax_combined_scenarios','single_edge_failures_minmax_{}_5_tons_100_percent_disrupt.csv'.format(file_id)))[['edge_id','min_econ_impact','max_econ_impact']]
+        nat = False 
+
     prov_roads = prov_roads.merge(loss_roads)
     
     dr_norm,dr_growth,min_main_dr,max_main_dr = calculate_discounting_arrays(discount_rate,growth_rate)
+    print (sum(dr_norm),sum(dr_growth),sum(min_main_dr),sum(max_main_dr))
     
-    prov_roads['min_benefit'],prov_roads['min_ini_adap_cost'],prov_roads['min_tot_adap_cost'],prov_roads['min_ini_rel_share'],prov_roads['min_tot_rel_share'],prov_roads['min_bc_ratio'],prov_roads['min_bc_diff'] = zip(*dd.from_pandas(prov_roads,npartitions=nCores).\
-       map_partitions(
-          lambda df : df.apply(lambda x: calc_costs(x,param_values,
-                                    mnt_dis_cost,mnt_nat_cost,cst_dis_cost,cst_nat_cost,pavement,
-                                    mnt_main_cost,cst_main_cost,dr_norm,dr_growth,rehab_costs,min_main_dr,max_main_dr,min_exp=True,national=False,min_loss=True),axis=1)).\
-       compute(scheduler=get))
+    tqdm.pandas()
+
+    prov_roads['min_benefit'],prov_roads['min_ini_adap_cost'],prov_roads['min_tot_adap_cost'], \
+    prov_roads['min_ini_rel_share'],prov_roads['min_tot_rel_share'],prov_roads['min_bc_ratio'],prov_roads['min_bc_diff'] = zip(*prov_roads.progress_apply(lambda x: calc_costs(x,param_values,
+                                mnt_dis_cost,mnt_nat_cost,cst_dis_cost,cst_nat_cost,brdg_cost,pavement,
+                                mnt_main_cost,cst_main_cost,dr_norm,dr_growth,rehab_costs,min_main_dr,max_main_dr,
+                                duration_max=duration_max,min_exp=True,national=nat,min_loss=True),axis=1))
+
+
+    prov_roads['max_benefit'],prov_roads['max_ini_adap_cost'],prov_roads['max_tot_adap_cost'], \
+    prov_roads['max_ini_rel_share'],prov_roads['max_tot_rel_share'],prov_roads['max_bc_ratio'],prov_roads['max_bc_diff'] = zip(*prov_roads.progress_apply(lambda x: calc_costs(x,param_values,
+                                mnt_dis_cost,mnt_nat_cost,cst_dis_cost,cst_nat_cost,brdg_cost,pavement,
+                                mnt_main_cost,cst_main_cost,dr_norm,dr_growth,rehab_costs,min_main_dr,max_main_dr,
+                                duration_max=duration_max,min_exp=False,national=nat,min_loss=False),axis=1))
     
-    prov_roads['max_benefit'],prov_roads['max_ini_adap_cost'],prov_roads['max_tot_adap_cost'],prov_roads['max_ini_rel_share'],prov_roads['max_tot_rel_share'],prov_roads['max_bc_ratio'],prov_roads['max_bc_diff'] = zip(*dd.from_pandas(prov_roads,npartitions=nCores).\
-       map_partitions(
-          lambda df : df.apply(lambda x: calc_costs(x,param_values,
-                                    mnt_dis_cost,mnt_nat_cost,cst_dis_cost,cst_nat_cost,pavement,
-                                    mnt_main_cost,cst_main_cost,dr_norm,dr_growth,rehab_costs,min_main_dr,max_main_dr,min_exp=False,national=False,min_loss=False),axis=1)).\
-       compute(scheduler=get))
-    
-    prov_roads.to_csv(os.path.join(data_path,'output_adaptation_{}.csv'.format(file_id)))
+    prov_roads.to_csv(os.path.join(output_path,'adaptation_results','output_adaptation_{}_{}_days_max_disruption.csv'.format(file_id,duration_max)))
 
 if __name__ == '__main__':
 
-    data_path = os.getcwd()
+    data_path, calc_path, output_path = load_config()['paths']['data'], load_config()[
+        'paths']['calc'], load_config()['paths']['output']
     
-    for file_id in ['laocai','binhdinh','thanhhoa','national_road']:
-        run_file(file_id,data_path,discount_rate=12,growth_rate=6)
+    duration_list = [10]
+    discount_rate = 12
+    growth_rate = 6.5
+    regions = ['laocai','binhdinh','thanhhoa','national_road']
+    for dur in duration_list:
+        for file_id in regions:
+            run_file(file_id,data_path,output_path,duration_max=dur,discount_rate=discount_rate,growth_rate=growth_rate)
  
     

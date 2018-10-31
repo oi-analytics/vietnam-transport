@@ -146,7 +146,7 @@ def main():
     ind_crop_cols = ['sugar', 'wood', 'steel', 'constructi', 'cement', 'fertilizer', 'coal', 'petroluem', 'manufactur',
                      'fishery', 'meat', 'cash', 'cass', 'teas', 'maiz', 'rubb', 'swpo', 'acof', 'rcof', 'pepp']
     min_max_exist = ['rice','tons']
-    percentage = [10,100.0]
+    percentage = [10]
     single_edge = True
     
     """Give the paths to the input data files
@@ -233,7 +233,6 @@ def main():
             flow_df = pd.read_excel(os.path.join(flow_paths_data,flow_excel_file), sheet_name=modes[m])
             edge_fail_ranges = []
             for t in range(len(types)):
-                flow_df[tons_types[t]] = 0.01*perct*flow_df[tons_types[t]]
                 ef_list = []
                 for fail_edge in ef_sc_list:
                     if isinstance(fail_edge,list) == False:

@@ -62,7 +62,7 @@ def main():
     modes = ['road', 'rail','inland']
 
     types = ['min', 'max']
-    percentage = [10,100.0]
+    percentage = [10]
     single_edge = True
     
     """Give the paths to the input data files

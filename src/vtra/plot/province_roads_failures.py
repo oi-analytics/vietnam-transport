@@ -17,65 +17,6 @@ def main():
     config = load_config()
 
     regions = ['Lao Cai', 'Binh Dinh', 'Thanh Hoa']
-    # plot_set = [
-    #     {
-    #         'column': 'min_econ_l',
-    #         'title': 'Min Economic impact',
-    #         'legend_label': "Economic Loss('000 USD/day)",
-    #         'divisor': 1000,
-    #         'significance': 0
-    #     },
-    #     {
-    #         'column': 'max_econ_l',
-    #         'title': 'Max Economic impact',
-    #         'legend_label': "Economic Loss('000 USD/day)",
-    #         'divisor': 1000,
-    #         'significance': 0
-    #     },
-    #     {
-    #         'column': 'min_tons',
-    #         'title': 'Min Daily Tons loss',
-    #         'legend_label': "MT (tons/day)",
-    #         'divisor': 1,
-    #         'significance': 0
-    #     },
-    #     {
-    #         'column': 'max_tons',
-    #         'title': 'Max Daily Tons loss',
-    #         'legend_label': "MT (tons/day)",
-    #         'divisor': 1,
-    #         'significance': 0
-    #     },
-    #     {
-    #         'column': 'min_adapt_',
-    #         'title': 'Min NPV of adaptation over time',
-    #         'legend_label': "NPV(USD million)",
-    #         'divisor': 1000000,
-    #         'significance': 0
-    #     },
-    #     {
-    #         'column': 'max_econ_l',
-    #         'title': 'Max NPV of adaptation over time',
-    #         'legend_label': "NPV(USD million)",
-    #         'divisor': 1000000,
-    #         'significance': 0
-    #     },
-    #     {
-    #         'column': 'min_bc_rat',
-    #         'title': 'Min BCR of adaptation over time',
-    #         'legend_label': "BCR",
-    #         'divisor': 1,
-    #         'significance': 0
-    #     },
-    #     {
-    #         'column': 'max_bc_rat',
-    #         'title': 'Max BCR of adaptation over time',
-    #         'legend_label': "BCR",
-    #         'divisor': 1,
-    #         'significance': 0
-    #     }
-    # ]
-
     plot_set = [
         {
             'column': 'min_tr_loss',
@@ -129,7 +70,7 @@ def main():
         {
             'column': 'max_croptons',
             'title': 'Max Daily Crop Tons disrupted',
-            'legend_label': "Crops trasnport disrupted (tons/day)",
+            'legend_label': "Crops transport disrupted (tons/day)",
             'divisor': 1,
             'significance': 0
         }
@@ -163,24 +104,6 @@ def main():
             # generate weight bins
             column = plot_set[c]['column']
             weights = [record[column] for iter_, record in region_file.iterrows()]
-            # if column in ('min_adapt_', 'max_adapt_'):
-            #     weights = [
-            #         record.attributes[column]
-            #         for record in shpreader.Reader(region_file).records()
-            #         if record.attributes[column] > 0 and record.attributes['max_econ_l'] > 0
-            #     ]
-            # elif column in ('min_bc_rat', 'max_bc_rat'):
-            #     weights = [
-            #         record.attributes[column]
-            #         for record in shpreader.Reader(region_file).records()
-            #         if record.attributes[column] > 1 and record.attributes['max_econ_l'] > 0
-            #     ]
-            # else:
-            #     weights = [
-            #         record.attributes[column]
-            #         record[column]
-            #     for iter_, record in region_file.iterrows()
-            #     ]
 
             max_weight = max(weights)
             if column in ('min_bc_rat', 'max_bc_rat') and region == 'Lao Cai':
@@ -194,37 +117,16 @@ def main():
                 region: []
             }
 
-            # styles = OrderedDict([
-            #     (region,  Style(color='black', zindex=6, label='No access'))
-            # ])
             styles = OrderedDict([
-                ('1',  Style(color='#252525', zindex=6, label='No access')),  # black
-                ('2', Style(color='#f1605d', zindex=8, label='Reroutiing possible')),  # orange
-                ('3', Style(color='#969696', zindex=7, label='No effect')) # grey
+                ('1',  Style(color='#252525', zindex=6, label='Hazard failure: No access')),  # black
+                ('2', Style(color='#f1605d', zindex=8, label='Hazard failure: Reroutiing possible')),  # orange
+                ('3', Style(color='#969696', zindex=7, label='No hazard exposure/effect')) # grey
             ])
-
-            # if column in ('min_adapt_', 'max_adapt_'):
-            #     rec_set = [
-            #         record
-            #         for record in shpreader.Reader(region_file).records()
-            #         if record.attributes[column] > 0 and record.attributes['max_econ_l'] > 0
-            #     ]
-            # elif column in ('min_bc_rat', 'max_bc_rat'):
-            #     rec_set = [
-            #         record
-            #         for record in shpreader.Reader(region_file).records()
-            #         if record.attributes[column] > 1 and record.attributes['max_econ_l'] > 0
-            #     ]
-            # else:
-            #     rec_set = [
-            #         record
-            #         for record in shpreader.Reader(region_file).records()
-            #     ]
 
             for iter_, record in region_file.iterrows():
                 cat = region
                 geom = record.geometry
-                access = record.no_access
+                noaccess = record.no_access
 
                 val = record[column]
 
@@ -234,17 +136,17 @@ def main():
                         buffered_geom = geom.buffer(line_style[1])
 
                         if buffered_geom is not None:
-                            if val == 0 and access == 0:
+                            if val == 0 and noaccess == 0:
                                 ax.add_geometries(
                                     [buffered_geom],
                                     crs=proj_lat_lon,
                                     linewidth=0,
                                     facecolor='#969696',
                                     edgecolor='none',
-                                    zorder=3 + line_style[0]
+                                    zorder=2 + line_style[0]
                                 )
 
-                            elif access == 0:
+                            elif noaccess == 0:
                                 ax.add_geometries(
                                     [buffered_geom],
                                     crs=proj_lat_lon,
@@ -260,11 +162,11 @@ def main():
                                     linewidth=0,
                                     facecolor='#252525',
                                     edgecolor='none',
-                                    zorder=3 + line_style[0]
+                                    zorder=4 + line_style[0]
                                 )
 
                         else:
-                            print("Feature was outside range to plot", record.attributes)
+                            print("Feature was outside range to plot", iter_)
 
             x_l = plot_settings['weight_legend']['x_l']
             x_r = plot_settings['weight_legend']['x_r']

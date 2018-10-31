@@ -216,19 +216,25 @@ def get_district_label(record):
     return (district_name, centroid.x, centroid.y, 9)
 
 
-def plot_basemap_labels(ax, data_path, labels=None, province_zoom=False, plot_regions=True):
+def plot_basemap_labels(ax, data_path, labels=None, province_zoom=False, plot_regions=True, plot_international_left=True,plot_international_right=True):
     """Plot countries and regions background
     """
     proj = ccrs.PlateCarree()
     extent = ax.get_extent()
 
     if labels is None:
-        labels = [
-            ('Cambodia', 105.25, 12.89, 9),
-            ('Laos', 105.64, 16.55, 9),
-            ('Thailand', 103.64, 15.25, 9),
-            ('China', 108.08, 22.71, 9),
-            ('South China Sea', 108.17, 17.37, 7)]
+        labels = []
+
+        if plot_international_left:
+            labels = labels + [
+                ('Cambodia', 105.25, 12.89, 9),
+                ('Laos', 105.64, 16.55, 9),
+                ('Thailand', 103.64, 15.25, 9)]
+
+        if plot_international_right:
+            labels = labels + [
+                ('China', 108.08, 22.71, 9),
+                ('South China Sea', 108.17, 17.37, 7)]
 
         if plot_regions:
             labels = labels + [

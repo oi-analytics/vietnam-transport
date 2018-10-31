@@ -4,6 +4,9 @@ import os
 import sys
 from collections import OrderedDict
 
+import numpy as np
+import geopandas as gpd
+import pandas as pd
 import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
 import matplotlib.pyplot as plt
@@ -14,9 +17,19 @@ from vtra.utils import *
 
 def main():
     config = load_config()
-    coastal_edge_file = os.path.join(
-        config['paths']['data'], 'Results', 'Failure_shapefiles',
-        'weighted_edges_failures_national_water_transfer_from_road_10_shift.shp')
+    region_file_path = os.path.join(config['paths']['data'], 'post_processed_networks',
+                               'coastal_edges.shp')
+    flow_file_path = os.path.join(config['paths']['output'], 'failure_results','minmax_combined_scenarios',
+                               'single_edge_failures_transfers_national_road_10_percent_shift.csv')
+
+    region_file = gpd.read_file(region_file_path,encoding='utf-8')
+    flow_file = pd.read_csv(flow_file_path)
+    region_file = pd.merge(region_file,flow_file,how='left', on=['edge_id']).fillna(0)
+    del flow_file
+
+
+
+    region_file = region_file[region_file['edge_id'] != 0]
 
     color = '#045a8d'
     color_by_type = {'Coastal Line': color}
@@ -36,34 +49,55 @@ def main():
 
         column = columns[c]
         weights = [
-            record.attributes[column]
-            for record
-            in shpreader.Reader(coastal_edge_file).records()
+            record[column]
+            for iter_,record in region_file.iterrows()
         ]
         max_weight = max(weights)
         width_by_range = generate_weight_bins(weights)
+
+        water_geoms_by_category = {
+            '1': [],
+            '2': []
+        }
 
         geoms_by_range = {}
         for value_range in width_by_range:
             geoms_by_range[value_range] = []
 
-        for record in shpreader.Reader(coastal_edge_file).records():
-            val = record.attributes[column]
+        for iter_,record in region_file.iterrows():
             geom = record.geometry
+            val = record[column]
+            if val == 0:
+                cat = '2'
+            else:
+                cat = '1'
 
-            if val > 0:  # only add edges that carry this commodity
-                for nmin, nmax in geoms_by_range:
-                    if nmin <= val and val < nmax:
-                        geoms_by_range[(nmin, nmax)].append(geom)
+            buffered_geom = None
+            for (nmin, nmax), width in width_by_range.items():
+                if nmin <= val and val < nmax:
+                    buffered_geom = geom.buffer(width)
 
-        # plot
-        for range_, width in width_by_range.items():
+            if buffered_geom is not None:
+                water_geoms_by_category[cat].append(buffered_geom)
+            else:
+                print("Feature was outside range to plot", iter_)
+
+
+        styles = OrderedDict([
+            ('1',  Style(color='#045a8d', zindex=9, label='Transfers')),  # blue
+            ('2', Style(color='#969696', zindex=7, label='No transfer'))
+        ])
+
+        for cat, geoms in water_geoms_by_category.items():
+            cat_style = styles[cat]
             ax.add_geometries(
-                [geom.buffer(width) for geom in geoms_by_range[range_]],
+                geoms,
                 crs=proj_lat_lon,
+                linewidth=0,
+                facecolor=cat_style.color,
                 edgecolor='none',
-                facecolor=color,
-                zorder=2)
+                zorder=cat_style.zindex
+            )
 
         x_l = 102.3
         x_r = x_l + 0.4
@@ -104,6 +138,7 @@ def main():
                 size=10)
 
         plt.title(title_cols[c], fontsize=14)
+        print ('* Plotting ',title_cols[c])
         output_file = os.path.join(
             config['paths']['figures'],
             'water_flow-map-transfer-road-10-shift-{}.png'.format(column))

@@ -14,7 +14,7 @@ def main():
     config = load_config()
     output_file = os.path.join(config['paths']['figures'], 'road-map.png')
     roads_file = os.path.join(
-        config['paths']['data'], 'Roads', 'roads2009', 'roads2009edges.shp')
+        config['paths']['data'], 'post_processed_networks','road_edges.shp')
 
     ax = get_axes()
     plot_basemap(ax, config['paths']['data'])

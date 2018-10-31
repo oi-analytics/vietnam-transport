@@ -47,7 +47,8 @@ def main():
     """
     provinces = ['Lao Cai','Binh Dinh','Thanh Hoa']
     modes = ['road']
-    province_results = 'Yes'
+    modes = ['rail']
+    province_results = 'No'
     national_results = 'Yes'
     start_year = 2016
     length_thr = 500.0
@@ -106,13 +107,19 @@ def main():
     
     if national_results == 'Yes':
         for m in range(len(modes)):
+            if modes[m] != 'road':
+                index_cols = ['edge_id', 'hazard_type', 'model', 'climate_scenario', 'year','road_length']
+                sel_cols = ['edge_id','length']
+            else:
+                sel_cols = ['edge_id','level','terrain','surface','road_class','road_cond','asset_type','width','length']
+
 
             """Load mode network DataFrame
             """
             print ('* Loading {} network DataFrame'.format(modes[m]))
             G_df = pd.read_excel(os.path.join(network_data_excel,
                 'national_edges.xlsx'),sheet_name = modes[m],encoding='utf-8')
-            G_df = G_df[['edge_id','level','terrain','surface','road_class','road_cond','asset_type','width','length']]
+            G_df = G_df[sel_cols]
             
             """Load failure scenarios
             """
@@ -126,7 +133,8 @@ def main():
 
             print('* Creating {} hazard-network scenarios'.format(modes[m]))
             scenarios_df = create_hazard_scenarios_for_adaptation(all_edge_fail_scenarios,index_cols,length_thr)
-
+            scenarios_df.rename(columns={'road_length': '{}_length'.format(modes[m])}, inplace=True)
+            
             df_path = os.path.join(output_path, 'hazard_scenarios',
                                'national_{}_hazard_intersections_risks.csv'.format(modes[m]))
             scenarios_df.to_csv(df_path, index=False)

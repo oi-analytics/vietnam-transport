@@ -13,12 +13,6 @@ from vtra.utils import *
 
 def main():
     config = load_config()
-    # flows_file = os.path.join(
-    #   config['paths']['data'], 'Results', 'Failure_shapefiles',
-    #   'weighted_edges_failures_national_road_2.shp')
-    # flows_file = os.path.join(
-    #   config['paths']['data'], 'Results', 'Failure_shapefiles',
-    #   'weighted_edges_failures_national_road_transfer_from_road.shp')
     flows_file = os.path.join(
         config['paths']['data'], 'Results', 'Failure_shapefiles',
         'weighted_edges_failures_national_road_transfer_from_rail.shp')

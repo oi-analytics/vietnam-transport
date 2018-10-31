@@ -50,8 +50,8 @@ def main():
 
     labels = ['0 to 10', '10 to 20', '20 to 30', '30 to 40', '40 to 100', 'No value']
     change_colors = ['#1a9850','#66bd63','#a6d96a','#d9ef8b','#fee08b','#fdae61','#f46d43','#d73027','#d9d9d9']
-    change_labels = ['-100 to -40','-40 to -20','-20 to -10','-10 to 0','0 to 10','10 to 20','20 to 40','40 to 100','No change/value']
-    change_ranges = [(-100,-40),(-40,-20),(-20,-10),(-10,0),(0.001,10),(10,20),(20,40),(40,100)]
+    change_labels = ['< -40','-40 to -20','-20 to -10','-10 to 0','0 to 10','10 to 20','20 to 40','> 40','No change/value']
+    change_ranges = [(-1e10,-40),(-40,-20),(-20,-10),(-10,0),(0.001,10),(10,20),(20,40),(40,1e10)]
 
     for mode in modes:
         region_file = gpd.read_file(commune_shp,encoding='utf-8')
@@ -72,7 +72,9 @@ def main():
             perc = all_edge_fail_scenarios.loc[[sc], 'percentage'].values.tolist()
             yrs = all_edge_fail_scenarios.loc[[sc], 'year'].values.tolist()
             cl = all_edge_fail_scenarios.loc[[sc], 'climate_scenario'].values.tolist()
-            if len(cl) > 1:
+            if 2016 not in yrs:
+                change_tup += list(zip([sc[0]]*len(cl),[sc[1]]*len(cl),cl,yrs,[1e9]*len(cl)))
+            elif len(cl) > 1:
                 vals = list(zip(cl,perc,yrs))
                 vals = sorted(vals, key=lambda pair: pair[-1])
                 change = np.array([p for (c,p,y) in vals[1:]]) - vals[0][1]
@@ -104,7 +106,7 @@ def main():
             ax = get_axes()
             plot_basemap(ax, config['paths']['data'],highlight_region=[])
             scale_bar(ax, location=(0.8, 0.05))
-            plot_basemap_labels(ax, config['paths']['data'])
+            plot_basemap_labels(ax, config['paths']['data'],plot_international_left=False)
             proj = ccrs.PlateCarree()
 
             name = [c['name'] for c in plot_set if c['hazard'] == hazard_type][0]
@@ -161,7 +163,7 @@ def main():
             ax = get_axes()
             plot_basemap(ax, config['paths']['data'],highlight_region=[])
             scale_bar(ax, location=(0.8, 0.05))
-            plot_basemap_labels(ax, config['paths']['data'])
+            plot_basemap_labels(ax, config['paths']['data'],plot_international_left=False)
             proj = ccrs.PlateCarree()
 
             colors = [c['color'] for c in plot_set if c['hazard'] == hazard_type][0]
@@ -207,7 +209,7 @@ def main():
                 climate_scenario = 'current'
             else:
                 climate_scenario = climate_scenario.upper()
-            plt.title('Percentage exposure for {} {} {}'.format(name,climate_scenario,year), fontsize=14)
+            plt.title('Percentage exposure for {} {} {}'.format(name,climate_scenario,year), fontsize=10)
             output_file = os.path.join(config['paths']['figures'],
                                        '{}-{}-{}-{}-exposure-percentage.png'.format(mode.replace(' ',''),name,climate_scenario.replace('.',''),year))
             save_fig(output_file)
