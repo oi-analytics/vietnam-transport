@@ -48,15 +48,17 @@ from shapely.geometry import Polygon
 from vtra.utils import *
 from vtra.transport_flow_and_failure_functions import *
 
-def hazard_data_summary(hazard_network_dataframe,length_column):
-    df = pd.read_csv(hazard_network_dataframe)
-    hazard_totals = df.groupby(['hazard_type','model','climate_scenario','year'])['min_exposure_length','max_exposure_length',length_column].sum().reset_index()
+def hazard_data_summary(hazard_network_dataframe,network_dataframe):
+    df = pd.merge(network_dataframe,hazard_network_dataframe,how='left',on=['edge_id']).fillna(0)
+    df['min_exposure_length'] = 0.001*df['min_exposure_length']
+    df['max_exposure_length'] = 0.001*df['max_exposure_length']
+    hazard_totals = df.groupby(['hazard_type','model','climate_scenario','year'])['min_exposure_length','max_exposure_length'].sum().reset_index()
     
-    hazard_totals_min = hazard_totals.groupby(['hazard_type','climate_scenario','year'])['min_exposure_length',length_column].min().reset_index()
-    hazard_totals_min['Percentange (min)'] = hazard_totals_min['min_exposure_length']/hazard_totals_min[length_column]
+    hazard_totals_min = hazard_totals.groupby(['hazard_type','climate_scenario','year'])['min_exposure_length'].min().reset_index()
+    hazard_totals_min['Percentage (min)'] = hazard_totals_min['min_exposure_length']/df['length'].sum()
 
-    hazard_totals_max = hazard_totals.groupby(['hazard_type','climate_scenario','year'])['max_exposure_length',length_column].max().reset_index()
-    hazard_totals_max['Percentange (max)'] = hazard_totals_max['max_exposure_length']/hazard_totals_max[length_column]
+    hazard_totals_max = hazard_totals.groupby(['hazard_type','climate_scenario','year'])['max_exposure_length'].max().reset_index()
+    hazard_totals_max['Percentage (max)'] = hazard_totals_max['max_exposure_length']/df['length'].sum()
 
     hazards = pd.merge(hazard_totals_min,hazard_totals_max,how='left',on=['hazard_type','climate_scenario','year'])
 
@@ -118,11 +120,18 @@ def main():
         prov_excel_writer = pd.ExcelWriter(data_excel)
         for province in provinces:
             province_name = province.replace(' ', '').lower()
-            hazard_data = os.path.join(
+            province_data = pd.read_excel(
+                os.path.join(
+                    data_path,
+                    'post_processed_networks',
+                    'province_roads_edges.xlsx'
+                    ),sheet_name=province_name
+                )
+            hazard_data = pd.read_csv(os.path.join(
                 hazard_path,
-                'roads_hazard_intersections_{}_risks.csv'.format(province_name))
+                'roads_hazard_intersections_{}_risks.csv'.format(province_name)))
 
-            data_df = hazard_data_summary(hazard_data,'road_length')
+            data_df = hazard_data_summary(hazard_data,province_data)
             data_df.to_excel(prov_excel_writer, province_name, index=False)
             prov_excel_writer.save()
             del data_df
@@ -135,11 +144,17 @@ def main():
             output_dir,'national_scale_hazard_intersection_summary_stats.xlsx')
         nat_excel_writer = pd.ExcelWriter(data_excel)
         for m in range(len(modes)):
-            hazard_data = os.path.join(
+            national_data = pd.read_excel(
+                os.path.join(
+                    data_path,
+                    'post_processed_networks',
+                    'national_edges.xlsx'
+                    ),sheet_name=modes[m]
+                )
+            hazard_data = pd.read_csv(os.path.join(
                 hazard_path,
-                'national_{}_hazard_intersections_risks.csv'.format(modes[m]))
-            
-            data_df = hazard_data_summary(hazard_data,'{}_length'.format(modes[m]))
+                'national_{}_hazard_intersections_risks.csv'.format(modes[m])))
+            data_df = hazard_data_summary(hazard_data,national_data)
             data_df.to_excel(nat_excel_writer, modes[m], index=False)
             nat_excel_writer.save()
             del data_df
