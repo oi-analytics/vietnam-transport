@@ -430,19 +430,23 @@ def main():
                 plt.close()
 
 
-        all_edge_fail_scenarios = fail_scenarios[['edge_id','asset_type','max_exposure_length','road_length','min_eael','max_eael',\
+        all_edge_fail_scenarios = fail_scenarios[['edge_id','asset_type','min_exposure_length','max_exposure_length','road_length','min_eael','max_eael',\
                                     'min_ini_adap_cost','max_ini_adap_cost','min_tot_adap_cost',\
                                     'max_tot_adap_cost','min_benefit','max_benefit','min_bc_ratio','max_bc_ratio']]
         for cols in ['min_ini_adap_cost','max_ini_adap_cost']:
             all_edge_fail_scenarios[cols] = all_edge_fail_scenarios[cols].apply(lambda x: np.max(np.array(ast.literal_eval(x))))
         
-        all_edge_fail_scenarios = all_edge_fail_scenarios.groupby(['edge_id','asset_type','max_exposure_length','road_length'])[adapt_cols + ['min_eael','max_eael']].max().reset_index()
+        all_edge_fail_scenarios = all_edge_fail_scenarios.groupby(['edge_id','asset_type','min_exposure_length','max_exposure_length','road_length'])[adapt_cols + ['min_eael','max_eael']].max().reset_index()
         asset_locations = pd.read_excel(os.path.join(config['paths']['output'],
             'hazard_scenarios','province_roads_hazard_intersections.xlsx'),sheet_name=region.replace(' ','').lower())
         asset_locations = asset_locations[['edge_id','commune_name','district_name']]
         asset_locations = asset_locations.drop_duplicates(subset=['edge_id','commune_name','district_name'], keep='first')
         all_edge_fail_scenarios = pd.merge(all_edge_fail_scenarios,asset_locations,how='left',on=['edge_id'])
         all_edge_fail_scenarios = all_edge_fail_scenarios.drop_duplicates(subset=['edge_id','commune_name','district_name'], keep='first')
+        all_edge_fail_scenarios = all_edge_fail_scenarios[['edge_id','asset_type','commune_name','district_name','min_exposure_length',\
+                                    'max_exposure_length','road_length','min_eael','max_eael',\
+                                    'min_ini_adap_cost','max_ini_adap_cost','min_tot_adap_cost',\
+                                    'max_tot_adap_cost','min_benefit','max_benefit','min_bc_ratio','max_bc_ratio']]
         all_edge_fail_scenarios.to_csv(os.path.join(config['paths']['output'],
             'network_stats',
             '{}_adapt_summary_fixed_parameter.csv'.format(region.replace(' ','').lower())

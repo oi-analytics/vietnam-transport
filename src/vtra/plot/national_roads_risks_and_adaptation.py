@@ -393,18 +393,18 @@ def main():
             save_fig(output_file)
             plt.close()
 
-    fail_scenarios = fail_scenarios[(fail_scenarios['hazard_type'] == 'flooding') & (fail_scenarios['year'] > 2016) & (fail_scenarios['climate_scenario'] == 'rcp 8.5')]
+    # fail_scenarios = fail_scenarios[(fail_scenarios['hazard_type'] == 'flooding') & (fail_scenarios['year'] > 2016) & (fail_scenarios['climate_scenario'] == 'rcp 8.5')]
     # fail_scenarios = fail_scenarios[(fail_scenarios['hazard_type'] == 'flooding') & (fail_scenarios['year'] == 2016)]
-    all_edge_fail_scenarios = fail_scenarios[['edge_id','min_eael','max_eael','min_benefit','min_ini_adap_cost','min_tot_adap_cost',\
+    all_edge_fail_scenarios = fail_scenarios[['edge_id','road_class','min_eael','max_eael','min_benefit','min_ini_adap_cost','min_tot_adap_cost',\
                                 'min_bc_ratio','max_benefit','max_ini_adap_cost','max_tot_adap_cost','max_bc_ratio']]
     for cols in ['min_ini_adap_cost','max_ini_adap_cost']:
         all_edge_fail_scenarios[cols] = all_edge_fail_scenarios[cols].apply(lambda x: np.max(np.array(ast.literal_eval(x))))
     
-    all_edge_fail_scenarios = all_edge_fail_scenarios.groupby(['edge_id'])[adapt_cols + ['min_eael','max_eael']].max().reset_index()
+    all_edge_fail_scenarios = all_edge_fail_scenarios.groupby(['edge_id','road_class'])[adapt_cols + ['min_eael','max_eael']].max().reset_index()
     all_edge_fail_scenarios = all_edge_fail_scenarios[all_edge_fail_scenarios['max_eael'] > 0]
     all_edge_fail_scenarios.to_csv(os.path.join(config['paths']['output'],
         'network_stats',
-        'national_roads_adapt_summary_fixed_parameters_flooding_rcp85.csv'
+        'national_roads_adapt_summary_fixed_parameters.csv'
         ), index=False
     )
     edges_vals = pd.merge(region_file,all_edge_fail_scenarios,how='left',on=['edge_id']).fillna(0)
