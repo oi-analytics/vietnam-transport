@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""vtra
+"""Vietnam Transport Risk Analysis
 """
 import pkg_resources
 
