@@ -84,9 +84,9 @@ IFPRI crop data
 	- raster grid geometry
 	- projection systems: Default assumed = EPSG:4326
 
-RiceAltas data
+RiceAtlas data
 --------------
-1. RiceAltas datasets are stored:
+1. RiceAtlas datasets are stored:
 	- In the path - ``data/rice_atlas_vietnam/``
 	- As Shapefiles
 	- Only the file ``rice_production.shp`` is used
