@@ -16,15 +16,15 @@ Networks
 
 2. All nodes should have the following attributes:
 	- ``node_id`` - String Node ID
-	- ``geometry`` - Shapely Point geometry of node with projection ESPG:4326
+	- ``geometry`` - Point geometry of node with projection ESPG:4326
 	- variable list of attributes depending upon sector
 
 3. All edges should have the following attributes:
 	- ``edge_id`` - String edge ID
-	- ``g_id`` - Interger edge ID
+	- ``g_id`` - Integer edge ID
 	- ``from_node`` - String node ID that should be present in node_id column
 	- ``to_node`` - String node ID that should be present in node_id column
-	- ``geometry`` - Shapely LineString geometry of edge with projection ESPG:4326
+	- ``geometry`` - LineString geometry of edge with projection ESPG:4326
 	- variable list of attributes depending upon sector
 
 Cost attributes

@@ -787,7 +787,7 @@ def get_node_edge_files_in_path(mode_file_path):
     Parameters
     ----------
     mode_file_path : Path of mode file
-    
+
     Returns
     -------
     edges_in : Path of edges shapefile
@@ -798,7 +798,7 @@ def get_node_edge_files_in_path(mode_file_path):
     Prints error if node or edge file missing
 
     """
-    for file in os.listdir(mode_file_path): 
+    for file in os.listdir(mode_file_path):
         try:
             if file.endswith('.shp') and 'edges' in file.lower().strip():
                 edges_in = os.path.join(mode_file_path, file)
@@ -828,7 +828,7 @@ def get_node_edge_files(mode_file_path,file_identification):
     Prints error if node or edge file missing
 
     """
-    for file in os.listdir(mode_file_path): 
+    for file in os.listdir(mode_file_path):
         try:
             if file.lower().strip() == '{}_edges.shp'.format(file_identification):
                 edges_in = os.path.join(mode_file_path, file)

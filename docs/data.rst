@@ -19,7 +19,7 @@ Networks
 	- ``tons`` - Float assigned cargo freight tonnage using node
 	- ``population`` - Float assigned passenger/population number using node
 	- ``capacity`` - Float assigned capacity in tons/passenger numbers/other units
-	- ``geometry`` - Shapely Point geometry of node with projection ESPG:4326
+	- ``geometry`` - Point geometry of node with projection ESPG:4326
 
 3. Attributes only present in inland and coastal port nodes:
 	- ``port_type`` - String name of type of port: inland or sea
@@ -27,10 +27,10 @@ Networks
 
 4. All edges have the following attributes:
 	- ``edge_id`` - String edge ID
-	- ``g_id`` - Interger edge ID
+	- ``g_id`` - Integer edge ID
 	- ``from_node`` - String node ID that should be present in node_id column
 	- ``to_node`` - String node ID that should be present in node_id column
-	- ``geometry`` - Shapely LineString geometry of edge with projection ESPG:4326
+	- ``geometry`` - LineString geometry of edge with projection ESPG:4326
 	- ``terrain`` - String name of terrain of edge
 	- ``level`` - Integer number for edge level: National, Provincial, Local, etc.
 	- ``width`` - Float width in meters of edge
