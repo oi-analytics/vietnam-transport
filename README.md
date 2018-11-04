@@ -44,9 +44,8 @@ licensing](https://www.gams.com/latest/docs/UG_MAIN.htm) instructions.
 
 ## Configuration
 
-The location of data and output files are configured by a `config.json` file.  Copy
-`config.template.json` and edit the file paths and database connection details to locate
-the files on your system and access your database.
+The location of data and output files are configured by a `config.json` file. Copy
+`config.template.json` and edit the file path details to locate the files on your system.
 
 
 ## Development notes

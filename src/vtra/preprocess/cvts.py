@@ -3,8 +3,8 @@ Purpose
 -------
 Process CVTS (Commercial Vehicle Tracking System) GPS traces. The script first reduces
 the number of Cvts points by removing standstill and minimal movement from the dataset.
-Each GPS trace is then mapped on the road network and  processed into a route (a list 
-of road edge id's). The sum of vehicles passing a each edge is added it the road 
+Each GPS trace is then mapped on the road network and  processed into a route (a list
+of road edge id's). The sum of vehicles passing a each edge is added it the road
 network shapefile.
 
 Input data requirements
@@ -22,7 +22,7 @@ Correct paths to all files and correct input parameter
 Results
 -------
 1) Each Cvts trace is processed into a route
-- A list of road edge id's 
+- A list of road edge id's
 
 2) The road edge shapefile is appended with the following properties:
 - vehicle_count: The total number of vehicles that passed this edge
@@ -218,7 +218,7 @@ def find_routes(road_network, gps_points_folder, routes_folder):
     # a previous driven edge it counted again (as a return journey)
     NUM_RETURN_JOURNEY = 5
 
-    # Process road network into spatial database
+    # Process road network into spatial index
     rtree = index.Index()
     road_network_lut = {}
     for road in road_network:

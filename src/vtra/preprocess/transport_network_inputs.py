@@ -18,7 +18,6 @@ import igraph as ig
 import networkx as nx
 import numpy as np
 import pandas as pd
-import psycopg2
 from vtra.utils import line_length
 
 
@@ -91,13 +90,13 @@ def assign_assumed_width_to_province_roads(x):
 def assign_asset_type_to_province_roads_from_file(asset_code, asset_type_list):
     """
     Assign asset types to roads assets in Vietnam based on values in file
-    
+
     The types are assigned based on our understanding of:
     1. The reported asset code in the data
 
     Parameters
         - asset_code - Numeric value for code of asset
-        - asset_type_list - List of Strings wiht names of asset types 
+        - asset_type_list - List of Strings wiht names of asset types
 
     Returns
         asset_type - String name of type of asset
@@ -114,12 +113,12 @@ def assign_asset_type_to_province_roads_from_file(asset_code, asset_type_list):
 def assign_asset_type_to_province_roads(x):
     """
     Assign asset types to roads assets in Vietnam
-    
+
     The types are assigned based on our understanding of:
     1. The reported asset code in the data
 
     Parameters
-        x - Pandas DataFrame with numeric asset code 
+        x - Pandas DataFrame with numeric asset code
 
     Returns
         asset type - Which is either of (Bridge, Dam, Culvert, Tunnel, Spillway, Road)
@@ -141,9 +140,9 @@ def assign_asset_type_to_province_roads(x):
 def assign_minmax_travel_speeds_province_roads_apply(x):
     """
     Assign travel speeds to roads assets in Vietnam
-    
+
     The speeds are assigned based on our understanding of:
-    
+
     1. The types of assets
     2. The levels of classification of assets: 0-National, 1-Provinical, 2-Local, 3-Other
     3. The terrain where the assets are located: Flat or Mountain or No information
@@ -192,9 +191,9 @@ def assign_minmax_travel_speeds_province_roads_apply(x):
 def assign_minmax_time_costs_province_roads_apply(x, cost_dataframe):
     """
     Assign time costs on Province roads in Vietnam
-    
+
     The costs are assigned based on our understanding of:
-    
+
     1. The types of assets
     2. The levels of classification of assets: 0-National, 1-Provinical, 2-Local, 3-Other
     3. The terrain where the assets are located: Flat or Mountain or No information
@@ -236,9 +235,9 @@ def assign_minmax_time_costs_province_roads_apply(x, cost_dataframe):
 def assign_minmax_tariff_costs_province_roads_apply(x, cost_dataframe):
     """
     Assign tariff costs on Province roads in Vietnam
-    
+
     The costs are assigned based on our understanding of:
-    
+
     1. The types of assets
     2. The levels of classification of assets: 0-National, 1-Provinical, 2-Local, 3-Other
     3. The terrain where the assets are located: Flat or Mountain or No information
@@ -282,7 +281,7 @@ def province_shapefile_to_dataframe(edges_in, road_terrain, road_properties_file
         - edges_in - String path to edges file/network Shapefile
         - road_terrain - String name of terrain: flat or mountanious
         - road_properties_file - String path to Excel file with road attributes
-        - usage_factor - Tuple of 2-float values between 0 and 1 
+        - usage_factor - Tuple of 2-float values between 0 and 1
 
     Returns
         edges - Geopandas DataFrame with network edge topology and attributes
@@ -373,7 +372,7 @@ def province_shapefile_to_network(edges_in, road_terrain, road_properties_file,u
         - edges_in - String path to edges file/network Shapefile
         - road_terrain - String name of terrain: flat or mountanious
         - road_properties_file - String path to Excel file with road attributes
-        - usage_factor - Tuple of 2-float values between 0 and 1 
+        - usage_factor - Tuple of 2-float values between 0 and 1
 
     Returns
         G - Igraph object with network edge topology and attributes
@@ -437,7 +436,7 @@ def assign_national_road_class(x):
     Parameters
         x - Pandas DataFrame of values
             - capkth__ca - String value of road class
-            - vehicle_co - Float value of number of vehicles on road 
+            - vehicle_co - Float value of number of vehicles on road
 
     Returns
         - Integer value of road class
@@ -500,7 +499,7 @@ def assign_national_road_class(x):
 def assign_assumed_width_to_national_roads_from_file(x, flat_width_range_list, mountain_width_range_list):
     """
     Assign widths to national roads assets in Vietnam
-    
+
     The widths are assigned based on our understanding of:
     1. The class of the road which is not reliable
     2. The number of lanes
@@ -509,7 +508,7 @@ def assign_assumed_width_to_national_roads_from_file(x, flat_width_range_list, m
     Parameters
         - x - Pandas DataFrame row with values
             - road_class - Integer value of road class
-            - lanenum__s - Integer value of number of lanes on road 
+            - lanenum__s - Integer value of number of lanes on road
         - flat_width_range_list - List of tuples containing (from_width, to_width, assumed_width)
         - moiuntain_width_range_list - List of tuples containing (from_width, to_width, assumed_width)
 
@@ -554,7 +553,7 @@ def assign_min_max_speeds_to_national_roads_from_file(x, flat_width_range_list,
                                                       mountain_width_range_list):
     """
     Assign speeds to national roads in Vietnam
-    
+
     The speeds are assigned based on our understanding of:
     1. The class of the road
     2. The estimated speed from the CVTS data
@@ -615,9 +614,9 @@ def assign_min_max_speeds_to_national_roads_from_file(x, flat_width_range_list,
 def assign_minmax_time_costs_national_roads_apply(x, cost_dataframe):
     """
     Assign time costs on national roads in Vietnam
-    
+
     The costs are assigned based on our understanding of:
-    
+
     1. The vehicle counts on roads
     2. The levels of classification of assets: 0-National, 1-Provinical, 2-Local, 3-Other
     3. The terrain where the assets are located: Flat or Mountain or No information
@@ -666,9 +665,9 @@ def assign_minmax_time_costs_national_roads_apply(x, cost_dataframe):
 def assign_minmax_tariff_costs_national_roads_apply(x, cost_dataframe):
     """
     Assign tariff costs on national roads in Vietnam
-    
+
     The costs are assigned based on our understanding of:
-    
+
     1. The vehicle counts on roads
 
     Parameters
@@ -699,7 +698,7 @@ def national_road_shapefile_to_dataframe(edges_in, road_properties_file,usage_fa
     Parameters
         - edges_in - String path to edges file/network Shapefile
         - road_properties_file - String path to Excel file with road attributes
-        - usage_factor - Tuple of 2-float values between 0 and 1 
+        - usage_factor - Tuple of 2-float values between 0 and 1
 
     Returns
         edges: Geopandas DataFrame with network edge topology and attributes
@@ -784,7 +783,7 @@ def national_road_shapefile_to_network(edges_in, road_properties_file,usage_fact
     Parameters
         - edges_in - String path to edges file/network Shapefile
         - road_properties_file - String path to Excel file with road attributes
-        - usage_factor - Tuple of 2-float values between 0 and 1 
+        - usage_factor - Tuple of 2-float values between 0 and 1
 
     Returns
         G - Igraph object with network edge topology and attributes
@@ -798,7 +797,7 @@ def national_road_shapefile_to_network(edges_in, road_properties_file,usage_fact
 
 def assign_minmax_time_costs_networks_apply(x, cost_dataframe):
     """
-    Assign time costs on networks in Vietnam  
+    Assign time costs on networks in Vietnam
 
     Parameters
         - x - Pandas dataframe with values
@@ -850,7 +849,7 @@ def network_shapefile_to_dataframe(edges_in, mode_properties_file, mode_name, sp
         - mode_name - String name of mode
         - speed_min - Float value of minimum assgined speed
         - speed_max - Float value of maximum assgined speed
-        - usage_factor - Tuple of 2-float values between 0 and 1 
+        - usage_factor - Tuple of 2-float values between 0 and 1
 
     Returns
         edges - Geopandas DataFrame with network edge topology and attributes
@@ -927,7 +926,7 @@ def network_shapefile_to_network(edges_in, mode_properties_file, mode_name, spee
         - mode_name - String name of mode
         - speed_min - Float value of minimum assgined speed
         - speed_max - Float value of maximum assgined speed
-        - usage_factor - Tuple of 2-float values between 0 and 1 
+        - usage_factor - Tuple of 2-float values between 0 and 1
 
     Returns
         G - Igraph object with network edge topology and attributes
@@ -949,7 +948,7 @@ def assign_minmax_tariff_costs_multi_modal_apply(x, cost_dataframe):
             - port_type - String name of port type
             - from_mode - String name of mode
             - to_mode - String name of mode
-            - other_mode - String name of mode 
+            - other_mode - String name of mode
         - cost_dataframe - Pandas Dataframe with costs
 
     Returns
@@ -989,7 +988,7 @@ def multi_modal_shapefile_to_dataframe(edges_in, mode_properties_file, mode_name
         - mode_properties_file - String path to Excel file with mode attributes
         - mode_name - String name of mode
         - length_threshold - Float value of threshold in km of length of multi-modal links
-        - usage_factor - Tuple of 2-float values between 0 and 1 
+        - usage_factor - Tuple of 2-float values between 0 and 1
 
     Returns
         edges - Geopandas DataFrame with network edge topology and attributes
@@ -1038,7 +1037,7 @@ def multi_modal_shapefile_to_network(edges_in, mode_properties_file, mode_name, 
         - mode_properties_file - String path to Excel file with mode attributes
         - mode_name - String name of mode
         - length_threshold - Float value of threshold in km of length of multi-modal links
-        - usage_factor - Tuple of 2-float values between 0 and 1 
+        - usage_factor - Tuple of 2-float values between 0 and 1
 
     Returns
         G - Igraph object with network edge topology and attributes
@@ -1060,7 +1059,7 @@ def create_port_names(x,port_names_df):
             - port_type - String type of port
             - cangbenid - Integer ID of inland port
             - objectid - Integer ID of sea port
-        - port_names_df - Pandas DataFrame with port names 
+        - port_names_df - Pandas DataFrame with port names
 
     Returns
         name - Vietnamese name of port
@@ -1076,7 +1075,7 @@ def create_port_names(x,port_names_df):
 
 def read_waterway_ports(ports_file_with_ids, ports_file_with_names):
     """
-    Create port data with attributes 
+    Create port data with attributes
 
     Parameters
         - ports_file_with_ids - String path of GeoDataFrame with port IDs
@@ -1101,7 +1100,7 @@ def read_waterway_ports(ports_file_with_ids, ports_file_with_names):
 
 def read_setor_nodes(node_file_with_ids,sector):
     """
-    Create port data with attributes 
+    Create port data with attributes
 
     Parameters
         - ports_file_with_ids - String path of GeoDataFrame with port IDs
@@ -1117,11 +1116,11 @@ def read_setor_nodes(node_file_with_ids,sector):
 
     if sector == 'air':
         ports_with_id.rename(columns={'ten': 'name'}, inplace=True)
-    
+
     for ac in add_columns:
         if ac[0] not in ports_with_id.columns.values.tolist():
             ports_with_id[ac[0]] = ac[1]
-    
+
     ports_with_id = ports_with_id[['node_id','name','tons','population','capacity','geometry']]
 
     return ports_with_id
