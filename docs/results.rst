@@ -78,9 +78,9 @@ Execution:
     - For Provinces OD matrices run script ``vtra.flow_mapping.province_roads_access_flow_paths.py``
 
 Result:
-    - Store flow excel outputs in /results/flow_mapping_paths/
-    - Store flow shapefiles in /results/flow_mapping_shapefiles/
-    - Store flow csv files in /results/flow_mapping_combined/
+    - Store flow excel outputs in ``/results/flow_mapping_paths/``
+    - Store flow shapefiles in ``/results/flow_mapping_shapefiles/``
+    - Store flow csv files in ``/results/flow_mapping_combined/``
     - National-scale excel sheets results of flow mapping based contain attributes:
         - ``origin`` - String node ID of Origin
         - ``destination`` - String node ID of Destination
@@ -131,7 +131,7 @@ Execution:
     - Run script ``vtra.failure_scenario_selection.hazards_network_intersections_results_collect.py``
 
 Result:
-    - Store shapefile outputs in the directory /results/networks_hazards_intersection_shapefiles/
+    - Store shapefile outputs in the directory ``/results/networks_hazards_intersection_shapefiles/``
     - All hazard-edge intersection shapefiles with attributes:
         - ``edge_id`` - String name of intersecting edge ID
         - ``length`` - Float length of intersection of edge LineString and hazard Polygon
@@ -141,7 +141,7 @@ Result:
         - ``node_id`` - String name of intersecting node ID
         - ``geometry`` - Point geometry of intersecting node ID
 
-    - Store summarised results in /results/hazard_scenarios/
+    - Store summarised results in ``/results/hazard_scenarios/``
     - Generate excel sheet of network-hazard-boundary intersection with attributes:
         - ``edge_id``/node_id - String name of intersecting edge ID or node ID
         - ``length`` - Float length of intersection of edge LineString and hazard Polygon: Only for edges
@@ -179,9 +179,9 @@ Execution:
     - For Provinces roads failure analysis run script ``vtra.flow_mapping.failures.failure_estimation_provinces.py``
 
 Result:
-    - Store csv outputs in the directory /results/failure_results/
-    - Store shapefile outputs in /results/failure_shapefiles/
-    - National-scale All failure scenarios results in /results//failure_results/all_fail_scenarios/
+    - Store csv outputs in the directory ``/results/failure_results/``
+    - Store shapefile outputs in ``/results/failure_shapefiles/``
+    - National-scale All failure scenarios results in ``/results/failure_results/all_fail_scenarios/``
         - ``edge_id`` - String name or list of failed edges
         - ``origin`` - String node ID of Origin of disrupted OD flow
         - ``destination`` - String node ID of Destination of disrupted OD flow
@@ -202,21 +202,21 @@ Result:
         - ``industry_columns`` - Float values of all daily tonnages of industry columns along disrupted OD pairs
         - ``min/max_tons`` - Float values of total daily tonnages along disrupted OD pairs
 
-    - National-scale Isolated OD scenarios - OD flows with no rerouting options in /results//failure_results/isolated_od_scenarios/
+    - National-scale Isolated OD scenarios - OD flows with no rerouting options in ``/results/failure_results/isolated_od_scenarios/``
         - ``edge_id`` - String name or list of failed edges
         - ``o_region`` - String name of Province of Origin node ID of disrupted OD flow
         - ``d_region`` - String name of Province of Destination node ID of disrupted OD flow
         - ``industry_columns`` - Float values of all daily tonnages of industry columns along disrupted OD pairs
         - ``min/max_tons`` - Float values of total daily tonnages along disrupted OD pairs
 
-    - National-scale rerouting scenarios - OD flows with rerouting options in /results//failure_results/rerouting_scenarios/
+    - National-scale rerouting scenarios - OD flows with rerouting options in ``/results/failure_results/rerouting_scenarios/``
         - ``edge_id`` - String name or list of failed edges
         - ``o_region`` - String name of Province of Origin node ID of disrupted OD flow
         - ``d_region`` - String name of Province of Destination node ID of disrupted OD flow
         - ``min/max_tr_loss`` - Float value of change in rerouting cost
         - ``min/max_tons`` - Float values of total daily tonnages along disrupted OD pairs
 
-    - National-scale min-max combined scenarios - Combined min-max results along each edge in /results/failure_results/minmax_combined_scenarios/
+    - National-scale min-max combined scenarios - Combined min-max results along each edge in ``/results/failure_results/minmax_combined_scenarios/``
         - ``edge_id`` - String name or list of failed edges
         - ``no_access`` - Boolean 1 (no reroutng) or 0 (rerouting)
         - ``min/max_tr_loss`` - Float values of change in rerouting cost
@@ -229,7 +229,7 @@ Result:
         - ``min/max_tons`` - Float values of total daily tonnages affted by disrupted edge
         - ``geometry`` - LineString geomtry of edges
 
-    - Province-scale all failure scenarios results in /results//failure_results/all_fail_scenarios/
+    - Province-scale all failure scenarios results in ``/results/failure_results/all_fail_scenarios/``
         - ``edge_id`` - String name or list of failed edges
         - ``origin`` - String node ID of Origin of disrupted OD flow
         - ``destination`` - String node ID of Destination of disrupted OD flow
@@ -251,7 +251,7 @@ Result:
         - ``min/max_tons`` - Float values of total daily crop tonnages along disrupted OD pairs
         - ``min_max_econ_impact`` - Float values of total daily economic impact of disrupted OD pairs
 
-    - Province-scale min-max combined scenarios - Combined min-max results oalong each edge in /results/failure_results/minmax_combined_scenarios/
+    - Province-scale min-max combined scenarios - Combined min-max results oalong each edge in ``/results/failure_results/minmax_combined_scenarios/``
         - ``edge_id`` - String name or list of failed edges
         - ``no_access`` - Boolean 1 (no reroutng) or 0 (rerouting)
         - ``min/max_tr_loss`` - Float values of estimated change in rerouting cost
@@ -347,7 +347,7 @@ Execution:
 
 Result:
     - Store results as excel sheets in ``/results/adaptation_results/``
-    - All adaptation resylts have the follwing attributes:
+    - All adaptation results have the following attributes:
         - ``edge_id`` - String edge IDs
         - ``hazard_type`` - String names of hazard types
         - ``model`` - String names of hazard models
