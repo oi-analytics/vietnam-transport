@@ -9,22 +9,22 @@ Collected Data
 Networks
 --------
 1. All pre-processed networks data are stored:
-	- In sub-folders in the file path - /data/pre_processed_networks_data/
+	- In sub-folders in the file path - ``/data/pre_processed_networks_data/``
 	- As Shapefiles with of network nodes and edges
 	- The names of files and folders are self-explanatory
-	- See /data/pre_processed_networks_data/networks_description.xlsx for details of all shapefiles
+	- See ``/data/pre_processed_networks_data/networks_description.xlsx`` for details of all shapefiles
 
 2. All nodes should have the following attributes:
-	- node_id - String Node ID
-	- geometry - Shapely Point geometry of node with projection ESPG:4326
+	- ``node_id`` - String Node ID
+	- ``geometry`` - Shapely Point geometry of node with projection ESPG:4326
 	- variable list of attributes depending upon sector
 
 3. All edges should have the following attributes:
-	- edge_id - String edge ID
-	- g_id - Interger edge ID
-	- from_node - String node ID that should be present in node_id column
-	- to_node - String node ID that should be present in node_id column
-	- geometry - Shapely LineString geometry of edge with projection ESPG:4326
+	- ``edge_id`` - String edge ID
+	- ``g_id`` - Interger edge ID
+	- ``from_node`` - String node ID that should be present in node_id column
+	- ``to_node`` - String node ID that should be present in node_id column
+	- ``geometry`` - Shapely LineString geometry of edge with projection ESPG:4326
 	- variable list of attributes depending upon sector
 
 Cost attributes
@@ -93,7 +93,7 @@ RiceAltas data
 
 2. The essential attributes in the dataset are listed below. See the data for all attributes:
 	- ``sub_region`` - String names of Provinces in English
-	- ``P_Jan``, ..., ``P_Dec`` - Columne names with float tonnage produced in each month from January to December
+	- ``P_Jan``, ..., ``P_Dec`` - Column names with float tonnage produced in each month from January to December
 	- ``geometry`` - Polygon geometries of Provinces
 
 Points of interest data
