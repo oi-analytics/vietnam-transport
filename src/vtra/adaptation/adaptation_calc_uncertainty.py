@@ -5,6 +5,7 @@ Created on Mon Oct 22 11:28:18 2018
 @author: cenv0574
 """
 import os
+import sys
 import pandas as pd
 import numpy as np
 import math
@@ -133,27 +134,35 @@ def calc_costs(x,param_values,mnt_dis_cost,mnt_nat_cost,cst_dis_cost,cst_nat_cos
     if (x.asset_type == 'Expressway') | ((national == True) & (x.road_class == 1)):
         rehab_cost = rehab_costs.loc[('Expressway',ter_type),'rate_m']
         rehab_corr = rehab_costs.loc[('Expressway',ter_type),'design_width']
+        general_road_class = 'national'
     elif (x.asset_type == 'National roads') | ((national == True) & (x.road_class == 2)):
         rehab_cost = rehab_costs.loc[('National  2x Carriageway',ter_type),'rate_m']
         rehab_corr = rehab_costs.loc[('National  2x Carriageway',ter_type),'design_width']
+        general_road_class = 'national'
     elif (x.asset_type == 'National roads') | ((national == True) & (x.road_class == 3)):
         rehab_cost = rehab_costs.loc[('National  1x Carriageway',ter_type),'rate_m']
         rehab_corr = rehab_costs.loc[('National  1x Carriageway',ter_type),'design_width']
+        general_road_class = 'national'
     elif (x.asset_type == 'Provincial roads') | ((national == True) & (x.road_class == 4)):
         rehab_cost = rehab_costs.loc[('Provincial',ter_type),'rate_m']
         rehab_corr = rehab_costs.loc[('Provincial',ter_type),'design_width']
+        general_road_class = 'district'
     elif ((x.asset_type == 'Urban roads/Named roads') | (x.asset_type == 'Boulevard')) | ((national == True) & (x.road_class == 5)):
         rehab_cost = rehab_costs.loc[('District',ter_type),'rate_m']
         rehab_corr = rehab_costs.loc[('District',ter_type),'design_width']
+        general_road_class = 'district'
     elif (x.asset_type == 'Other roads') | ((national == True) & (x.road_class == 6)):
         rehab_cost = rehab_costs.loc[('Commune',ter_type),'rate_m']
         rehab_corr = rehab_costs.loc[('Commune',ter_type),'design_width']       
+        general_road_class = 'district'
     elif x.asset_type == 'Bridge':
         rehab_cost = rehab_costs.rate_m.max()
         rehab_corr = rehab_costs.design_width.max()
+        general_road_class = 'bridge'
     else:
         rehab_cost = rehab_costs.rate_m.min()
         rehab_corr = rehab_costs.design_width.min()
+        general_road_class = 'district'
 
     rehab_cost = (rehab_cost*x.width)/rehab_corr
         
@@ -267,6 +276,15 @@ def calc_costs(x,param_values,mnt_dis_cost,mnt_nat_cost,cst_dis_cost,cst_nat_cos
     tot_rel_share = []
     bc_ratio = []
     bc_diff = []
+
+    # preset parameter values, use if not reading from file
+    if isinstance(param_values, dict):
+        assert x.terrain in ('mountain', 'flat'), 'Expected terrain to be either "mountain" or "flat", got "%s"' % x.terrain
+        param_set = "{}_{}".format(general_road_class, x.terrain)
+        param_values = [
+            param_values[param_set]
+        ]
+
     
     # Loop through all parameter combinations for the uncertainty and sensitivity analysis
     for param in param_values:
@@ -337,7 +355,7 @@ def calc_costs(x,param_values,mnt_dis_cost,mnt_nat_cost,cst_dis_cost,cst_nat_cos
     
     return benefit,uncer_output,tot_uncer_output,rel_share,tot_rel_share,bc_ratio,bc_diff
 
-def run_file(file_id,data_path,output_path,duration_max=10,discount_rate=12,growth_rate=6):
+def run_file(file_id,data_path,output_path,duration_max=10,discount_rate=12,growth_rate=6, read_from_file=False):
     
     print('{} started!'.format(file_id))
     
@@ -383,9 +401,79 @@ def run_file(file_id,data_path,output_path,duration_max=10,discount_rate=12,grow
     rehab_costs['rate_m'] = rehab_costs.basic_cost*0.001
 
     # load param values
-    param_values = [np.fromfile(os.path.join(adapt_path,'param_values.pkl'))[x:x+8] for x in range(0, len(np.fromfile(os.path.join(adapt_path,'param_values.pkl'))), 8)]
+    if read_from_file:
+        param_values = [np.fromfile(os.path.join(adapt_path,'param_values.pkl'))[x:x+8] for x in range(0, len(np.fromfile(os.path.join(adapt_path,'param_values.pkl'))), 8)]
+    else:
+        param_values = {
+            'district_mountain': [
+                2, # drainage
+                0.05, # ew1
+                0.25, # ew2
+                1.5, # ss1
+                0.5, # ss2
+                1, # ss3
+                0.05, # ss4
+                2 # pavement option
 
-    pavement = np.array([[1,0,0,0],[0,0.75,0.2,0.05],[0,0.9,0,0.1],[0,2,0,0]])
+            ],
+            'district_flat': [
+                0, # drainage
+                2, # ew1
+                0, # ew2
+                0, # ss1
+                2, # ss2
+                2, # ss3
+                0.1, # ss4
+                3 # pavement option
+            ],
+            'national_mountain': [
+                2, # drainage
+                0.2, # ew1
+                1, # ew2
+                1.5, # ss1
+                0.5, # ss2
+                1, # ss3
+                0.05, # ss4
+                1 # pavement option
+            ],
+            'national_flat': [
+                0, # drainage
+                2, # ew1
+                0, # ew2
+                0, # ss1
+                2, # ss2
+                2, # ss3
+                0.1, # ss4
+                4 # pavement option
+            ],
+            'bridge_mountain': [
+                2, # drainage
+                2, # ew1
+                0, # ew2
+                0, # ss1
+                2, # ss2
+                0, # ss3
+                2, # ss4
+                2 # pavement option
+            ],
+            'bridge_flat': [
+                2, # drainage
+                2, # ew1
+                0, # ew2
+                0, # ss1
+                2, # ss2
+                0, # ss3
+                2, # ss4
+                2 # pavement option
+            ]
+        }
+
+    pavement = np.array([
+        [1,0,0,0], #
+        [0,0.75,0.2,0.05],
+        [0,0.9,0,0.1],
+        [0,2,0,0]
+    ])
     
     # load provinces
     if file_id == 'national_road':
@@ -417,9 +505,27 @@ def run_file(file_id,data_path,output_path,duration_max=10,discount_rate=12,grow
                                 mnt_main_cost,cst_main_cost,dr_norm,dr_growth,rehab_costs,min_main_dr,max_main_dr,
                                 duration_max=duration_max,min_exp=False,national=nat,min_loss=False),axis=1))
     
-    prov_roads.to_csv(os.path.join(output_path,'adaptation_results','output_adaptation_{}_{}_days_max_disruption.csv'.format(file_id,duration_max)))
+    if not read_from_file:
+        prov_roads['max_tot_adap_cost'] = prov_roads.max_tot_adap_cost.apply(lambda item: max(item))
+        prov_roads['min_tot_adap_cost'] = prov_roads.min_tot_adap_cost.apply(lambda item: max(item))
+        prov_roads['min_bc_ratio'] = prov_roads['min_benefit']/prov_roads['max_tot_adap_cost']
+        prov_roads['max_bc_ratio'] = prov_roads['max_benefit']/prov_roads['min_tot_adap_cost']
+
+    if read_from_file:
+        prov_roads.to_csv(os.path.join(output_path,'adaptation_results','output_adaptation_{}_{}_days_max_disruption.csv'.format(file_id,duration_max)))
+    else:
+        prov_roads.to_csv(os.path.join(output_path,'adaptation_results','output_adaptation_{}_{}_days_max_disruption_fixed_parameters.csv'.format(file_id,duration_max)))
 
 if __name__ == '__main__':
+    read_from_file = False      
+    if len(sys.argv) == 2:
+        if sys.argv[1] == '--read_from_file':
+            read_from_file = True
+
+    if read_from_file:
+        print('Reading param values from file')
+    else: 
+        print('Running with fixed param values, --read_from_file to use file')
 
     data_path, calc_path, output_path = load_config()['paths']['data'], load_config()[
         'paths']['calc'], load_config()['paths']['output']
@@ -430,6 +536,6 @@ if __name__ == '__main__':
     regions = ['laocai','binhdinh','thanhhoa','national_road']
     for dur in duration_list:
         for file_id in regions:
-            run_file(file_id,data_path,output_path,duration_max=dur,discount_rate=discount_rate,growth_rate=growth_rate)
+            run_file(file_id,data_path,output_path,duration_max=dur,discount_rate=discount_rate,growth_rate=growth_rate, read_from_file=read_from_file)
  
     

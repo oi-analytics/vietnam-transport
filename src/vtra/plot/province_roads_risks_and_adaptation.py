@@ -149,7 +149,7 @@ def main():
         del flow_file
 
         flow_file_path = os.path.join(config['paths']['output'], 'adaptation_results',
-                                   'output_adaptation_{}_10_days_max_disruption.csv'.format(region.lower().replace(' ', '')))
+                                   'output_adaptation_{}_10_days_max_disruption_fixed_parameters.csv'.format(region.lower().replace(' ', '')))
 
         fail_scenarios = pd.read_csv(flow_file_path)
         fail_scenarios['min_eael'] = duration*fail_scenarios['min_duration_wt']*fail_scenarios['risk_wt']*fail_scenarios['min_econ_impact']
@@ -394,8 +394,8 @@ def main():
                         [line],
                         crs=proj_lat_lon,
                         linewidth=0,
-                        edgecolor=str(line_style[2]),
-                        facecolor=str(line_style[2]),
+                        edgecolor='#969696',
+                        facecolor='#969696',
                         zorder=2)
                     if nmin == max_weight:
                         value_template = '>{:.' + str(significance_ndigits) + 'f}'
@@ -430,10 +430,11 @@ def main():
                 plt.close()
 
 
-        all_edge_fail_scenarios = fail_scenarios[['edge_id','asset_type','max_exposure_length','road_length','min_eael','max_eael','min_benefit','min_ini_adap_cost','min_tot_adap_cost',\
-                                    'min_bc_ratio','max_benefit','max_ini_adap_cost','max_tot_adap_cost','max_bc_ratio']]
-        for cols in ['min_ini_adap_cost','min_tot_adap_cost','min_bc_ratio','max_ini_adap_cost','max_tot_adap_cost','max_bc_ratio']:
-            all_edge_fail_scenarios[cols] = all_edge_fail_scenarios[cols].apply(lambda x: np.median(np.array(ast.literal_eval(x))))
+        all_edge_fail_scenarios = fail_scenarios[['edge_id','asset_type','max_exposure_length','road_length','min_eael','max_eael',\
+                                    'min_ini_adap_cost','max_ini_adap_cost','min_tot_adap_cost',\
+                                    'max_tot_adap_cost','min_benefit','max_benefit','min_bc_ratio','max_bc_ratio']]
+        for cols in ['min_ini_adap_cost','max_ini_adap_cost']:
+            all_edge_fail_scenarios[cols] = all_edge_fail_scenarios[cols].apply(lambda x: np.max(np.array(ast.literal_eval(x))))
         
         all_edge_fail_scenarios = all_edge_fail_scenarios.groupby(['edge_id','asset_type','max_exposure_length','road_length'])[adapt_cols + ['min_eael','max_eael']].max().reset_index()
         asset_locations = pd.read_excel(os.path.join(config['paths']['output'],
@@ -441,9 +442,10 @@ def main():
         asset_locations = asset_locations[['edge_id','commune_name','district_name']]
         asset_locations = asset_locations.drop_duplicates(subset=['edge_id','commune_name','district_name'], keep='first')
         all_edge_fail_scenarios = pd.merge(all_edge_fail_scenarios,asset_locations,how='left',on=['edge_id'])
+        all_edge_fail_scenarios = all_edge_fail_scenarios.drop_duplicates(subset=['edge_id','commune_name','district_name'], keep='first')
         all_edge_fail_scenarios.to_csv(os.path.join(config['paths']['output'],
             'network_stats',
-            '{}_adapt_summary.csv'.format(region.replace(' ','').lower())
+            '{}_adapt_summary_fixed_parameter.csv'.format(region.replace(' ','').lower())
             ), index=False
         )
         edges_vals = pd.merge(region_file,all_edge_fail_scenarios,how='left',on=['edge_id']).fillna(0)
@@ -571,8 +573,8 @@ def main():
                     [line],
                     crs=proj_lat_lon,
                     linewidth=0,
-                    edgecolor=str(line_style[2]),
-                    facecolor=str(line_style[2]),
+                    edgecolor='#969696',
+                    facecolor='#969696',
                     zorder=2)
                 if nmin == max_weight:
                     value_template = '>{:.' + str(significance_ndigits) + 'f}'
@@ -602,7 +604,7 @@ def main():
 
             # output
             output_file = os.path.join(
-                config['paths']['figures'], 'commune_center-{}-{}-values.png'.format(region.lower().replace(' ', ''), column))
+                config['paths']['figures'], 'commune_center-{}-{}-values-fixed-parameter.png'.format(region.lower().replace(' ', ''), column))
             save_fig(output_file)
             plt.close()
 

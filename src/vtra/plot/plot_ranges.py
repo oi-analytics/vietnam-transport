@@ -57,7 +57,18 @@ def plot_many_ranges(input_dfs, division_factor,x_label, y_label,plot_title,plot
     for i in range(len(input_dfs)):
         input_data = input_dfs[i]
 
-        vals_min_max = list(zip(*list(h for h in input_data.itertuples(index=False))))
+        vals_min_max = []
+        for a, b in input_data.itertuples(index=False):
+            if a < b:
+                min_, max_ = a, b
+            else:
+                min_, max_ = b, a
+            vals_min_max.append((min_, max_))
+
+        vals_min_max.sort(key=lambda el: el[1])
+
+        vals_min_max = list(zip(*vals_min_max))
+
         percentlies = 100.0*np.arange(0,len(vals_min_max[0]))/len(vals_min_max[0])
         length.append(len(vals_min_max[0]))
         ax.plot(percentlies,
@@ -167,12 +178,12 @@ def main():
 
         if modes[m] == 'road':
             flow_file_path = os.path.join(config['paths']['output'], 'adaptation_results',
-                                   'output_adaptation_national_road_10_days_max_disruption.csv')
+                                   'output_adaptation_national_road_10_days_max_disruption_fixed_parameters.csv')
             fail_scenarios = pd.read_csv(flow_file_path)
             fail_scenarios = fail_scenarios[fail_scenarios['max_econ_impact'] > 0]
             
-            for cols in ['min_ini_adap_cost','min_tot_adap_cost','min_bc_ratio','max_ini_adap_cost','max_tot_adap_cost','max_bc_ratio']:
-                fail_scenarios[cols] = fail_scenarios[cols].apply(lambda x: np.median(np.array(ast.literal_eval(x))))
+            for cols in ['min_ini_adap_cost','max_ini_adap_cost']:
+                fail_scenarios[cols] = fail_scenarios[cols].apply(lambda x: np.max(np.array(ast.literal_eval(x))))
         
             # fail_scenarios = fail_scenarios.groupby(['edge_id'])[adapt_cols].max().reset_index()
             
@@ -207,7 +218,7 @@ def main():
                 fail_cur = fail_cur[cols]
             
                 fail_dfs = [fail_cur,fail_rcp45,fail_rcp85]
-                plt_file_path = os.path.join(config['paths']['figures'],'national-road-{}-flooding-ranges.png'.format(adapt_names[c]))
+                plt_file_path = os.path.join(config['paths']['figures'],'national-road-{}-flooding-ranges-fixed-paramters.png'.format(adapt_names[c]))
                 plot_many_ranges(fail_dfs,adapt_divisor[c], "Percentile rank".format(adapt_labels[c]), 
                         "{} ({})".format(adapt_labels[c],adapt_units[c]),"Range of {} of adaptation".format(adapt_labels[c]),flood_colors,flood_labels,plt_file_path)
 if __name__ == '__main__':
