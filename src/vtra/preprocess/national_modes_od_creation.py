@@ -546,7 +546,7 @@ def main():
         - Network nodes files
         - VITRANSS 2 OD file
         - IFPRI crop data files
-        - Rice Altas data shapefile
+        - Rice Atlas data shapefile
         - Province boundary and stats data shapefile
         - Commune boundary and stats data shapefile
 

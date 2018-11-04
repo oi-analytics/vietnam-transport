@@ -13,11 +13,12 @@ from vtra.utils import load_config
 def load_db_IO(table_in):
     """Load the Input-Output data from the **io_basic** Class object and converts it to a GAMS .gdx file.
 
-    Parameters
-        - table_in - **io_basic** class object, containing all IO data
+    Write out .gdx file of the IO data
 
-    Outputs
-        - .gdx file of the IO data
+    Parameters
+    ----------
+    table_in
+        **io_basic** class object, containing all IO data
 
     """
 

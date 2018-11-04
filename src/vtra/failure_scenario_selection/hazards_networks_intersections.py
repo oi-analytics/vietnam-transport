@@ -55,6 +55,7 @@ def networkedge_hazard_intersection(edge_shapefile, hazard_shapefile, output_sha
     output_shapefile
         String name of edge-hazard shapefile for storing results
 
+
     Outputs
     -------
     output_shapefile
@@ -122,6 +123,7 @@ def networknode_hazard_intersection(node_shapefile, hazard_shapefile, output_sha
     output_shapefile
         String name of node-hazard shapefile for storing results
 
+
     Outputs
     -------
     output_shapefile
@@ -167,6 +169,7 @@ def intersect_networks_and_all_hazards(hazard_dir,network_file_path,network_file
         name of directory where network-hazard instersection result shapefiles will be stored
     network_type : str
         values of 'edges' or 'nodes'
+
 
     Outputs
     -------

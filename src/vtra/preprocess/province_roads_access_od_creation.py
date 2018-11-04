@@ -155,7 +155,7 @@ def assign_monthly_tons_crops(x,rice_prod_file,crop_month_fields,province,x_cols
 
     Parameters
         - x - Pandas DataFrame of values
-        - rice_prod_file - Shapefile of RiceAltas monthly production value
+        - rice_prod_file - Shapefile of RiceAtlas monthly production value
         - crop_month_fields - Lsit of strings of month columns in Rice Atlas shapefile
         - province - Stirng name of province
         - x_cols - List of string names of crops
@@ -191,7 +191,7 @@ def assign_io_rev_costs_crops(x, cost_dataframe,rice_prod_file,crop_month_fields
     Parameters
         - x - Pandas DataFrame of values
         - cost_dataframe - Pandas DataFrame of conversion of tonnages to net revenues
-        - rice_prod_file - Shapefile of RiceAltas monthly production value
+        - rice_prod_file - Shapefile of RiceAtlas monthly production value
         - province - Stirng name of province
         - x_cols - List of string names of crops
         - ex_rate - Exchange rate from VND millions to USD
@@ -373,7 +373,7 @@ def main():
     3. Give the paths to the input data files:
         - Network nodes files
         - IFPRI crop data files
-        - Rice Altas data shapefile
+        - Rice Atlas data shapefile
         - Province boundary and stats data shapefile
         - Commune boundary and stats data shapefile
         - Population points shapefile for locations of villages

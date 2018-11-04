@@ -109,21 +109,32 @@ def network_od_path_estimations(graph,
 
     Parameters
     ---------
-    graph - igraph network structure
-    source - String/Float/Integer name of Origin node ID
-    source - String/Float/Integer name of Destination node ID
-    tonnage - Float value of tonnage
-    vehicle_weight - Float unit weight of vehicle
-    cost_criteria - String name of generalised cost criteria to be used: min_gcost or max_gcost
-    time_criteria - String name of time criteria to be used: min_time or max_time
-    fixed_cost - Boolean Tru or False
+    graph
+        igraph network structure
+    source
+        String/Float/Integer name of Origin node ID
+    source
+        String/Float/Integer name of Destination node ID
+    tonnage : float
+        value of tonnage
+    vehicle_weight : float
+        unit weight of vehicle
+    cost_criteria : str
+        name of generalised cost criteria to be used: min_gcost or max_gcost
+    time_criteria : str
+        name of time criteria to be used: min_time or max_time
+    fixed_cost : bool
 
-    Outputs
+    Returns
     -------
-    edge_path_list - List of lists of Strings/Floats/Integers of edge ID's in routes
-    path_dist_list - List of float values of estimated distances of routes
-    path_time_list - List of float values of estimated times of routes
-    path_gcost_list - List of float values of estimated generalised costs of routes
+    edge_path_list : list[list]
+        nested lists of Strings/Floats/Integers of edge ID's in routes
+    path_dist_list : list[float]
+        estimated distances of routes
+    path_time_list : list[float]
+        estimated times of routes
+    path_gcost_list : list[float]
+        estimated generalised costs of routes
 
     """
     if vehicle_weight == 0 and tonnage == 0:
@@ -165,21 +176,28 @@ def write_flow_paths_to_network_files(save_paths_df,
     industry_columns,min_max_exist,gdf_edges, save_csv=True, save_shapes=True, shape_output_path='',csv_output_path=''):
     """Write results to Shapefiles
 
+    Outputs ``gdf_edges`` - a shapefile with minimum and maximum tonnage flows of all
+    commodities/industries for each edge of network.
+
     Parameters
     ---------
-    save_paths_df - Pandas DataFrame of OD flow paths and their tonnages
-    industry_columns - List of string names of all OD commodities/industries indentified
-    min_max_exist - List of string names of commodity/industry columns for which min-max tonnage column names already exist
-    gdf_edges - GeoDataFrame of network edge set
-    save_csv - Boolean condition to tell code to save created edge csv file
-    save_shapes - Boolean condition to tell code to save created edge shapefile
-    shape_output_path - Path where the output shapefile will be stored
-    csv_output_path - Path where the output csv file will be stored
+    save_paths_df
+        Pandas DataFrame of OD flow paths and their tonnages
+    industry_columns
+        List of string names of all OD commodities/industries indentified
+    min_max_exist
+        List of string names of commodity/industry columns for which min-max tonnage column names already exist
+    gdf_edges
+        GeoDataFrame of network edge set
+    save_csv
+        Boolean condition to tell code to save created edge csv file
+    save_shapes
+        Boolean condition to tell code to save created edge shapefile
+    shape_output_path
+        Path where the output shapefile will be stored
+    csv_output_path
+        Path where the output csv file will be stored
 
-    Outputs
-    -------
-    gdf_edges - Shapefile
-        With minimum and maximum tonnage flows of all commodities/industries for each edge of network
     """
     if save_shapes == False:
         gdf_edges.drop('geometry', axis=1, inplace=True)
@@ -269,9 +287,9 @@ def igraph_scenario_edge_failures_changing_tonnages(network_df_in, edge_failure_
     time_criteria - String name of column of path travel time in flow dataframe
 
 
-    Outputs
+    Returns
     -------
-    edge_failure_dictionary - List of dictionaries
+    edge_failure_dictionary : list[dict]
         With attributes
         edge_id - String name or list of failed edges
         origin - String node ID of Origin of disrupted OD flow
@@ -351,9 +369,9 @@ def igraph_scenario_edge_failures(network_df_in, edge_failure_set,
     time_criteria - String name of column of path travel time in flow dataframe
 
 
-    Outputs
+    Returns
     -------
-    edge_failure_dictionary - List of dictionaries
+    edge_failure_dictionary : list[dict]
         With attributes
         edge_id - String name or list of failed edges
         origin - String node ID of Origin of disrupted OD flow
@@ -420,11 +438,12 @@ def rearrange_minmax_values(edge_failure_dataframe):
 
     Parameters
     ---------
-    edge_failure_dataframe - Pandas DataFrame with min-max columns
+    edge_failure_dataframe : pandas.DataFrame
+        with min-max columns
 
-    Outputs
+    Returns
     -------
-    edge_failure_dataframe - Pandas DataFrame
+    edge_failure_dataframe : pandas.DataFrame
         With columns where min < max
     """
     failure_columns = edge_failure_dataframe.columns.values.tolist()
@@ -444,17 +463,20 @@ def rearrange_minmax_values(edge_failure_dataframe):
 def network_failure_assembly_shapefiles(edge_failure_dataframe, gdf_edges, save_edges=True, shape_output_path=''):
     """Write results to Shapefiles
 
+
+    Outputs gdf_edges - a Shapefile with results of edge failure dataframe
+
     Parameters
     ---------
-    edge_failure_dataframe - Pandas DataFrame of edge failure results
-    gdf_edges - GeoDataFrame of network edge set with edge ID's and geometry
-    save_edges - Boolean condition to tell code to save created edge shapefile
-    shape_output_path - Path where the output shapefile will be stored
+    edge_failure_dataframe
+        Pandas DataFrame of edge failure results
+    gdf_edges
+        GeoDataFrame of network edge set with edge ID's and geometry
+    save_edges : bool
+        Boolean condition to tell code to save created edge shapefile
+    shape_output_path : str
+        Path where the output shapefile will be stored
 
-    Outputs
-    -------
-    gdf_edges - Shapefile
-        With results of edge failure dataframe
     """
     failure_columns = edge_failure_dataframe.columns.values.tolist()
     failure_columns = [f for f in failure_columns if f != 'edge_id']
@@ -490,7 +512,7 @@ def edge_failure_sampling(failure_scenarios,edge_column):
     failure_scenarios - Pandas DataFrame of failure scenarios
     edge_column - String name of column to select failed edge ID's
 
-    Outputs
+    Returns
     -------
     edge_failure_samples - List of lists of failed edge sets
     """
@@ -503,18 +525,25 @@ def merge_failure_results(flow_df_select,failure_df,tons_col,dist_col,time_col,c
 
     Parameters
     ---------
-    flow_df_select - Pandas DataFrame of edge flow values
-    failure_df - Pandas DataFrame of edge failure values
-    tons_col - String name of column of tonnages in flow dataframe
-    dist_col - String name of column of distance in flow dataframe
-    time_col - String name of column of time in flow dataframe
-    cost_col - String name of column of cost in flow dataframe
-    vehicle_col - String name of column of vehicle counts in flow dataframe
-    changing_tonnages - Boolean True or False
+    flow_df_select : pandas.DataFrame
+        edge flow values
+    failure_df : pandas.DataFrame
+        edge failure values
+    tons_col : str
+        name of column of tonnages in flow dataframe
+    dist_col : str
+        name of column of distance in flow dataframe
+    time_col : str
+        name of column of time in flow dataframe
+    cost_col : str
+        name of column of cost in flow dataframe
+    vehicle_col : str
+        name of column of vehicle counts in flow dataframe
+    changing_tonnages : bool
 
-    Outputs
+    Returns
     -------
-    flow_df_select - Pandas DataFrame
+    flow_df_select : pandas.DataFrame
         Of edge flow and failure values merged
     """
     flow_df_select = pd.merge(flow_df_select, failure_df, on=[

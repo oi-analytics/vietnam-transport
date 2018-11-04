@@ -557,7 +557,7 @@ def gdf_geom_clip(gdf_in, clip_geom):
     province_geom
         shapely geometry of province for what we do the calculation
 
-    Outputs
+    Returns
     -------
     filtered dataframe
     """
@@ -574,7 +574,7 @@ def gdf_clip(shape_in, clip_geom):
     province_geom
         shapely geometry of province for what we do the calculation
 
-    Outputs
+    Returns
     -------
     filtered dataframe
     """
@@ -597,7 +597,7 @@ def get_nearest_node(x, sindex_input_nodes, input_nodes, id_column):
     id_column
         name of column of id of closest node
 
-    Outputs
+    Returns
     -------
     Nearest node to geometry of row
     """
@@ -625,9 +625,9 @@ def count_points_in_polygon(x, points_sindex):
     points_sindex
         spatial index of dataframe with points in the region to consider
 
-    Outputs
+    Returns
     -------
-    Amount of points in polygon
+    Number of points in polygon
     """
     return len(list(points_sindex.intersection(x.bounds)))
 
@@ -646,7 +646,7 @@ def extract_value_from_gdf(x, gdf_sindex, gdf, column_name):
     column_name
         column that contains the value we want to extract
 
-    Outputs
+    Returns
     -------
     extracted value from other gdf
     """
@@ -813,13 +813,17 @@ def get_node_edge_files(mode_file_path,file_identification):
 
     Parameters
     ----------
-    mode_file_path : Path of mode file
-    file_identification: String name of file
+    mode_file_path : str
+        path of mode file
+    file_identification : str
+        name of file
 
     Returns
     -------
-    edges_in : Path of edges shapefile
-    nodes_in: Path of nodes shapefile
+    edges_in
+        Path of edges shapefile
+    nodes_in
+        Path of nodes shapefile
 
     Error Exception
     ---------------
@@ -835,4 +839,4 @@ def get_node_edge_files(mode_file_path,file_identification):
         except:
             print('Network nodes and edge files necessary')
 
-    return nodes_in,edges_in
+    return nodes_in, edges_in
