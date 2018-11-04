@@ -1,4 +1,4 @@
-"""Coastal network flows map
+"""Water network transfers maps
 """
 import os
 import sys

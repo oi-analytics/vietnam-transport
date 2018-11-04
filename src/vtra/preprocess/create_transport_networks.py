@@ -1,4 +1,5 @@
-"""
+"""Pre-process networks
+
 Purpose
 -------
 
@@ -99,7 +100,8 @@ from vtra.utils import *
 
 
 def main():
-    """
+    """Pre-process networks
+
     1. Specify the paths from where to read and write:
         - Input data
         - Intermediate calcuations data
@@ -125,8 +127,7 @@ def main():
     data_path, calc_path, output_path = load_config()['paths']['data'], load_config()[
         'paths']['calc'], load_config()['paths']['output']
 
-    """Supply input data and parameters
-    """
+    # Supply input data and parameters
     province_list = ['Lao Cai', 'Binh Dinh', 'Thanh Hoa']
     province_terrian = ['mountain', 'flat', 'flat']
     truck_unit_wt = [5.0]
@@ -141,24 +142,21 @@ def main():
     province_results = 'Yes'
     national_results = 'No'
 
-    """Give the paths to the input data files
-    """
+    # Give the paths to the input data files
     network_data_path = os.path.join(
         data_path, 'pre_processed_networks_data')
     md_prop_file = os.path.join(network_data_path, 'mode_properties', 'mode_costs.xlsx')
     rd_prop_file = os.path.join(network_data_path, 'mode_properties', 'road_properties.xlsx')
 
 
-    """Specify the output files and paths to be created
-    """
+    # Specify the output files and paths to be created
     output_dir = os.path.join(data_path, 'post_processed_networks')
     if os.path.exists(output_dir) == False:
         os.mkdir(output_dir)
 
 
 
-    """Start the OD flow mapping process
-    """
+    # Start the OD flow mapping process
     if province_results == 'Yes':
         edges_excel = os.path.join(
             output_dir, 'province_roads_edges.xlsx')
@@ -171,8 +169,7 @@ def main():
             province = province_list[prn]
             province_name = province.replace(' ', '').lower()
 
-            """Load igraph network and GeoDataFrame
-            """
+            # Load igraph network and GeoDataFrame
             print ('* Creating and writing {} GeoDataFrame to Shapefiles and Excel Sheets'.format(province))
             province_path = os.path.join(network_data_path, 'Roads', '{}_roads'.format(province_name))
             nodes_in,edges_in = get_node_edge_files_in_path(province_path)
@@ -192,8 +189,7 @@ def main():
             nodes_excl_wrtr.save()
 
 
-    """Start the OD flow mapping process
-    """
+    # Start the OD flow mapping process
     if national_results == 'Yes':
         edges_excel = os.path.join(
             output_dir, 'national_edges.xlsx')
@@ -208,8 +204,7 @@ def main():
                 network_data_path, modes_file_paths[m][0], modes_file_paths[m][1])
             nodes_in,edges_in = get_node_edge_files_in_path(mode_data_path)
 
-            """Load mode igraph network and GeoDataFrame
-            """
+            # Load mode igraph network and GeoDataFrame
             if modes[m] == 'road':
                 gdf_edges = national_road_shapefile_to_dataframe(edges_in, rd_prop_file,cost_uncertainty_factors[m])
             elif modes[m] == 'multi':

@@ -1,4 +1,4 @@
-"""Road network flows
+"""Road network failure maps
 """
 import os
 import sys
@@ -91,7 +91,7 @@ def main():
     region_file = gpd.read_file(region_file_path,encoding='utf-8')
     flow_file = pd.read_csv(flow_file_path)
     region_file = pd.merge(region_file,flow_file,how='left', on=['edge_id']).fillna(0)
-    
+
     for c in range(len(plot_set)):
         ax = get_axes()
         plot_basemap(ax, config['paths']['data'], highlight_region=[])
@@ -179,7 +179,7 @@ def main():
         max_sig = []
         for (i, ((nmin, nmax), line_style)) in enumerate(width_by_range.items()):
             if round(nmin/divisor, significance_ndigits) < round(nmax/divisor, significance_ndigits):
-                max_sig.append(significance_ndigits)    
+                max_sig.append(significance_ndigits)
             elif round(nmin/divisor, significance_ndigits+1) < round(nmax/divisor, significance_ndigits+1):
                 max_sig.append(significance_ndigits+1)
             elif round(nmin/divisor, significance_ndigits+2) < round(nmax/divisor, significance_ndigits+2):

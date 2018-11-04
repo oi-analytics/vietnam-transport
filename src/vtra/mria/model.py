@@ -24,31 +24,40 @@ from vtra.utils import load_config
 
 
 class MRIA_IO(object):
-    """
-    This is the class object **MRIA** which is used to set up the modelling framework.
+    """MRIA_IO sets up the modelling framework.
 
     In this class we define the type of model, sets, set up the core variables and specify the
     constraints and objectives for different model setups.
+
+    Attributes
+    ----------
+    name : string
+        name of the model
+    m : Pyomo.ConcreteModel
+        model instance
+    regions : list
+        model regions
+    total_regions : int
+        number of regions
+    sectors : list
+        model sectors
+    fd_cat : list
+        final demand categories
     """
 
     def __init__(self, name, list_regions, list_sectors, list_fd_cats=[]):
-        """
-        Creation of a Concrete Model, specify the regions and sectors to include.
+        """Create a Concrete Model, specify the regions and sectors to include.
 
         Parameters
-            - *self* - **MRIA_IO** class object
-            - name - string name of the model
-            - list_regions - a list of regions to include in the model calculations
-            - list_sectors - a list of sectors to include in the model calculations
-            - list_fd_cats - a list of the final demand categories in the table. This will be aggregated to one column.
-
-        Output
-            - *self*.name - string name of the model in the **MRIA_IO** class
-            - *self*.m - Pyomo ConcreteModel instance in the **MRIA_IO** class
-            - *self*.regions - list of regions in the **MRIA_IO** class
-            - *self*.total_regions - Integer of total amount of regions in the **MRIA_IO** class
-            - *self*.sectors - list of sectors in the **MRIA_IO** class
-            - *self*.fd_cat - list of final demand categories in the **MRIA_IO** class
+        ----------
+        name : str
+            name of the model
+        list_regions : list
+            regions to include in the model calculations
+        list_sectors : list
+            sectors to include in the model calculations
+        list_fd_cats : list
+            the final demand categories in the table. This will be aggregated to one column.
 
         """
         self.name = name
@@ -59,22 +68,23 @@ class MRIA_IO(object):
         self.fd_cat = list_fd_cats
 
 
-    def create_sets(self, FD_SET=[], VA_SET=[]):
-        """
-        Creation of the various sets, allowing for own specification of set inputs.
-        
+    def create_sets(self, FD_SET=None, VA_SET=None):
+        """Create of the various sets, allowing for specification of set inputs.
+
         Parameters
-            - FD_SET - if specified, these final demand categories will be used. The default is an **empty list**  
-            - VA_SET - if specified, these value added categories will be used. The default is an **empty list**  
-
-        Output
-            - *self*.S - Pyomo Set Instance for the sectors in the **MRIA_IO** class
-            - *self*.rROW - Pyomo Set Instance for the Rest of the World in the **MRIA_IO** class
-            - *self*.R - Pyomo Set Instance for the regions in the **MRIA_IO** class
-            - *self*.fdemand - Pyomo Set Instance for the final demand in the **MRIA_IO** class
-            - *self*.VA - Pyomo Set Instance for value added in the **MRIA_IO** class
+        ----------
+        FD_SET : list or None, optional
+            final demand categories, default to an **empty list**
+        VA_SET : list or None, optional
+            value added categories, default to an **empty list**
 
         """
+
+        if FD_SET is None:
+            FD_SET = []
+
+        if VA_SET is None:
+            VA_SET = []
 
         self.m.S = Set(initialize=self.sectors, doc='sectors')
         self.m.rROW = Set(initialize=self.regions, ordered=True,
@@ -84,38 +94,29 @@ class MRIA_IO(object):
         self.m.VA = Set(initialize=VA_SET, doc='value added')
 
     def create_alias(self):
-        """
-        Set aliases.
-        
-        Parameters
-            - *self* - **MRIA_IO** class object
-            - list_regions - a list of regions to include in the model calculations
-            - list_sectors - a list of sectors to include in the model calculations
-            - list_fd_cats - a list of the final demand categories in the table. This will be aggregated to one column.
+        """Set aliases.
 
-        Output
-            - *self*.Rb - Pyomo Alias instance for the regions Set instance
-            - *self*.r -  Pyomo Alias instance for the regions Set instance
-            - *self*.Sb -  Pyomo Alias instance for the sector Set instance
-   
+        Parameters
+        ----------
+        list_regions : list[str]
+            regions to include in the model calculations
+        list_sectors : list[str]
+            sectors to include in the model calculations
+        list_fd_cats : list[str]
+            the final demand categories in the table. This will be aggregated to one column.
+
         """
         self.m.Rb = SetOf(self.m.R)  # an alias of region R
         self.m.r = SetOf(self.m.R)  # an alias of region R
         self.m.Sb = SetOf(self.m.S)  # an alias of sector S
 
-    """
-    This part focuses on tables, parameters and variables
-    """
-
     def create_A_mat(self, A_mat_in):
-        """
-        Creation of the A-matrix for the optimization model.
-        
-        Parameters
-            - *self* - **MRIA_IO** class object
-            - A_mat_in - A-matrix dictionary from the **io_basic** class object
+        """Creation of the A-matrix for the optimization model.
 
-        Outputs
+        Parameters
+        ----------
+        A_mat_in
+            A-matrix dictionary from the **io_basic** class object
 
         """
         model = self.m
@@ -130,17 +131,17 @@ class MRIA_IO(object):
 
 
     def create_FD(self, FinalD, disr_dict_fd):
-        """
-        Specify Final Demand and Local Final Demand.
-        
+        """Specify Final Demand and Local Final Demand.
+
         Parameters
-            - *self* - **MRIA_IO** class object
-            - FinalD - Final Demand dictionary from the **io_basic** class object
-            - disr_dict_fd - dictionary containing the disruptions in final demand
-    
-        Outputs
-            - *self*.ttfd - Pyomo Parameter instance for the total final demand in the **MRIA_IO** class
-            - *self*.fd - Pyomo Parameter instance for the final demand in the **MRIA_IO** class
+        ----------
+        FinalD
+            Final Demand dictionary from the **io_basic** class object
+        disr_dict_fd
+            dictionary containing the disruptions in final demand
+
+        Create *self*.ttfd - Pyomo Parameter instance for the total final demand
+        and *self*.fd - Pyomo Parameter instance for the final demand
 
         """
 
@@ -168,15 +169,14 @@ class MRIA_IO(object):
 
 
     def create_LFD(self, FinalD):
-        """
-        Specify local final demand. 
+        """Specify local final demand
 
         Parameters
-            - *self* - **MRIA_IO** class object
-            - FinalD - Final Demand dictionary from the **io_basic** class object
-    
-        Outputs
-            - *self*.lfd - Pyomo Parameter instance for the local final demand in the **MRIA_IO** class
+        ----------
+        FinalD
+            Final Demand dictionary from the **io_basic** class object
+
+        Create *self*.lfd - Pyomo Parameter instance for the local final demand
 
         """
         model = self.m
@@ -189,17 +189,18 @@ class MRIA_IO(object):
 
 
     def create_ExpImp(self, ExpROW, ImpROW):
-        """
-        Specify export and import to the rest of the world.
-        
+        """Specify export and import to the rest of the world
+
         Parameters
-            - *self* - **MRIA_IO** class object
-            - ExpROW - Exports to the Rest of the World dictionary from the **io_basic** class object
-            - ImpROW - Imports from the Rest of the World dictionary from the **io_basic** class object
-    
-        Outputs
-            - *self*.ExpROW - Pyomo Parameter instance for the Exports to the Rest of the World in the **MRIA_IO** class
-            - *self*.ImpROW - Pyomo Parameter instance for the Imports from the Rest of the World in the **MRIA_IO** class
+        ----------
+        ExpROW
+            Exports to the Rest of the World dictionary from the **io_basic** class object
+        ImpROW
+            Imports from the Rest of the World dictionary from the **io_basic** class object
+
+        Create *self*.ExpROW - Pyomo Parameter instance for the Exports to the Rest of the World
+        and *self*.ImpROW - Pyomo Parameter instance for the Imports from the Rest of the World
+
         """
         model = self.m
 
@@ -218,19 +219,17 @@ class MRIA_IO(object):
         self.ExpROW = model.ExpROW
         self.ImpROW = model.ImpROW
 
-    """  """
-
     def create_X_up(self, disr_dict, Regmaxcap=0.98):
-        """
-        Specify upper bound of total production **X**.
-        
+        """Specify upper bound of total production **X**.
+
         Parameters
-            - *self* - **MRIA_IO** class object
-            - disr_dict - dictionary containing the reduction in production capacity
-            - Regmaxcap - maximum regional capacity. The default value is set to **0.98**
-    
-        Outputs
-            - *self*.X_up - Pyomo Parameter instance for the upper bound of total production **X** in the **MRIA_IO** class
+        ----------
+        disr_dict : dict
+            dictionary containing the reduction in production capacity
+        Regmaxcap : float, optional
+            maximum regional capacity. The default value is set to **0.98**
+
+        Create *self*.X_up - Pyomo Parameter instance for the upper bound of total production **X**
 
         """
         model = self.m
@@ -246,17 +245,18 @@ class MRIA_IO(object):
         self.X_up = model.X_up
 
     def create_Xbase(self, Z_matrix, disr_dict, FinalD=None):
-        """
-        Specify Baseline value of total production **X**.
-        
+        """Specify Baseline value of total production **X**
+
         Parameters
-            - *self* - **MRIA_IO** class object
-            - Z_matrix - Z-matrix dictionary from the **io_basic** class object
-            - disr_dict - dictionary containing the reduction in production capacity
-            - FinalD - Final Demand dictionary from the **io_basic** class object
-    
-        Outputs
-            - *self*.X_up - Pyomo Parameter instance for the Baseline value of total production **X** in the **MRIA_IO** class
+        ----------
+        Z_matrix
+            Z-matrix dictionary from the **io_basic** class object
+        disr_dict
+            dictionary containing the reduction in production capacity
+        FinalD
+            Final Demand dictionary from the **io_basic** class object
+
+        Create *self*.X_up - Pyomo Parameter instance for the Baseline value of total production **X**
 
         """
         model = self.m
@@ -275,26 +275,30 @@ class MRIA_IO(object):
                             doc='Total Production baseline')
         self.Xbase = model.Xbase
 
-    """create X"""
+    def create_X(self, disr_dict, Regmaxcap=0.98, A_matrix_ini=None, Z_matrix=None,
+                 FinalD=None, Xbase=None, fd=None, ExpROW=None):
+        """Create the total production **X** variable
 
-    def create_X(self, disr_dict, Regmaxcap=0.98,
-                 A_matrix_ini=None, Z_matrix=None, FinalD=None, Xbase=None, fd=None, ExpROW=None):
-        """
-        Creation of the total production **X** variable.
-        
         Parameters
-            - *self* - **MRIA_IO** class object
-            - disr_dict - dictionary containing the reduction in production capacity
-            - Regmaxcap - maximum regional capacity. The default value is set to **0.98**
-            - A_matrix_ini -  A-matrix dictionary from the **io_basic** class object
-            - Z_matrix - Z-matrix dictionary from the **io_basic** class object
-            - FinalD - Final Demand dictionary from the **io_basic** class object
-            - Xbase - Total Production **X** parameter from the **MRIA** class object
-            - fd - Final Demand parameter from the **MRIA** class object
-            - ExpROW - Export to the Rest of the World parameter from the **MRIA** class object
+        ----------
+        disr_dict
+            dictionary containing the reduction in production capacity
+        Regmaxcap
+            maximum regional capacity. The default value is set to **0.98**
+        A_matrix_ini
+             A-matrix dictionary from the **io_basic** class object
+        Z_matrix
+            Z-matrix dictionary from the **io_basic** class object
+        FinalD
+            Final Demand dictionary from the **io_basic** class object
+        Xbase
+            Total Production **X** parameter from the **MRIA** class object
+        fd
+            Final Demand parameter from the **MRIA** class object
+        ExpROW
+            Export to the Rest of the World parameter from the **MRIA** class object
 
-        Outputs
-            - *self*.X_up - Pyomo Variable instance of total production **X** in the **MRIA_IO** class
+        Create *self*.X_up - Pyomo Variable instance of total production **X**
 
         """
 
@@ -323,15 +327,14 @@ class MRIA_IO(object):
 
 
     def create_VA(self, ValueA):
-        """
-        Specify Value Added.
-        
+        """Specify Value Added
+
         Parameters
-            - *self* - **MRIA_IO** class object
-            - ValueA - Value Added dictionary from the **io_basic** class object
-    
-        Outputs
-            - *self*.ValueA - Pyomo Parameter instance for the total Value Added in the **MRIA_IO** class
+        ----------
+        ValueA
+            Value Added dictionary from the **io_basic** class object
+
+        Create *self*.ValueA - Pyomo Parameter instance for the total Value Added
 
         """
         model = self.m
@@ -344,14 +347,9 @@ class MRIA_IO(object):
         self.ValueA = model.ValueA
 
     def create_Z_mat(self):
-        """
-        Specify Trade between regions.
-        
-        Parameters
-            - *self* - **MRIA_IO** class object
-    
-        Outputs
-            - *self*.Z_matrix - Pyomo Parameter instance for the total trade matrix in the **MRIA_IO** class
+        """Specify Trade between regions
+
+        Create *self*.Z_matrix - Pyomo Parameter instance for the total trade matrix
 
         """
         model = self.m
@@ -364,17 +362,17 @@ class MRIA_IO(object):
         self.Z_matrix = model.Z_matrix
 
     def create_Trade(self, FinalD, Z_matrix=None):
-        """
-        Create Trade Matrix.
-        
+        """Create Trade Matrix
+
         Parameters
-            - *self* - **MRIA_IO** class object
-            - FinalD - Final Demand dictionary from the **io_basic** class object
-            - Z_matrix - Z-matrix dictionary from the **io_basic** class object
-    
-        Outputs
-            - *self*.trade - Pyomo Parameter instance for the trade matrix between regions in the **MRIA_IO** class
-            
+        ----------
+        FinalD
+            Final Demand dictionary from the **io_basic** class object
+        Z_matrix
+            Z-matrix dictionary from the **io_basic** class object
+
+        Create *self*.trade - Pyomo Parameter instance for the trade matrix between regions
+
         """
         model = self.m
 
@@ -387,14 +385,9 @@ class MRIA_IO(object):
 
 
     def create_TotExp(self):
-        """
-        Estimate Total Export.
-        
-        Parameters
-            - *self* - **MRIA_IO** class object
-    
-        Outputs
-            - *self*.TotExp - Pyomo Parameter instance for the total export in the **MRIA_IO** class
+        """Estimate Total Export
+
+        Create *self*.TotExp - Pyomo Parameter instance for the total export
 
         """
         model = self.m
@@ -408,14 +401,9 @@ class MRIA_IO(object):
 
 
     def create_TotImp(self):
-        """
-        Estimate Total Import.
-        
-        Parameters
-            - *self* - **MRIA_IO** class object
-    
-        Outputs
-            - *self*.TotExp - Pyomo Parameter instance for the total import in the **MRIA_IO** class
+        """Estimate Total Import
+
+        Create *self*.TotExp - Pyomo Parameter instance for the total import
 
         """
         model = self.m
@@ -429,14 +417,9 @@ class MRIA_IO(object):
 
 
     def create_ImpShares(self):
-        """
-        Estimate Import shares and Import share DisImp.
-        
-        Parameters
-            - *self* - **MRIA_IO** class object
-    
-        Outputs
-            - *self*.ImportShare - Pyomo Parameter instance for the total import shares in the **MRIA_IO** class
+        """Estimate Import shares and Import share DisImp
+
+        Create *self*.ImportShare - Pyomo Parameter instance for the total import shares
 
         """
         model = self.m
@@ -462,14 +445,9 @@ class MRIA_IO(object):
 
 
     def create_Rdem(self):
-        """
-        Create reconstruction demand variable.
-        
-        Parameters
-            - *self* - **MRIA_IO** class object
-    
-        Outputs
-            - *self*.Rdem - Pyomo Parameter instance for the total reconstruction demand in the **MRIA_IO** class
+        """Create reconstruction demand variable.
+
+        Create *self*.Rdem - Pyomo Parameter instance for the total reconstruction demand
 
         """
         model = self.m
@@ -477,19 +455,19 @@ class MRIA_IO(object):
         self.Rdem = model.Rdem
 
     def create_Rat(self, FinalD=None, Z_matrix=None):
-        """
-        Create rationing variable.
-        
+        """Create rationing variable
+
         Parameters
-            - *self* - **MRIA_IO** class object
-            - FinalD - Final Demand dictionary from the **io_basic** class object
-            - Z_matrix - Z-matrix dictionary from the **io_basic** class object
-    
-        Outputs
-            - *self*.Rat - Pyomo Variable instance for rationing in the **MRIA_IO** class
+        ----------
+        FinalD
+            Final Demand dictionary from the **io_basic** class object
+        Z_matrix
+            Z-matrix dictionary from the **io_basic** class object
+
+        Set *self*.Rat - Pyomo Variable instance for rationing
 
         """
-     
+
         model = self.m
 
         if self.lfd.active is not True:
@@ -505,15 +483,14 @@ class MRIA_IO(object):
         self.Rat = model.Rat
 
     def create_Ratmarg(self, Table):
-        """
-        Estimate the marginal values of the rationing variable.
-        
+        """Estimate the marginal values of the rationing variable
+
         Parameters
-            - *self* - **MRIA_IO** class object
-            - Table - the **io_basic** class object
-    
-        Outputs
-            - *self*.Ratmarg - Pyomo Parameter instance for the marginal value of rationing in the **MRIA_IO** class
+        ----------
+        Table
+            the **io_basic** class object
+
+        Set *self*.Ratmarg - Pyomo Parameter instance for the marginal value of rationing
 
         """
         model = self.m
@@ -536,16 +513,16 @@ class MRIA_IO(object):
         self.Ratmarg = model.Ratmarg
 
     def create_DisImp(self, disr_dict, Regmaxcap=0.98):
-        """
-        Create disaster import variable.
-        
+        """Create disaster import variable.
+
         Parameters
-            - *self* - **MRIA_IO** class object
-            - disr_dict - dictionary containing the reduction in production capacity
-            - Regmaxcap - maximum regional capacity. The default value is set to **0.98**
-            
-        Outputs
-            - *self*.DisImp - Pyomo Variable instance for disaster imports in the **MRIA_IO** class
+        ----------
+        disr_dict
+            dictionary containing the reduction in production capacity
+        Regmaxcap
+            maximum regional capacity. The default value is set to **0.98**
+
+        Set *self*.DisImp - Pyomo Variable instance for disaster imports
 
         """
         model = self.m
@@ -570,15 +547,10 @@ class MRIA_IO(object):
 
 
     def create_demand(self):
-        """
-        Specify demand function.
-        
-        Parameters
-            - *self* - **MRIA_IO** class object
-    
-        Outputs
-            - *self*.Demand - Pyomo Variable instance for total demand in the **MRIA_IO** class
-            
+        """Specify demand function
+
+        Create *self*.Demand - Pyomo Variable instance for total demand
+
         """
         model = self.m
 
@@ -596,20 +568,24 @@ class MRIA_IO(object):
         model.Demand = Var(model.R, model.S, bounds=(0.0, None), initialize=demand_init)
         self.Demand = model.Demand
 
-    """ Create baseline dataset to use in model """
+    #
+    # Create baseline dataset to use in model
+    #
 
     def baseline_data(self, Table, disr_dict_sup, disr_dict_fd):
-        """
-        Function to set up all the baseline variables for the MRIA model.
-        
+        """Set up all the baseline variables for the MRIA model
+
         Parameters
-            - *self* - **MRIA_IO** class object
-            - Table - the **io_basic** class object
-            - disr_dict_sup - dictionary containing the reduction in production capacity
-            - disr_dict_fd - dictionary containing the disruptions in final demand
-    
-        Outputs
-            - all required parameters and variables for the **MRIA_IO** class and the **MRIA** model
+        ----------
+        Table
+            the **io_basic** class object
+        disr_dict_sup
+            dictionary containing the reduction in production capacity
+        disr_dict_fd
+            dictionary containing the disruptions in final demand
+
+        Set all required parameters and variables for the **MRIA_IO** class and the **MRIA**
+        model.
 
         """
 
@@ -628,18 +604,21 @@ class MRIA_IO(object):
         self.create_ImpShares()
 
     def impact_data(self, Table, disr_dict_sup, disr_dict_fd, Regmaxcap=0.98):
-        """
-        Create additional parameters and variables required for impact analysis.
-        
+        """Create additional parameters and variables required for impact analysis
+
         Parameters
-            - *self* - **MRIA_IO** class object
-            - Table - the **io_basic** class object
-            - disr_dict_sup - dictionary containing the reduction in production capacity
-            - disr_dict_fd - dictionary containing the disruptions in final demand
-            - Regmaxcap - maximum regional capacity. The default value is set to **0.98**
-    
-        Outputs
-            - all additional parameters and variables required for the **MRIA_IO** class and the **MRIA** model to do an impact analysis.
+        ----------
+        Table
+            the **io_basic** class object
+        disr_dict_sup
+            dictionary containing the reduction in production capacity
+        disr_dict_fd
+            dictionary containing the disruptions in final demand
+        Regmaxcap
+            maximum regional capacity. The default value is set to **0.98**
+
+        Set all additional parameters and variables required for the **MRIA_IO** class and the
+        **MRIA** model to do an impact analysis.
         """
 
         self.create_X_up(disr_dict_sup)
@@ -649,20 +628,23 @@ class MRIA_IO(object):
         self.create_DisImp(disr_dict_sup)
         self.create_demand()
 
-    """
-    Set up baseline model
-    """
+    #
+    # Set up baseline model
+    #
 
     def run_basemodel(self, solver=None):
-        """
-        Run the baseline model of the MRIA model. This should return the baseline situation (i.e. no changes between input matrix and output matrix).
-        
-        Parameters
-            - *self* - **MRIA_IO** class object
-            - solver - Specify the solver to be used with Pyomo. The Default value is set to **None**. If set to **None**, the ipopt solver will be used
+        """Run the baseline model of the MRIA model.
 
-        Outputs
-            - returns the output of an optimized **MRIA_IO** class and the **MRIA** model
+        This should return the baseline situation (i.e. no changes between input matrix and
+        output matrix).
+
+        Parameters
+        ----------
+        solver : str
+            Specify the solver to be used with Pyomo. The Default value is set to
+            **None**. If set to **None**, the ipopt solver will be used
+
+        Write out the output of an optimized **MRIA_IO** class and the **MRIA** model
 
         """
         model = self.m
@@ -697,19 +679,23 @@ class MRIA_IO(object):
         results.write()
 
     def run_impactmodel(self, solver=None, output=None, tol=1e-6, DisWeight=1.75, RatWeight=2):
-        """
-        Run the **MRIA** model with disruptions. This will return an economy with a new equilibrium, based on the new production and demand values.
-        
+        """Run the **MRIA** model with disruptions. This will return an economy with a new
+        equilibrium, based on the new production and demand values.
+
         Parameters
-            - *self* - **MRIA_IO** class object
-            - solver - Specify the solver to be used with Pyomo. The Default value is set to **None**. If set to **None**, the ipopt solver will be used
-            - output - Specify whether you want the solver to print its progress.The default value is set to **None**
-            - tol - the tolerance value that determines whether the outcome of the model is feasible. The default value is set to **1e-6**
-            - DisWeight - the weight that determines the penalty set to let the model allow for additional imports. A higher penalty value will result in less imports. The default value is set to **1.75**
-            - RatWeight - the weight that determines the penalty set to let the model allow to ration goods. A higher penalty value will result in less rationing. The default value is set to **2**
-    
-        Outputs
-            - returns the output of an optimized **MRIA_IO** class and the **MRIA** model
+        ----------
+        solver
+            Specify the solver to be used with Pyomo. The Default value is set to **None**. If set to **None**, the ipopt solver will be used
+        output
+            Specify whether you want the solver to print its progress.The default value is set to **None**
+        tol
+            the tolerance value that determines whether the outcome of the model is feasible. The default value is set to **1e-6**
+        DisWeight
+            the weight that determines the penalty set to let the model allow for additional imports. A higher penalty value will result in less imports. The default value is set to **1.75**
+        RatWeight
+            the weight that determines the penalty set to let the model allow to ration goods. A higher penalty value will result in less rationing. The default value is set to **2**
+
+        Optionally write out the output of an optimized **MRIA_IO** class and **MRIA** model
 
         """
         model = self.m

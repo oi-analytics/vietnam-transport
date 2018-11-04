@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
+"""Utility functions for adaptation analysis
 """
 import ast
 import copy
@@ -103,7 +103,7 @@ def create_hazard_scenarios_for_adaptation(all_edge_fail_scenarios,index_cols,le
             min_dur = 0.01*min_per
             if max_exposure_len < length_thr:
                 max_dur = 0.01*max_per
-                risk_wt = 0.01*max_per*prob_wt 
+                risk_wt = 0.01*max_per*prob_wt
             else:
                 max_dur = 1.0
                 risk_wt = prob_wt
@@ -114,6 +114,6 @@ def create_hazard_scenarios_for_adaptation(all_edge_fail_scenarios,index_cols,le
     new_cols = ['min_band', 'max_band', 'min_height', 'max_height', 'min_exposure_percent', 'max_exposure_percent',
                 'min_duration_wt', 'max_duration_wt', 'min_exposure_length', 'max_exposure_length', 'risk_wt','dam_wt']
     scenarios_df = pd.DataFrame(scenarios_list, columns=index_cols + new_cols)
-    
+
     del all_edge_fail_scenarios, scenarios_list
     return scenarios_df

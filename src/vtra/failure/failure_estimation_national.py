@@ -106,7 +106,8 @@ from vtra.transport_flow_and_failure_functions import *
 
 
 def main():
-    """
+    """Estimate failures
+
     Specify the paths from where you want to read and write:
 
     1. Input data
@@ -143,8 +144,7 @@ def main():
     data_path, calc_path, output_path = load_config()['paths']['data'], load_config()[
         'paths']['calc'], load_config()['paths']['output']
 
-    """Supply input data and parameters
-    """
+    # Supply input data and parameters
     modes = ['road','rail']
     veh_wt = [20, 800]
 
@@ -161,16 +161,14 @@ def main():
     percentage = [90,100.0]
     single_edge = True
 
-    """Give the paths to the input data files
-    """
+    # Give the paths to the input data files
     network_data_path = os.path.join(data_path,'post_processed_networks')
     network_data_excel = os.path.join(data_path,'post_processed_networks','national_edges.xlsx')
     flow_paths_data = os.path.join(output_path, 'flow_mapping_paths')
     fail_scenarios_data = os.path.join(
         output_path, 'hazard_scenarios', 'national_scale_hazard_intersections.xlsx')
 
-    """Specify the output files and paths to be created
-    """
+    # Specify the output files and paths to be created
     shp_output_path = os.path.join(output_path, 'failure_shapefiles')
     if os.path.exists(shp_output_path) == False:
         os.mkdir(shp_output_path)
@@ -201,28 +199,24 @@ def main():
 
 
     for m in range(len(modes)):
-        """Load mode igraph network and GeoDataFrame
-        """
+        # Load mode igraph network and GeoDataFrame
         print ('* Loading {} igraph network and GeoDataFrame'.format(modes[m]))
         G_df = pd.read_excel(network_data_excel,sheet_name = modes[m],encoding='utf-8')
         gdf_edges = gpd.read_file(os.path.join(network_data_path,'{}_edges.shp'.format(modes[m])),encoding='utf-8')
         gdf_edges = gdf_edges[['edge_id','geometry']]
 
-        """Create failure scenarios
-        """
+        # Create failure scenarios
         print ('* Creating {} failure scenarios'.format(modes[m]))
         fail_df = pd.read_excel(fail_scenarios_data, sheet_name=modes[m])
         ef_sc_list = edge_failure_sampling(fail_df,'edge_id')
 
         for perct in percentage:
-            """Load flow paths
-            """
+            # Load flow paths
             print ('* Loading {} flow paths'.format(modes[m]))
             flow_excel_file = 'national_scale_flow_paths_{}_percent.xlsx'.format(int(perct))
             flow_df = pd.read_excel(os.path.join(flow_paths_data,flow_excel_file), sheet_name=modes[m])
 
-            """Perform failure analysis
-            """
+            # Perform failure analysis
             edge_fail_ranges = []
             for t in range(len(types)):
                 print ('* Performing {} {} failure analysis'.format(types[t],modes[m]))
@@ -315,8 +309,7 @@ def main():
             df_path = os.path.join(minmax_combine,file_name + '.csv')
             edge_impact.to_csv(df_path, index = False)
 
-            """Create network shapefiles with flows
-            """
+            # Create network shapefiles with flows
             print ('* Creating {} network shapefiles with failure results'.format(modes[m]))
             shp_path = os.path.join(
                 shp_output_path,file_name + '.shp')

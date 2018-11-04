@@ -1,4 +1,4 @@
-"""
+"""Assess national adaptation options
 """
 import ast
 import copy
@@ -41,16 +41,14 @@ def main():
         'terrain','surface','road_class','road_cond','asset_type','width','road_length']
 
 
-    """Give the paths to the input data files
-    """
+    # Give the paths to the input data files
     network_loss_data = os.path.join(data_path,'failure_results')
     fail_scenarios_data = os.path.join(
         output_path, 'hazard_scenarios')
 
     adaptation_data_path = os.path.join(data_path, 'Adaptation_options', 'adaptation_costs_road_types.xlsx')
 
-    """Specify the output files and paths to be created
-    """
+    # Specify the output files and paths to be created
     adapt_output_path = os.path.join(output_path, 'adaptation_results')
     if os.path.exists(adapt_output_path) == False:
         os.mkdir(adapt_output_path)
@@ -60,8 +58,7 @@ def main():
             'national_{}_hazard_intersections_risks.csv'.format(modes[m])))
 
         for perct in percentage:
-            """Load failure impact results
-            """
+            # Load failure impact results
             impacts_df = pd.read_csv(os.path.join(network_loss_data,
                 'single_edge_failures_minmax_national_{0}_{1}_percent_disrupt.csv'.format(mode,int(perct))))
 

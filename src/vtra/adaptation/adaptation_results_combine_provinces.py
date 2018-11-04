@@ -1,4 +1,4 @@
-"""Assign commodity flows on the road network
+"""Combine provincial adaptation results
 """
 import ast
 import copy
@@ -27,11 +27,8 @@ def main():
 
     province_list = ['Lao Cai', 'Binh Dinh', 'Thanh Hoa']
 
-    """
-    Path OD flow disruptions
-    """
+    # Path OD flow disruptions
     for prn in range(len(province_list)):
-        # for prn in range(0, 1):
         province = province_list[prn]
         # set all paths for all input files we are going to use
         province_name = province.replace(' ', '').lower()

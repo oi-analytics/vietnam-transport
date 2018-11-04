@@ -1,4 +1,4 @@
-"""Road network flows
+"""Road network (flows to commune centres) maps
 """
 import os
 import sys

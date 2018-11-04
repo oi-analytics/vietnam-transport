@@ -1,4 +1,4 @@
-"""Road network flows
+"""Network rerouting loss maps
 """
 import os
 import sys

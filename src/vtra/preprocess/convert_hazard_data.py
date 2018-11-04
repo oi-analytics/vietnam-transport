@@ -1,4 +1,5 @@
-"""
+"""Pre-process hazard data
+
 Purpose
 -------
 
@@ -24,9 +25,10 @@ Input data requirements
 Results
 -------
 
-1. Shapefiles whose names show the hazard models and their selected range of values 
-    - ID - equal to 1 
+1. Shapefiles whose names show the hazard models and their selected range of values
+    - ID - equal to 1
     - geometry - Shapely Polygon outline of selected hazard
+
 """
 
 import os
@@ -44,8 +46,7 @@ import numpy as np
 import pandas as pd
 
 def glofris_data_details(file_name,root_dir):
-	"""
-    Read names of GLOFRIS files and create attributes 
+	"""Read names of GLOFRIS files and create attributes
 
     Parameters
         - file_name - String name of GeoTff file
@@ -87,16 +88,15 @@ def glofris_data_details(file_name,root_dir):
 
 
 def raster_rewrite(in_raster,out_raster,nodata):
-	"""
-    Rewrite a raster to reproject and change no data value
+	"""Rewrite a raster to reproject and change no data value
 
     Parameters
         - in_raster - String name of input GeoTff file path
         - out_raster - String name of output GeoTff file path
-        - nodata - Float value of data that is treated as no data 
+        - nodata - Float value of data that is treated as no data
 
     Outputs
-        Reproject and replace raster with nodata = -1  
+        Reproject and replace raster with nodata = -1
     """
 	with rasterio.open(in_raster) as dataset:
 		data_array = dataset.read()
@@ -118,8 +118,7 @@ def raster_rewrite(in_raster,out_raster,nodata):
 
 
 def raster_projections_and_databands(file_path):
-	"""
-    Extract projection, data bands numbers and valuees from raster
+	"""Extract projection, data bands numbers and valuees from raster
 
     Parameters
         - file_path - String name of input GeoTff file path
@@ -127,7 +126,7 @@ def raster_projections_and_databands(file_path):
     Outputs
         - counts - Number of bans in raster
         - crs - Projection system of raster
-        - data_vals - Numpy array of raster values 
+        - data_vals - Numpy array of raster values
     """
 	with rasterio.open(file_path) as dataset:
 		counts = dataset.count
@@ -149,8 +148,7 @@ def raster_projections_and_databands(file_path):
 	return counts,crs, data_vals
 
 def convert_geotiff_to_vector_with_threshold(from_threshold,to_threshold, infile, infile_epsg,tmpfile_1, tmpfile_2, outfile):
-	"""
-    Convert GeoTiff raster file to Shapefile with geometries based on raster threshold ranges  
+	"""Convert GeoTiff raster file to Shapefile with geometries based on raster threshold ranges
 
     Parameters
         - from_threshold - Float value of lower bound of GeoTiff threshold value to be selected
@@ -206,11 +204,10 @@ def convert_geotiff_to_vector_with_threshold(from_threshold,to_threshold, infile
 	subprocess.run(["rm", tmpfile_2.replace('shp', 'prj')])
 
 def convert_geotiff_to_vector_with_multibands(band_colors, infile, infile_epsg,tmpfile_1, tmpfile_2, outfile):
-	"""
-    Convert multi-band GeoTiff raster file to Shapefile with geometries based on raster band color values  
+	"""Convert multi-band GeoTiff raster file to Shapefile with geometries based on raster band color values
 
     Parameters
-        - band_colors - Tuple with 3-values each corresponding to the values in raster bands 
+        - band_colors - Tuple with 3-values each corresponding to the values in raster bands
         - infile - String name of input GeoTff file path
         - infile_epsg - Integer value of EPSG Projection number of raster
         - tmpfile_1 - Stirng name of tmp file 1
@@ -268,8 +265,7 @@ def convert_geotiff_to_vector_with_multibands(band_colors, infile, infile_epsg,t
 	subprocess.run(["rm", tmpfile_2.replace('shp', 'prj')])
 
 def convert(threshold, infile, tmpfile_1, outfile):
-	"""
-    Convert GeoTiff raster file to Shapefile with geometries based on raster threshold less that 999  
+	"""Convert GeoTiff raster file to Shapefile with geometries based on raster threshold less that 999
 
     Parameters
         - threshold - Float value of lower bound of GeoTiff threshold value to be selected
@@ -301,11 +297,12 @@ def convert(threshold, infile, tmpfile_1, outfile):
 	])
 
 def main():
-	"""
+	"""Process hazard data
+
     1. Specify the paths from where to read and write:
         - Input data
         - Hazard data
-    
+
     2. Supply input data and parameters
         - Thresholds of flood hazards
         - Values of bands to be selected
@@ -320,7 +317,7 @@ def main():
 	band_vals_2 = [4,5]
 	color_codes_1 = [(255,190,190),(245,0,0),(255,0,0)]
 	color_codes_2 = [(255,170,0),(255,128,0)]
-	specific_files = ['LSZ_NgheAn_to_PhuYen.tif'] 
+	specific_files = ['LSZ_NgheAn_to_PhuYen.tif']
 	f_all = []
 	for root, dirs, files in os.walk(root_dir):
 		for file in files:

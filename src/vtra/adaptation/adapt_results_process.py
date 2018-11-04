@@ -41,9 +41,9 @@ def main():
                 'min_npv_nooption', 'max_npv_nooption', 'adapt_strategy', 'min_npv', 'max_npv', 'min_bc_ratio', 'max_bc_ratio']
 
     index_cols = index_cols + new_cols
-    """
-    Path OD flow disruptions
-    """
+
+    # Path OD flow disruptions
+
     # for prn in range(len(province_list)):
     for prn in range(0, 1):
         province = province_list[prn]

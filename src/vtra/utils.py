@@ -781,8 +781,7 @@ def extract_gdf_values_containing_nodes(x, sindex_input_gdf, input_gdf, column_n
         return get_nearest_node(x.geometry, sindex_input_gdf, input_gdf, column_name)
 
 def get_node_edge_files_in_path(mode_file_path):
-    """
-    Get the paths of edge and node files in folder
+    """Get the paths of edge and node files in folder
 
     Parameters
     ----------
@@ -810,8 +809,7 @@ def get_node_edge_files_in_path(mode_file_path):
     return nodes_in,edges_in
 
 def get_node_edge_files(mode_file_path,file_identification):
-    """
-    Get the paths of edge and node files in folder
+    """Get the paths of edge and node files in folder
 
     Parameters
     ----------

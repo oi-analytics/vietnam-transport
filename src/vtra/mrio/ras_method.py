@@ -44,8 +44,7 @@ import numpy as np
 
 
 def invd(x):
-    """
-    Extract projection, data bands numbers and valuees from raster
+    """Extract projection, data bands numbers and valuees from raster
 
     Parameters
         - file_path - String name of input GeoTff file path
@@ -53,7 +52,7 @@ def invd(x):
     Outputs
         - counts - Number of bans in raster
         - crs - Projection system of raster
-        - data_vals - Numpy array of raster values 
+        - data_vals - Numpy array of raster values
     """
     invd = 1./x
     invd[x == 0] = 1
@@ -61,8 +60,7 @@ def invd(x):
 
 
 def ras_method(X0, u, v, eps=1e-5):
-    """
-    Extract projection, data bands numbers and valuees from raster
+    """Extract projection, data bands numbers and valuees from raster
 
     Parameters
         - file_path - String name of input GeoTff file path
@@ -70,7 +68,7 @@ def ras_method(X0, u, v, eps=1e-5):
     Outputs
         - counts - Number of bans in raster
         - crs - Projection system of raster
-        - data_vals - Numpy array of raster values 
+        - data_vals - Numpy array of raster values
     """
 
     m, n = np.shape(X0)

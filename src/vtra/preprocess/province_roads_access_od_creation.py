@@ -1,8 +1,9 @@
-"""
+"""Pre-process accessibility-based provincial OD matrix
+
 Purpose
 -------
 
-Create province scale OD matrices between roads connecting villages to nearest communes: 
+Create province scale OD matrices between roads connecting villages to nearest communes:
     - Net revenue estimates of commune villages
     - IFPRI crop data at 1km resolution
 
@@ -36,7 +37,7 @@ Input data requirements
 
 7. Shapefiles of network edges
     - vehicle_co - Count of vehiles only for roads
-    - geometry - Shapely LineString geometry of edges 
+    - geometry - Shapely LineString geometry of edges
 
 8. Shapefiles of Commune center points
     - object_id - Integer ID of point
@@ -69,7 +70,7 @@ References
 1. Pant, R., Koks, E.E., Russell, T., Schoenmakers, R. & Hall, J.W. (2018).
    Analysis and development of model for addressing climate change/disaster risks in multi-modal transport networks in Vietnam.
    Final Report, Oxford Infrastructure Analytics Ltd., Oxford, UK.
-2. All input data folders and files referred to in the code below. 
+2. All input data folders and files referred to in the code below.
 """
 
 import os
@@ -85,8 +86,7 @@ from vtra.utils import *
 
 
 def netrev_od_pairs(start_points, end_points):
-    """
-    Assign crop tonnages to OD pairs 
+    """Assign crop tonnages to OD pairs
 
     Parameters
         - start_points - GeoDataFrame of start points for Origins
@@ -119,8 +119,7 @@ def netrev_od_pairs(start_points, end_points):
 
 
 def crop_od_pairs(start_points, end_points, crop_name):
-    """
-    Assign crop tonnages to OD pairs 
+    """Assign crop tonnages to OD pairs
 
     Parameters
         - start_points - GeoDataFrame of start points for Origins
@@ -145,15 +144,14 @@ def crop_od_pairs(start_points, end_points, crop_name):
         except:
             print(iter_)
 
-    
+
     od_pairs_df = pd.DataFrame(save_paths, columns=['origin', 'destination', crop_name])
     od_pairs_df = od_pairs_df.groupby(['origin', 'destination'])[crop_name].sum().reset_index()
 
     return od_pairs_df
 
 def assign_monthly_tons_crops(x,rice_prod_file,crop_month_fields,province,x_cols):
-    """
-    Assign crop tonnages to OD pairs 
+    """Assign crop tonnages to OD pairs
 
     Parameters
         - x - Pandas DataFrame of values
@@ -163,8 +161,8 @@ def assign_monthly_tons_crops(x,rice_prod_file,crop_month_fields,province,x_cols
         - x_cols - List of string names of crops
 
     Outputs
-        - min_croptons - Float value of Minimum daily tonnages of crops 
-        - max_croptons - Float value of Maximum daily tonnages of crops 
+        - min_croptons - Float value of Minimum daily tonnages of crops
+        - max_croptons - Float value of Maximum daily tonnages of crops
     """
     # find the crop production months for the province
     rice_prod_months = gpd.read_file(rice_prod_file)
@@ -173,7 +171,7 @@ def assign_monthly_tons_crops(x,rice_prod_file,crop_month_fields,province,x_cols
     rice_prod_months = np.array(rice_prod_months[0])/sum(rice_prod_months[0])
     rice_prod_months = rice_prod_months[rice_prod_months > 0]
     rice_prod_months = rice_prod_months.tolist()
-    
+
     min_croptons = 0
     max_croptons = 0
     for x_name in x_cols:
@@ -188,8 +186,7 @@ def assign_monthly_tons_crops(x,rice_prod_file,crop_month_fields,province,x_cols
 
 
 def assign_io_rev_costs_crops(x, cost_dataframe,rice_prod_file,crop_month_fields,province, x_cols, ex_rate):
-    """
-    Assign crop tonnages to daily net revenues
+    """Assign crop tonnages to daily net revenues
 
     Parameters
         - x - Pandas DataFrame of values
@@ -200,8 +197,8 @@ def assign_io_rev_costs_crops(x, cost_dataframe,rice_prod_file,crop_month_fields
         - ex_rate - Exchange rate from VND millions to USD
 
     Outputs
-        - min_croprev - Float value of Minimum daily revenue of crops 
-        - max_croprev - Float value of Maximum daily revenue of crops 
+        - min_croprev - Float value of Minimum daily revenue of crops
+        - max_croprev - Float value of Maximum daily revenue of crops
     """
     # find the crop production months for the province
     rice_prod_months = gpd.read_file(rice_prod_file)
@@ -234,8 +231,8 @@ def assign_io_rev_costs_crops(x, cost_dataframe,rice_prod_file,crop_month_fields
 def netrevenue_values_to_province_od_nodes(province_ods_df,prov_communes,commune_sindex,netrevenue,
     n_firms,agri_prop,prov_pop,prov_pop_sindex,nodes,sindex_nodes,prov_commune_center,
     sindex_commune_center,node_id,object_id,exchange_rate):
-    """
-    Assign commune level netrevenue values to OD nodes in provinces
+    """Assign commune level netrevenue values to OD nodes in provinces
+
         - Based on finding nearest nodes to village points with netrevenues as Origins
         - And finding nearest commune centers as Destinations
 
@@ -249,12 +246,12 @@ def netrevenue_values_to_province_od_nodes(province_ods_df,prov_communes,commune
         - prov_pop - GeoDataFrame of population points in Province
         - prov_pop_sindex - Spatial index of population points in Province
         - nodes - GeoDataFrame of province road nodes
-        - sindex_nodes - Spatial index of province road nodes 
-        - prov_commune_center - GeoDataFrame of province commune center points 
+        - sindex_nodes - Spatial index of province road nodes
+        - prov_commune_center - GeoDataFrame of province commune center points
         - sindex_commune_center - Spatial index of commune center points
         - node_id - String name of Node ID column
         - object_id - String name of commune ID column
-        - exchange_rate - Float value for exchange rate from VND million to USD 
+        - exchange_rate - Float value for exchange rate from VND million to USD
 
     Outputs
         province_ods_df - List of Lists of Pandas dataframes with columns:
@@ -296,23 +293,23 @@ def netrevenue_values_to_province_od_nodes(province_ods_df,prov_communes,commune
 
 def crop_values_to_province_od_nodes(province_ods_df,province_geom,calc_path,
     crop_data_path,crop_names,nodes,sindex_nodes,prov_commune_center,sindex_commune_center,node_id,object_id):
-    """
-    Assign IFPRI crop values to OD nodes in provinces
+    """Assign IFPRI crop values to OD nodes in provinces
+
         - Based on finding nearest nodes to crop production sites as Origins
         - And finding nearest commune centers as Destinations
 
     Parameters
         - province_ods_df - List of lists of Pandas dataframes
-        - province_geom - Shapely Geometry of province 
-        - calc_path - Path to store intermediary calculations 
+        - province_geom - Shapely Geometry of province
+        - calc_path - Path to store intermediary calculations
         - crop_data_path - Path to crop datasets
         - crop_names - List of string of crop names in IFPRI datasets
         - nodes - GeoDataFrame of province road nodes
-        - sindex_nodes - Spatial index of province road nodes 
-        - prov_commune_center - GeoDataFrame of province commune center points 
+        - sindex_nodes - Spatial index of province road nodes
+        - prov_commune_center - GeoDataFrame of province commune center points
         - sindex_commune_center - Spatial index of commune center points
         - node_id - String name of Node ID column
-        - object_id - String name of commune ID column 
+        - object_id - String name of commune ID column
 
     Outputs
         province_ods_df - List of Lists of Pandas dataframes with columns:
@@ -355,14 +352,15 @@ def crop_values_to_province_od_nodes(province_ods_df,province_geom,calc_path,
     return province_ods_df
 
 def main():
-    """
+    """Pre-process provincial-scale OD
+
     1. Specify the paths from where to read and write:
         - Input data
         - Intermediate calcuations data
         - Output results
-    
+
     2. Supply input data and parameters
-        - Names of the Provinces: List of strings 
+        - Names of the Provinces: List of strings
         - Exchange rate to convert 2012 Net revenue in million VND values to USD in 2016
         - Names of crops in IFPRI crop data
         - Names of months in Rice Atlas data
@@ -376,18 +374,16 @@ def main():
         - Network nodes files
         - IFPRI crop data files
         - Rice Altas data shapefile
-        - Province boundary and stats data shapefile 
+        - Province boundary and stats data shapefile
         - Commune boundary and stats data shapefile
         - Population points shapefile for locations of villages
-        - Commune center points shapefile 
-    
-    4. Specify the output files and paths to be created 
+        - Commune center points shapefile
+
     """
     data_path, calc_path, output_path = load_config()['paths']['data'], load_config()[
         'paths']['calc'], load_config()['paths']['output']
 
-    """Supply input data and parameters
-    """
+    # Supply input data and parameters
     province_list = ['Lao Cai', 'Binh Dinh', 'Thanh Hoa']
     exchange_rate = 1.05*(1000000/21000)
     crop_names = ['rice', 'cash', 'cass', 'teas',
@@ -400,8 +396,7 @@ def main():
     node_id = 'NODE_ID'
     object_id = 'OBJECTID'
 
-    """Give the paths to the input data files:
-    """
+    # Give the paths to the input data files
     network_data_path = os.path.join(data_path,'post_processed_networks')
     crop_data_path = os.path.join(data_path, 'Agriculture_crops', 'crop_data')
     rice_month_file = os.path.join(data_path, 'rice_atlas_vietnam', 'rice_production.shp')
@@ -414,8 +409,7 @@ def main():
     commune_center_in = os.path.join(
             data_path, 'Points_of_interest', 'commune_committees_points.shp')
 
-    """Specify the output files and paths to be created  
-    """
+    # Specify the output files and paths to be created
     output_dir = os.path.join(output_path, 'flow_ods')
     if os.path.exists(output_dir) == False:
         os.mkdir(output_dir)
@@ -423,9 +417,8 @@ def main():
     flow_output_excel = os.path.join(
         output_dir, 'province_roads_commune_center_flow_ods.xlsx')
     excl_wrtr = pd.ExcelWriter(flow_output_excel)
-   
-    """Start the province OD allocations 
-    """
+
+    # Start the province OD allocations
     for prn in range(len(province_list)):
         province = province_list[prn]
         province_name = province.replace(' ', '').lower()
@@ -460,11 +453,10 @@ def main():
         province_ods_df = []
         prov_commune_center['NEAREST_G_NODE'] = prov_commune_center.geometry.apply(
             lambda x: get_nearest_node(x, sindex_nodes, nodes, node_id))
-        
-        """Assign revenue values for each village to nearest road nodes
-        And commune center point to nearest road nodes
-        For Net Revenue OD pairs
-        """
+
+        # Assign revenue values for each village to nearest road nodes
+        # And commune center point to nearest road nodes
+        # For Net Revenue OD pairs
         print ('* Assigning revenue OD values for each village in {}'.format(province))
         province_ods_df = netrevenue_values_to_province_od_nodes(
                                 province_ods_df,prov_communes,commune_sindex,netrevenue,n_firms,
@@ -472,10 +464,9 @@ def main():
                                 prov_commune_center,sindex_commune_center,
                                 node_id,object_id,exchange_rate)
 
-        """Get crop values and assign to the nearest road nodes
-        And assign commune centers to nearest road nodes
-        For crop OD pairs 
-        """
+        # Get crop values and assign to the nearest road nodes
+        # And assign commune centers to nearest road nodes
+        # For crop OD pairs
         print ('* Getting crop OD values in {}'.format(province))
         province_ods_df = crop_values_to_province_od_nodes(
                                 province_ods_df,province_geom,calc_path,
@@ -483,8 +474,7 @@ def main():
                                 prov_commune_center,sindex_commune_center,
                                 node_id,object_id)
 
-        """Combine the Net Revenue abd Crop OD results
-        """
+        # Combine the Net Revenue abd Crop OD results
         print ('* Combining OD values in {}'.format(province))
         # Get totals across all crops
         all_ods = pd.concat(province_ods_df, axis=0, sort='False', ignore_index=True).fillna(0)
@@ -508,7 +498,7 @@ def main():
         cost_values_df = pd.read_excel(os.path.join(
             crop_data_path, 'crop_unit_costs.xlsx'), sheet_name='io_rev')
         all_ods['croprev'] = all_ods.apply(lambda x: assign_io_rev_costs_crops(
-            x, cost_values_df,rice_month_file,crop_month_fields,province, 
+            x, cost_values_df,rice_month_file,crop_month_fields,province,
             all_ods.columns.values.tolist(), exchange_rate), axis=1)
         all_ods[['min_agrirev', 'max_croprev']] = all_ods['croprev'].apply(pd.Series)
         all_ods.drop('croprev', axis=1, inplace=True)

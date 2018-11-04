@@ -1,4 +1,5 @@
-"""
+"""Summarise network-hazard intersections
+
 Purpose
 -------
 
@@ -56,6 +57,7 @@ Results
     - band_num - Integer value of hazard band
     - min_val - Integer value of minimum value of hazard threshold
     - max_val - Integer value of maximum value of hazard threshold
+
 """
 import itertools
 import os
@@ -69,24 +71,37 @@ from vtra.transport_flow_and_failure_functions import *
 
 
 def create_hazard_attributes_for_network(intersection_dir,sector,hazard_files,hazard_df,bands,thresholds,commune_shape,network_type='',name_province=''):
-    """
-    Extract results of network edges/nodes and hazard intersections to collect network-hazard intersection attributes
+    """Extract results of network edges/nodes and hazard intersections to collect
+    network-hazard intersection attributes
+
         - Combine with boundary Polygons to collect network-hazard-boundary intersection attributes
         - Write final results to an Excel sheet
 
     Parameters
-        - intersection_dir - String Path to Directory where the network-hazard shapefile results are stored
-        - sector - String name of transport mode
-        - hazard_files - List of string names of all hazard files
-        - hazard_df - Pandas DataFrame of hazard attributes
-        - bands - List of integer values of hazard bands
-        - thresholds - List of integer values of hazard thresholds
-        - commune_shahe - Shapefile of commune boundaries and attributes
-        - network_type - String value -'edges' or 'nodes': Default = 'nodes'
-        - name_province - String name of province if needed: Default = ''
+    ----------
+    intersection_dir : str
+        Path to Directory where the network-hazard shapefile results are stored
+    sector : str
+        name of transport mode
+    hazard_files : list[str]
+        names of all hazard files
+    hazard_df : pandas.DataFrame
+        hazard attributes
+    bands : list[int]
+        integer values of hazard bands
+    thresholds : list[int]
+        integer values of hazard thresholds
+    commune_shape
+        Shapefile of commune boundaries and attributes
+    network_type : str, optional
+        value -'edges' or 'nodes': Default = 'nodes'
+    name_province : str, optional
+        name of province if needed: Default = ''
 
-    Outputs
-        data_df - Pandas DataFrame of network-hazard-boundary intersection attributes:
+    Returns
+    -------
+    data_df : pandas.DataFrame
+        network-hazard-boundary intersection attributes:
             - edge_id/node_id - String name of intersecting edge ID or node ID
             - length - Float length of intersection of edge LineString and hazard Polygon: Only for edges
             - province_id - String/Integer ID of Province
@@ -105,6 +120,7 @@ def create_hazard_attributes_for_network(intersection_dir,sector,hazard_files,ha
             - min_val - Integer value of minimum value of hazard threshold
             - max_val - Integer value of maximum value of hazard threshold
             - length - Float length of intersection of edge LineString and hazard Polygon: Only for edges
+
     """
     data_dict = []
     for root, dirs, files in os.walk(intersection_dir):
@@ -155,7 +171,8 @@ def create_hazard_attributes_for_network(intersection_dir,sector,hazard_files,ha
     return data_df
 
 def main():
-    """
+    """Collect results
+
     1. Specify the paths from where you to read and write:
         - Input data
         - Intermediate calcuations data
@@ -173,14 +190,11 @@ def main():
         - Commune boundary and stats data shapefile
         - Hazard datasets description Excel file
         - String name of sheet in hazard datasets description Excel file
-
-    4. Specify the output files and paths to be created
     """
     data_path, calc_path, output_path = load_config()['paths']['data'], load_config()[
         'paths']['calc'], load_config()['paths']['output']
 
-    """Supply input data and parameters
-    """
+    # Supply input data and parameters
     provinces = ['Lao Cai','Binh Dinh','Thanh Hoa']
     modes = ['road','rail','air','inland','coastal']
     out_modes = ['national_roads', 'national_rail', 'air_ports', 'inland_ports', 'sea_ports']
@@ -189,8 +203,7 @@ def main():
     province_results = 'Yes'
     national_results = 'Yes'
 
-    """Give the paths to the input data files
-    """
+    # Give the paths to the input data files
     commune_shp = os.path.join(data_path, 'Vietnam_boundaries',
                                 'who_boundaries', 'who_communes.shp')
 
@@ -198,20 +211,17 @@ def main():
         data_path, 'Hazard_data', 'hazard_data_folder_data_info.xlsx')
     hazard_sheet = 'file_contents'
 
-    """Specify the output files and paths to be created
-    """
+    # Specify the output files and paths to be created
     output_dir = os.path.join(output_path, 'hazard_scenarios')
     if os.path.exists(output_dir) == False:
         os.mkdir(output_dir)
 
-    """Read hazard datasets desciptions
-    """
+    # Read hazard datasets desciptions
     print ('* Reading hazard datasets desciptions')
     hazard_df = pd.read_excel(hazard_description_file, sheet_name=hazard_sheet)
     hazard_files = hazard_df['file_name'].values.tolist()
 
-    """Process province scale results
-    """
+    # Process province scale results
     if province_results == 'Yes':
         print ('* Processing province scale results')
         data_excel = os.path.join(
@@ -232,8 +242,7 @@ def main():
             prov_excel_writer.save()
             del data_df
 
-    """Process national scale results
-    """
+    # Process national scale results
     if national_results == 'Yes':
         print ('* Processing national scale results')
         data_excel = os.path.join(

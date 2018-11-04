@@ -1,4 +1,5 @@
-"""
+"""Map flows on national networks
+
 Purpose
 -------
 
@@ -17,13 +18,13 @@ Input data requirements
     - from_node - String node ID that should be present in node_id column
     - to_node - String node ID that should be present in node_id column
     - length - Float length of edge in km
-    - min_time - Float minimum time of travel in hours on edge 
-    - max_time - Float maximum time of travel in hours on edge  
-    - min_time_cost - Float minimum cost of time in USD on edge   
-    - max_time_cost - Float maximum cost of time in USD on edge 
-    - min_tariff_cost - Float minimum tariff cost in USD on edge   
+    - min_time - Float minimum time of travel in hours on edge
+    - max_time - Float maximum time of travel in hours on edge
+    - min_time_cost - Float minimum cost of time in USD on edge
+    - max_time_cost - Float maximum cost of time in USD on edge
+    - min_tariff_cost - Float minimum tariff cost in USD on edge
     - max_tariff_cost - Float maximum tariff cost in USD on edge
-         
+
 3. Edge shapefiles for all national-scale networks with attributes:
     - edge_id - String Edge ID
     - geometry - Shapely LineString geometry of edges
@@ -34,7 +35,7 @@ Input data requirements
     - min_tons -  Float values of minimum daily OD in tons
     - max_tons - Float values of maximum daily OD in tons
     - Names of the industry columns specified in the inputs
-            
+
 Results
 -------
 1. Excel sheets with results of flow mapping based on MIN-MAX generalised costs estimates:
@@ -57,7 +58,7 @@ Results
 2. Shapefiles
     - edge_id - String/Integer/Float Edge ID
     - geometry - Shapely LineString geomtry of edges
-    - min_{industry} - Float values of estimated minimum daily industries/commodities/total volumes in tons on edges 
+    - min_{industry} - Float values of estimated minimum daily industries/commodities/total volumes in tons on edges
     - max_{industry} - Float values of estimated maximum daily industries/commodities/total volumes in tons on edges
 
 References
@@ -66,6 +67,7 @@ References
    Analysis and development of model for addressing climate change/disaster risks in multi-modal transport networks in Vietnam.
    Final Report, Oxford Infrastructure Analytics Ltd., Oxford, UK.
 2. All input data folders and files referred to in the code below.
+
 """
 import os
 import subprocess
@@ -83,34 +85,39 @@ from vtra.transport_flow_and_failure_functions import *
 from vtra.utils import *
 
 
-def network_od_paths_assembly_national(points_dataframe, 
-    graph, vehicle_wt, transport_mode, 
-    excel_writer=''):
-    """
-    Assembles estimates of OD paths, distances, times, costs and tonnages on networks 
+def network_od_paths_assembly_national(points_dataframe, graph, vehicle_wt, transport_mode,
+                                       excel_writer=''):
+    """Assemble estimates of OD paths, distances, times, costs and tonnages on networks
 
     Parameters
-        - points_dataframe - Pandas DataFrame of OD nodes and their tonnages
-        - graph - igraph network structure 
-        - vehicle_wt - Float unit weight of vehicle
-        - transport_mode - String name of modes
-        - excel_writer - Name of the excel writer to save Pandas dataframe to Excel file
+    ----------
+    points_dataframe : pandas.DataFrame
+        OD nodes and their tonnages
+    graph
+        igraph network structure
+    vehicle_wt : float
+        unit weight of vehicle
+    transport_mode : str
+        name of modes
+    excel_writer
+        Name of the excel writer to save Pandas dataframe to Excel file
 
-    Outputs
-        save_paths_df - Pandas DataFrame with columns:
-            - origin - String node ID of Origin
-            - destination - String node ID of Destination
-            - min_edge_path - List of string of edge ID's for paths with minimum generalised cost flows
-            - max_edge_path - List of string of edge ID's for paths with maximum generalised cost flows
-            - min_distance - Float values of estimated distance for paths with minimum generalised cost flows
-            - max_distance - Float values of estimated distance for paths with maximum generalised cost flows
-            - min_time - Float values of estimated time for paths with minimum generalised cost flows
-            - max_time - Float values of estimated time for paths with maximum generalised cost flows
-            - min_gcost - Float values of estimated generalised cost for paths with minimum generalised cost flows
-            - max_gcost - Float values of estimated generalised cost for paths with maximum generalised cost flows
-            - min_vehicle_nums - Float values of estimated vehicle numbers for paths with minimum generalised cost flows
-            - max_vehicle_nums - Float values of estimated vehicle numbers for paths with maximum generalised cost flows
-            - industry_columns - All tonnages of industry columns given in the OD matrix data
+    Returns
+    -------
+    save_paths_df : pandas.DataFrame
+        - origin - String node ID of Origin
+        - destination - String node ID of Destination
+        - min_edge_path - List of string of edge ID's for paths with minimum generalised cost flows
+        - max_edge_path - List of string of edge ID's for paths with maximum generalised cost flows
+        - min_distance - Float values of estimated distance for paths with minimum generalised cost flows
+        - max_distance - Float values of estimated distance for paths with maximum generalised cost flows
+        - min_time - Float values of estimated time for paths with minimum generalised cost flows
+        - max_time - Float values of estimated time for paths with maximum generalised cost flows
+        - min_gcost - Float values of estimated generalised cost for paths with minimum generalised cost flows
+        - max_gcost - Float values of estimated generalised cost for paths with maximum generalised cost flows
+        - min_vehicle_nums - Float values of estimated vehicle numbers for paths with minimum generalised cost flows
+        - max_vehicle_nums - Float values of estimated vehicle numbers for paths with maximum generalised cost flows
+        - industry_columns - All tonnages of industry columns given in the OD matrix data
     """
     save_paths = []
     for iter_, row in points_dataframe.iterrows():
@@ -148,11 +155,12 @@ def network_od_paths_assembly_national(points_dataframe,
     save_paths_df.to_excel(excel_writer, transport_mode, index=False)
     excel_writer.save()
     del save_paths
-    
+
     return save_paths_df
 
 def main():
-    """
+    """Estimate flows
+
     1. Specify the paths from where you want to read and write:
         - Input data
         - Intermediate calcuations data
@@ -160,7 +168,7 @@ def main():
 
     2. Supply input data and parameters
         - Names of modes: List of strings
-        - Unit weight of vehicle assumed for each mode: List of float types 
+        - Unit weight of vehicle assumed for each mode: List of float types
         - Names of all industry sector and crops in VITRANSS2 and IFPRI datasets: List of string types
         - Names of commodity/industry columns for which min-max tonnage column names already exist: List of string types
         - Percentage of OD flow we want to send along path: FLoat type
@@ -168,25 +176,23 @@ def main():
     3. Give the paths to the input data files:
         - Network edges Excel file
         - OD flows Excel file
-        - Costs of modes Excel file 
+        - Costs of modes Excel file
         - Road properties Excel file
-    
-    4. Specify the output files and paths to be created 
+
+    4. Specify the output files and paths to be created
     """
     data_path, calc_path, output_path = load_config()['paths']['data'], load_config()[
         'paths']['calc'], load_config()['paths']['output']
 
-    """Supply input data and parameters
-    """
+    # Supply input data and parameters
     modes = ['road', 'rail', 'air', 'inland', 'coastal']
     veh_wt = [20, 800, 0, 800, 1200]
     ind_cols = ['cement', 'coal', 'constructi', 'fertilizer', 'fishery', 'manufactur', 'acof', 'cash', 'cass', 'maiz', 'pepp', 'rcof',
                 'rubb', 'swpo', 'teas', 'meat', 'rice', 'petroluem', 'steel', 'sugar', 'wood', 'tons']
     min_max_exist = ['rice','tons']
     percentage = [10,90,100]
-    
-    """Give the paths to the input data files
-    """
+
+    # Give the paths to the input data files
     network_data_path = os.path.join(data_path,'post_processed_networks')
     network_data_excel = os.path.join(data_path,'post_processed_networks','national_edges.xlsx')
     od_output_excel = os.path.join(
@@ -195,8 +201,7 @@ def main():
     rd_prop_file = os.path.join(data_path, 'mode_properties', 'road_properties.xlsx')
 
 
-    """Specify the output files and paths to be created 
-    """
+    # Specify the output files and paths to be created
     flow_shp_dir = os.path.join(output_path, 'flow_mapping_shapefiles')
     if os.path.exists(flow_shp_dir) == False:
         os.mkdir(flow_shp_dir)
@@ -211,16 +216,14 @@ def main():
 
     for perct in percentage:
         flow_output_excel = os.path.join(
-            flow_paths_dir, 
+            flow_paths_dir,
             'national_scale_flow_paths_{}_percent.xlsx'.format(int(perct)))
-    
+
         excl_wrtr = pd.ExcelWriter(flow_output_excel)
 
-        """Start the OD flow mapping process    
-        """
+        # Start the OD flow mapping process
         for m in range(len(modes)):
-            """Load mode igraph network and GeoDataFrame
-            """
+            # Load mode igraph network and GeoDataFrame
             print ('* Loading {} igraph network and GeoDataFrame'.format(modes[m]))
             edges_in = pd.read_excel(network_data_excel,sheet_name = modes[m],encoding='utf-8')
             G = ig.Graph.TupleList(edges_in.itertuples(index=False), edge_attrs=list(edges_in.columns)[2:])
@@ -228,32 +231,29 @@ def main():
             gdf_edges = gpd.read_file(os.path.join(network_data_path,'{}_edges.shp'.format(modes[m])),encoding='utf-8')
             gdf_edges = gdf_edges[['edge_id','geometry']]
 
-            """Load mode OD nodes pairs and tonnages
-            """
+            # Load mode OD nodes pairs and tonnages
             print ('* Loading {} OD nodes pairs and tonnages'.format(modes[m]))
             ods = pd.read_excel(od_output_excel, sheet_name=modes[m])
             ods = ods[ods['max_tons'] > 0.5]
-            
+
             all_ods = copy.deepcopy(ods)
-            all_ods_tons_cols = [col for col in all_ods.columns.values.tolist() if col not in ['origin','o_region','destination','d_region']] 
+            all_ods_tons_cols = [col for col in all_ods.columns.values.tolist() if col not in ['origin','o_region','destination','d_region']]
             all_ods[all_ods_tons_cols] = 0.01*perct*all_ods[all_ods_tons_cols]
-            """Calculate mode OD paths
-            """
+            # Calculate mode OD paths
             print ('* Calculating {} OD paths'.format(modes[m]))
             all_paths = network_od_paths_assembly_national(
                 all_ods, G, veh_wt[m], modes[m],excel_writer=excl_wrtr)
 
             del all_ods
-            """Create network shapefiles with flows
-            """
+            # Create network shapefiles with flows
             print ('* Creating {} network shapefiles with flows'.format(modes[m]))
-            
+
             shp_output_path = os.path.join(flow_shp_dir,'weighted_flows_national_{}_{}_percent.shp'.format(modes[m],int(perct)))
             csv_output_path = os.path.join(flow_csv_dir,'weighted_flows_national_{}_{}_percent.csv'.format(modes[m],int(perct)))
 
 
             write_flow_paths_to_network_files(all_paths,
-                ind_cols,min_max_exist,gdf_edges, 
+                ind_cols,min_max_exist,gdf_edges,
                 save_csv=True, save_shapes=False, shape_output_path=shp_output_path,csv_output_path=csv_output_path)
 
 

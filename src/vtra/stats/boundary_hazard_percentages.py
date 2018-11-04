@@ -1,15 +1,16 @@
-"""
+"""Summarise network-hazard intersections per-boundary (district, commune or province)
+
 Purpose
 -------
 
-Collect network-hazard intersection attributes 
-    - Combine with boundary Polygons to collect network-boundary intersection attributes 
-    - Write final results to an Excel sheet 
+Collect network-hazard intersection attributes
+    - Combine with boundary Polygons to collect network-boundary intersection attributes
+    - Write final results to an Excel sheet
 
 Input data requirements
 -----------------------
 
-1. Correct paths to all files and correct input parameters 
+1. Correct paths to all files and correct input parameters
 
 2. Shapefiles of network-hazard intersections results with attributes:
     - edge_id or node_id - String/Integer/Float Edge ID or Node ID of network
@@ -23,14 +24,14 @@ Input data requirements
     - dis_name_e - String name of District in English
     - commune_id - String/Integer ID of Commune
     - name_eng - String name of Commune in English
-    - geometry - Shapely geometry of boundary Polygon 
+    - geometry - Shapely geometry of boundary Polygon
 
 Results
 -------
 
 1. Excel sheet of network-hazard-boundary intersection with attributes:
     - edge_id/node_id - String name of intersecting edge ID or node ID
-    - length - Float length of intersection of edge LineString and hazard Polygon: Only for edges 
+    - length - Float length of intersection of edge LineString and hazard Polygon: Only for edges
     - province_id - String/Integer ID of Province
     - province_name - String name of Province in English
     - district_id - String/Integer ID of District
@@ -49,14 +50,15 @@ from vtra.utils import *
 from vtra.transport_flow_and_failure_functions import *
 
 def main():
-    """
+    """Summarise intersections
+
     1. Specify the paths from where you to read and write:
         - Input data
         - Intermediate calcuations data
         - Output results
 
     2. Supply input data and parameters
-        - Names of the three Provinces - List of string types 
+        - Names of the three Provinces - List of string types
         - Names of modes - List of strings
         - Names of output modes - List of strings
         - Names of hazard bands - List of integers
@@ -67,14 +69,13 @@ def main():
         - Commune boundary and stats data shapefile
         - Hazard datasets description Excel file
         - String name of sheet in hazard datasets description Excel file
-    
-    4. Specify the output files and paths to be created 
+
+    4. Specify the output files and paths to be created
     """
     data_path, calc_path, output_path = load_config()['paths']['data'], load_config()[
         'paths']['calc'], load_config()['paths']['output']
 
-    """Supply input data and parameters
-    """
+    # Supply input data and parameters
     provinces = ['Lao Cai','Binh Dinh','Thanh Hoa']
     modes = ['road','rail','air','inland','coastal']
     out_modes = ['national_roads', 'national_rail', 'air_ports', 'inland_ports', 'sea_ports']
@@ -83,33 +84,30 @@ def main():
     province_results = 'No'
     national_results = 'Yes'
 
-    """Give the paths to the input data files
-    """
-    province_file = os.path.join(output_path, 
+    # Give the paths to the input data files
+    province_file = os.path.join(output_path,
             'network_stats',
             'province_roads_stats.xlsx')
 
-    national_file = os.path.join(output_path, 
+    national_file = os.path.join(output_path,
             'network_stats',
             'national_scale_stats.xlsx')
 
-    province_hazard_file = os.path.join(output_path, 
+    province_hazard_file = os.path.join(output_path,
             'hazard_scenarios',
             'province_roads_hazard_intersections.xlsx')
 
-    national_hazard_file = os.path.join(output_path, 
+    national_hazard_file = os.path.join(output_path,
             'hazard_scenarios',
             'national_scale_hazard_intersections.xlsx')
-    """Specify the output files and paths to be created
-    """
+    # Specify the output files and paths to be created
     output_dir = os.path.join(output_path, 'network_stats')
     if os.path.exists(output_dir) == False:
         os.mkdir(output_dir)
 
-    """Process province scale results
-    """
+    # Process province scale results
     if province_results == 'Yes':
-        print ('* Processing province scale results') 
+        print ('* Processing province scale results')
         data_excel = os.path.join(
             output_dir,'province_roads_hazards_stats.xlsx')
         prov_excel_writer = pd.ExcelWriter(data_excel)
@@ -128,10 +126,9 @@ def main():
             prov_excel_writer.save()
             del hazard_stats
 
-    """Process national scale results
-    """
+    # Process national scale results
     if national_results == 'Yes':
-        print ('* Processing national scale results') 
+        print ('* Processing national scale results')
         data_excel = os.path.join(
             output_dir,'national_scale_hazards_stats.xlsx')
         nat_excel_writer = pd.ExcelWriter(data_excel)
@@ -145,7 +142,7 @@ def main():
                 hazard_stats = hazard_stats.groupby(boundary_cols+hazard_cols)['length'].sum().reset_index()
                 hazard_stats = pd.merge(hazard_stats,national_edges_stats,how='left', on=boundary_cols).fillna(0)
                 hazard_stats['percentage'] = 100.0*hazard_stats['length']/hazard_stats['total_length']
-                
+
                 hazard_stats.to_excel(nat_excel_writer, modes[m], index=False)
                 nat_excel_writer.save()
                 del hazard_stats

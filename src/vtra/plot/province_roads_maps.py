@@ -1,4 +1,4 @@
-"""Road network flows
+"""Provincial road network maps
 """
 import os
 import sys

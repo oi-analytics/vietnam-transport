@@ -1,4 +1,4 @@
-"""Road network flows
+"""Road network risks and adaptation maps
 """
 import os
 import sys
@@ -135,7 +135,7 @@ def main():
     ]
 
     adapt_cols = ['min_benefit','min_ini_adap_cost','min_tot_adap_cost','min_bc_ratio','max_benefit','max_ini_adap_cost','max_tot_adap_cost','max_bc_ratio']
-    
+
     region_file_path = os.path.join(config['paths']['data'], 'post_processed_networks',
                                'road_edges.shp')
 
@@ -152,12 +152,11 @@ def main():
 
     fail_scenarios = pd.read_csv(flow_file_path)
     fail_scenarios['min_eael'] = duration*fail_scenarios['min_duration_wt']*fail_scenarios['risk_wt']*fail_scenarios['min_econ_impact']
-    fail_scenarios['max_eael'] = duration*fail_scenarios['max_duration_wt']*fail_scenarios['risk_wt']*fail_scenarios['max_econ_impact']    
+    fail_scenarios['max_eael'] = duration*fail_scenarios['max_duration_wt']*fail_scenarios['risk_wt']*fail_scenarios['max_econ_impact']
     all_edge_fail_scenarios = fail_scenarios[hazard_cols + ['edge_id','min_eael','max_eael']]
     all_edge_fail_scenarios = all_edge_fail_scenarios.groupby(hazard_cols + ['edge_id'])['min_eael','max_eael'].max().reset_index()
 
-    """Climate change effects
-    """
+    # Climate change effects
     all_edge_fail_scenarios = all_edge_fail_scenarios.set_index(['hazard_type','edge_id'])
     scenarios = list(set(all_edge_fail_scenarios.index.values.tolist()))
     change_tup = []
@@ -182,8 +181,7 @@ def main():
         ), index=False
     )
 
-    """Change effects
-    """
+    # Change effects
     change_df = change_df.set_index(hazard_cols)
     scenarios = list(set(change_df.index.values.tolist()))
     for sc in scenarios:
@@ -214,7 +212,7 @@ def main():
             else:
                 ax.add_geometries([geom], crs=proj, linewidth=1,edgecolor=change_colors[-1],facecolor='none',zorder=1)
 
-            
+
         # Legend
         legend_handles = []
         for c in range(len(change_colors)):
@@ -239,8 +237,7 @@ def main():
         save_fig(output_file)
         plt.close()
 
-    """Absolute effects
-    """
+    # Absolute effects
     all_edge_fail_scenarios = all_edge_fail_scenarios.reset_index()
     all_edge_fail_scenarios = all_edge_fail_scenarios.set_index(hazard_cols)
     scenarios = list(set(all_edge_fail_scenarios.index.values.tolist()))
@@ -344,7 +341,7 @@ def main():
             max_sig = []
             for (i, ((nmin, nmax), line_style)) in enumerate(width_by_range.items()):
                 if round(nmin/divisor, significance_ndigits) < round(nmax/divisor, significance_ndigits):
-                    max_sig.append(significance_ndigits)    
+                    max_sig.append(significance_ndigits)
                 elif round(nmin/divisor, significance_ndigits+1) < round(nmax/divisor, significance_ndigits+1):
                     max_sig.append(significance_ndigits+1)
                 elif round(nmin/divisor, significance_ndigits+2) < round(nmax/divisor, significance_ndigits+2):
@@ -372,7 +369,7 @@ def main():
                         'f}-{:.' + str(significance_ndigits) + 'f}'
                     label = value_template.format(
                         round(nmin/divisor, significance_ndigits), round(nmax/divisor, significance_ndigits))
-                
+
                 ax.text(
                     x_r + x_text_nudge,
                     y - y_text_nudge,
@@ -399,7 +396,7 @@ def main():
                                 'min_bc_ratio','max_benefit','max_ini_adap_cost','max_tot_adap_cost','max_bc_ratio']]
     for cols in ['min_ini_adap_cost','max_ini_adap_cost']:
         all_edge_fail_scenarios[cols] = all_edge_fail_scenarios[cols].apply(lambda x: np.max(np.array(ast.literal_eval(x))))
-    
+
     all_edge_fail_scenarios = all_edge_fail_scenarios.groupby(['edge_id','road_class'])[adapt_cols + ['min_eael','max_eael']].max().reset_index()
     all_edge_fail_scenarios = all_edge_fail_scenarios[all_edge_fail_scenarios['max_eael'] > 0]
     all_edge_fail_scenarios.to_csv(os.path.join(config['paths']['output'],
@@ -420,7 +417,7 @@ def main():
         column = adapt_set[c]['column']
         weights = [record[column] for iter_, record in edges_vals.iterrows()]
 
-        
+
         max_weight = max(weights)
         width_by_range = generate_weight_bins(weights)
 
@@ -474,7 +471,6 @@ def main():
                 zorder=cat_style.zindex
             )
 
-        
         x_l = 102.3
         x_r = x_l + 0.4
         base_y = 14
@@ -495,7 +491,7 @@ def main():
         max_sig = []
         for (i, ((nmin, nmax), line_style)) in enumerate(width_by_range.items()):
             if round(nmin/divisor, significance_ndigits) < round(nmax/divisor, significance_ndigits):
-                max_sig.append(significance_ndigits)    
+                max_sig.append(significance_ndigits)
             elif round(nmin/divisor, significance_ndigits+1) < round(nmax/divisor, significance_ndigits+1):
                 max_sig.append(significance_ndigits+1)
             elif round(nmin/divisor, significance_ndigits+2) < round(nmax/divisor, significance_ndigits+2):
@@ -523,7 +519,7 @@ def main():
                     'f}-{:.' + str(significance_ndigits) + 'f}'
                 label = value_template.format(
                     round(nmin/divisor, significance_ndigits), round(nmax/divisor, significance_ndigits))
-            
+
             ax.text(
                 x_r + x_text_nudge,
                 y - y_text_nudge,

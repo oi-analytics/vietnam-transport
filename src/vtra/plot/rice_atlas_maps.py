@@ -1,4 +1,4 @@
-"""Generate crop maps for Vietnam
+"""Rice atlas maps
 """
 import os
 import sys

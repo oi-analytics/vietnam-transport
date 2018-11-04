@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""vtra
+"""Flow mapping
 """
 import pkg_resources
 

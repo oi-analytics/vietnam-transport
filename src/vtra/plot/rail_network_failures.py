@@ -1,4 +1,4 @@
-"""Rail network flows map
+"""Rail network loss maps
 """
 import os
 import sys
@@ -171,7 +171,7 @@ def main():
         max_sig = []
         for (i, ((nmin, nmax), line_style)) in enumerate(width_by_range.items()):
             if round(nmin/divisor, significance_ndigits) < round(nmax/divisor, significance_ndigits):
-                max_sig.append(significance_ndigits)    
+                max_sig.append(significance_ndigits)
             elif round(nmin/divisor, significance_ndigits+1) < round(nmax/divisor, significance_ndigits+1):
                 max_sig.append(significance_ndigits+1)
             elif round(nmin/divisor, significance_ndigits+2) < round(nmax/divisor, significance_ndigits+2):

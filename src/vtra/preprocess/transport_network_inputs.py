@@ -1,4 +1,5 @@
-"""
+"""Utility functions for transport networks
+
 Purpose
 -------
 Helper functions to create post-processeed networks with attributes from specific types of input datasets
@@ -22,8 +23,7 @@ from vtra.utils import line_length
 
 
 def assign_province_road_conditions(x):
-    """
-    Assign road conditions as paved or unpaved to Province roads
+    """Assign road conditions as paved or unpaved to Province roads
 
     Parameters
         x - Pandas DataFrame of values
@@ -45,8 +45,7 @@ def assign_province_road_conditions(x):
 
 
 def assign_assumed_width_to_province_roads_from_file(asset_width, width_range_list):
-    """
-    Assign widths to Province roads assets in Vietnam
+    """Assign widths to Province roads assets in Vietnam
 
     The widths are assigned based on our understanding of:
 
@@ -72,8 +71,7 @@ def assign_assumed_width_to_province_roads_from_file(asset_width, width_range_li
 
 
 def assign_assumed_width_to_province_roads(x):
-    """
-    Assign widths to Province roads assets in Vietnam
+    """Assign widths to Province roads assets in Vietnam
 
     Parameters
         x : int value for width of asset
@@ -88,8 +86,7 @@ def assign_assumed_width_to_province_roads(x):
 
 
 def assign_asset_type_to_province_roads_from_file(asset_code, asset_type_list):
-    """
-    Assign asset types to roads assets in Vietnam based on values in file
+    """Assign asset types to roads assets in Vietnam based on values in file
 
     The types are assigned based on our understanding of:
     1. The reported asset code in the data
@@ -111,8 +108,7 @@ def assign_asset_type_to_province_roads_from_file(asset_code, asset_type_list):
 
 
 def assign_asset_type_to_province_roads(x):
-    """
-    Assign asset types to roads assets in Vietnam
+    """Assign asset types to roads assets in Vietnam
 
     The types are assigned based on our understanding of:
     1. The reported asset code in the data
@@ -138,8 +134,7 @@ def assign_asset_type_to_province_roads(x):
 
 
 def assign_minmax_travel_speeds_province_roads_apply(x):
-    """
-    Assign travel speeds to roads assets in Vietnam
+    """Assign travel speeds to roads assets in Vietnam
 
     The speeds are assigned based on our understanding of:
 
@@ -189,8 +184,7 @@ def assign_minmax_travel_speeds_province_roads_apply(x):
 
 
 def assign_minmax_time_costs_province_roads_apply(x, cost_dataframe):
-    """
-    Assign time costs on Province roads in Vietnam
+    """Assign time costs on Province roads in Vietnam
 
     The costs are assigned based on our understanding of:
 
@@ -233,8 +227,7 @@ def assign_minmax_time_costs_province_roads_apply(x, cost_dataframe):
 
 
 def assign_minmax_tariff_costs_province_roads_apply(x, cost_dataframe):
-    """
-    Assign tariff costs on Province roads in Vietnam
+    """Assign tariff costs on Province roads in Vietnam
 
     The costs are assigned based on our understanding of:
 
@@ -274,8 +267,7 @@ def assign_minmax_tariff_costs_province_roads_apply(x, cost_dataframe):
 
 
 def province_shapefile_to_dataframe(edges_in, road_terrain, road_properties_file,usage_factors):
-    """
-    Create province network dataframe from inputs
+    """Create province network dataframe from inputs
 
     Parameters
         - edges_in - String path to edges file/network Shapefile
@@ -365,8 +357,7 @@ def province_shapefile_to_dataframe(edges_in, road_terrain, road_properties_file
 
 
 def province_shapefile_to_network(edges_in, road_terrain, road_properties_file,usage_factors):
-    """
-    Create province igraph network from inputs
+    """Create province igraph network from inputs
 
     Parameters
         - edges_in - String path to edges file/network Shapefile
@@ -384,8 +375,7 @@ def province_shapefile_to_network(edges_in, road_terrain, road_properties_file,u
 
 
 def assign_national_road_terrain(x):
-    """
-    Assign terrain as flat or mountain to national roads
+    """Assign terrain as flat or mountain to national roads
 
     Parameters
         x - Pandas DataFrame of values
@@ -407,8 +397,7 @@ def assign_national_road_terrain(x):
 
 
 def assign_national_road_conditions(x):
-    """
-    Assign road conditions as paved or unpaved to national roads
+    """Assign road conditions as paved or unpaved to national roads
 
     Parameters
         x - Pandas DataFrame of values
@@ -430,8 +419,7 @@ def assign_national_road_conditions(x):
 
 
 def assign_national_road_class(x):
-    """
-    Assign road speeds to national roads
+    """Assign road speeds to national roads
 
     Parameters
         x - Pandas DataFrame of values
@@ -497,8 +485,7 @@ def assign_national_road_class(x):
 
 
 def assign_assumed_width_to_national_roads_from_file(x, flat_width_range_list, mountain_width_range_list):
-    """
-    Assign widths to national roads assets in Vietnam
+    """Assign widths to national roads assets in Vietnam
 
     The widths are assigned based on our understanding of:
     1. The class of the road which is not reliable
@@ -551,8 +538,7 @@ def assign_assumed_width_to_national_roads_from_file(x, flat_width_range_list, m
 
 def assign_min_max_speeds_to_national_roads_from_file(x, flat_width_range_list,
                                                       mountain_width_range_list):
-    """
-    Assign speeds to national roads in Vietnam
+    """Assign speeds to national roads in Vietnam
 
     The speeds are assigned based on our understanding of:
     1. The class of the road
@@ -612,8 +598,7 @@ def assign_min_max_speeds_to_national_roads_from_file(x, flat_width_range_list,
 
 
 def assign_minmax_time_costs_national_roads_apply(x, cost_dataframe):
-    """
-    Assign time costs on national roads in Vietnam
+    """Assign time costs on national roads in Vietnam
 
     The costs are assigned based on our understanding of:
 
@@ -663,8 +648,7 @@ def assign_minmax_time_costs_national_roads_apply(x, cost_dataframe):
 
 
 def assign_minmax_tariff_costs_national_roads_apply(x, cost_dataframe):
-    """
-    Assign tariff costs on national roads in Vietnam
+    """Assign tariff costs on national roads in Vietnam
 
     The costs are assigned based on our understanding of:
 
@@ -692,8 +676,7 @@ def assign_minmax_tariff_costs_national_roads_apply(x, cost_dataframe):
 
 
 def national_road_shapefile_to_dataframe(edges_in, road_properties_file,usage_factors):
-    """
-    Create national network dataframe from inputs
+    """Create national network dataframe from inputs
 
     Parameters
         - edges_in - String path to edges file/network Shapefile
@@ -777,8 +760,7 @@ def national_road_shapefile_to_dataframe(edges_in, road_properties_file,usage_fa
 
 
 def national_road_shapefile_to_network(edges_in, road_properties_file,usage_factors):
-    """
-    Create national igraph network from inputs
+    """Create national igraph network from inputs
 
     Parameters
         - edges_in - String path to edges file/network Shapefile
@@ -796,8 +778,7 @@ def national_road_shapefile_to_network(edges_in, road_properties_file,usage_fact
 
 
 def assign_minmax_time_costs_networks_apply(x, cost_dataframe):
-    """
-    Assign time costs on networks in Vietnam
+    """Assign time costs on networks in Vietnam
 
     Parameters
         - x - Pandas dataframe with values
@@ -819,8 +800,7 @@ def assign_minmax_time_costs_networks_apply(x, cost_dataframe):
 
 
 def assign_minmax_tariff_costs_networks_apply(x, cost_dataframe):
-    """
-    Assign tariff costs on networks in Vietnam
+    """Assign tariff costs on networks in Vietnam
 
     Parameters
         - x - Pandas dataframe with values
@@ -840,8 +820,7 @@ def assign_minmax_tariff_costs_networks_apply(x, cost_dataframe):
 
 
 def network_shapefile_to_dataframe(edges_in, mode_properties_file, mode_name, speed_min, speed_max,usage_factors):
-    """
-    Create network dataframe from inputs
+    """Create network dataframe from inputs
 
     Parameters
         - edges_in - String path to edges file/network Shapefile
@@ -917,8 +896,7 @@ def network_shapefile_to_dataframe(edges_in, mode_properties_file, mode_name, sp
 
 
 def network_shapefile_to_network(edges_in, mode_properties_file, mode_name, speed_min, speed_max,utilization_factors):
-    """
-    Create igraph network from inputs
+    """Create igraph network from inputs
 
     Parameters
         - edges_in - String path to edges file/network Shapefile
@@ -940,8 +918,7 @@ def network_shapefile_to_network(edges_in, mode_properties_file, mode_name, spee
 
 
 def assign_minmax_tariff_costs_multi_modal_apply(x, cost_dataframe):
-    """
-    Assign tariff costs on multi-modal network links in Vietnam
+    """Assign tariff costs on multi-modal network links in Vietnam
 
     Parameters
         - x - Pandas dataframe with values
@@ -980,8 +957,7 @@ def assign_minmax_tariff_costs_multi_modal_apply(x, cost_dataframe):
 
 
 def multi_modal_shapefile_to_dataframe(edges_in, mode_properties_file, mode_name, length_threshold,usage_factors):
-    """
-    Create multi-modal network dataframe from inputs
+    """Create multi-modal network dataframe from inputs
 
     Parameters
         - edges_in - String path to edges file/network Shapefile
@@ -1029,8 +1005,7 @@ def multi_modal_shapefile_to_dataframe(edges_in, mode_properties_file, mode_name
 
 
 def multi_modal_shapefile_to_network(edges_in, mode_properties_file, mode_name, length_threshold,utilization_factors):
-    """
-    Create multi-modal igraph network dataframe from inputs
+    """Create multi-modal igraph network dataframe from inputs
 
     Parameters
         - edges_in - String path to edges file/network Shapefile
@@ -1051,8 +1026,7 @@ def multi_modal_shapefile_to_network(edges_in, mode_properties_file, mode_name, 
 
 
 def create_port_names(x,port_names_df):
-    """
-    Add port names in Vietnamese to port data
+    """Add port names in Vietnamese to port data
 
     Parameters
         - x - Pandas DataFrame with values
@@ -1074,8 +1048,7 @@ def create_port_names(x,port_names_df):
     return name
 
 def read_waterway_ports(ports_file_with_ids, ports_file_with_names):
-    """
-    Create port data with attributes
+    """Create port data with attributes
 
     Parameters
         - ports_file_with_ids - String path of GeoDataFrame with port IDs
@@ -1099,8 +1072,7 @@ def read_waterway_ports(ports_file_with_ids, ports_file_with_names):
     return ports_with_id
 
 def read_setor_nodes(node_file_with_ids,sector):
-    """
-    Create port data with attributes
+    """Create port data with attributes
 
     Parameters
         - ports_file_with_ids - String path of GeoDataFrame with port IDs

@@ -91,7 +91,9 @@ from vtra.transport_flow_and_failure_functions import *
 
 
 def main():
-    """Specify the paths from where you want to read and write:
+    """Estimate provincial road failures
+
+    Specify the paths from where you want to read and write:
 
     1. Input data
     2. Intermediate calcuations data
@@ -120,8 +122,7 @@ def main():
     data_path, calc_path, output_path = load_config()['paths']['data'], load_config()[
         'paths']['calc'], load_config()['paths']['output']
 
-    """Supply input data and parameters
-    """
+    # Supply input data and parameters
     province_list = ['Lao Cai', 'Binh Dinh', 'Thanh Hoa']
     truck_unit_wt = [5.0]
 
@@ -137,16 +138,14 @@ def main():
     single_edge = True
 
 
-    """Give the paths to the input data files
-    """
+    # Give the paths to the input data files
     network_data_path = os.path.join(data_path,'post_processed_networks')
     network_data_excel = os.path.join(data_path,'post_processed_networks','province_roads_edges.xlsx')
     flow_paths_data = os.path.join(output_path, 'flow_mapping_paths')
     fail_scenarios_data = os.path.join(
         output_path, 'hazard_scenarios', 'province_roads_hazard_intersections.xlsx')
 
-    """Specify the output files and paths to be created
-    """
+    # Specify the output files and paths to be created
     shp_output_path = os.path.join(output_path, 'failure_shapefiles')
     if os.path.exists(shp_output_path) == False:
         os.mkdir(shp_output_path)
@@ -171,38 +170,32 @@ def main():
     if os.path.exists(minmax_combine) == False:
         os.mkdir(minmax_combine)
 
-    """
-    Path OD flow disruptions
-    """
+    # Path OD flow disruptions
     for prn in range(len(province_list)):
         province = province_list[prn]
         province_name = province.replace(' ', '').lower()
 
-        """Load igraph network and GeoDataFrame
-        """
+        # Load igraph network and GeoDataFrame
         print ('* Loading {} igraph network and GeoDataFrame'.format(province))
         G_df = pd.read_excel(network_data_excel,sheet_name = province_name,encoding='utf-8')
         gdf_edges = gpd.read_file(os.path.join(network_data_path,'{}_roads_edges.shp'.format(province_name)),encoding='utf-8')
         gdf_edges = gdf_edges[['edge_id','geometry']]
 
-        """Create failure scenarios
-        """
+        # Create failure scenarios
         print ('* Creating {} failure scenarios'.format(province))
         fail_df = pd.read_excel(fail_scenarios_data, sheet_name=province_name)
         ef_sc_list = edge_failure_sampling(fail_df,'edge_id')
 
         for perct in percentage:
             for tr_wt in truck_unit_wt:
-                """Load flow paths
-                """
+                # Load flow paths
                 print ('* Loading {} flow paths'.format(province))
                 flow_excel_file = 'province_roads_commune_center_access_flow_paths_{}_percent.xlsx'.format(int(perct))
                 flow_df = pd.read_excel(
                     os.path.join(flow_paths_data,flow_excel_file),
                     sheet_name = province_name + '_{}_tons'.format(int(tr_wt)))
 
-                """Perform failure analysis
-                """
+                # Perform failure analysis
                 edge_fail_ranges = []
                 for t in range(len(types)):
                     print ('* Performing  {} {} failure analysis'.format(types[t],province))
@@ -266,8 +259,7 @@ def main():
                 df_path = os.path.join(minmax_combine,file_name + '.csv')
                 edge_impact.to_csv(df_path, index=False)
 
-                """Create network shapefiles with flows
-                """
+                # Create network shapefiles with flows
                 print ('* Creating {} network shapefiles with flows'.format(province))
                 shp_path = os.path.join(
                     shp_output_path,file_name + '.shp')

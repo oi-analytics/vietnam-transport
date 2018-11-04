@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
+"""MRIO utility functions
 """
 import os
 
@@ -7,8 +7,7 @@ import geopandas as gpd
 import pandas as pd
 
 def load_table(data_path):
-    """
-    Load national Input-Output table as pandas dataframe.
+    """Load national Input-Output table as pandas dataframe.
 
     Parameters
         - file_path - String name of data path
@@ -16,23 +15,22 @@ def load_table(data_path):
     Outputs
         - pandas Dataframe with Input-Output table that is going to be used
     """
-    
+
     vnm_IO_path = os.path.join(data_path, "INPUT-OUTPUT TABLE 2012",
                                "IO Table 2012 English.xlsx")
     return pd.read_excel(vnm_IO_path, sheet_name='IO_clean', index_col=0)
 
 def load_sectors(data_path):
-    """
-    Load national Input-Output table and extracted all sectors
+    """Load national Input-Output table and extracted all sectors
 
     Parameters
         - data_path - String name of data path
 
     Outputs
         - pandas Dataframe with all sectors in national Input-Output table
-        
+
     """
-    
+
     vnm_IO_path = os.path.join(data_path, "INPUT-OUTPUT TABLE 2012",
                                "IO Table 2012 English.xlsx")
     vnmIO_rowcol = pd.read_excel(vnm_IO_path, sheet_name='SectorName')
@@ -41,19 +39,17 @@ def load_sectors(data_path):
 
 
 def get_final_sector_classification():
-    """
-    Return the list of sectors to be used in the new multiregional Input-Output table.
-    
+    """Return the list of sectors to be used in the new multiregional Input-Output table.
+
     Outputs:
         - list of sectors
-        
+
     """
     return ['secA', 'secB', 'secC', 'secD', 'secE', 'secF', 'secG', 'secH', 'secI']
 
 def map_sectors(vnm_IO_rowcol):
-    """
-    Map the sectors of the loaded national Input-Output table to the sectors which are going to used in the multiregional Input-Output table.
-    
+    """Map the sectors of the loaded national Input-Output table to the sectors which are going to used in the multiregional Input-Output table.
+
     Parameters
         - vnm_IO_rowcol - pandas dataframe with all sectors in the national Input-Output table.
 
@@ -72,13 +68,12 @@ def map_sectors(vnm_IO_rowcol):
 
 
 def aggregate_table(vnm_IO, vnm_IO_rowcol, in_million=True):
-    """
-    Aggregate national Input-Output table to the amount of sectors used in the multiregional Input-Output table.
+    """Aggregate national Input-Output table to the amount of sectors used in the multiregional Input-Output table.
 
     Parameters
         - vnm_IO - pandas dataframe of national Input-Output table
         - vnm_IO_rowcol - pandas dataframe with all sectors in the national Input-Output table
-        - in_million - Specify whether we want to divide the table by 1000000, to have values in millions. The default value is set to **True** 
+        - in_million - Specify whether we want to divide the table by 1000000, to have values in millions. The default value is set to **True**
 
     Outputs
         - pandas Dataframe with aggregated national Input-Output table
@@ -105,15 +100,14 @@ def aggregate_table(vnm_IO, vnm_IO_rowcol, in_million=True):
 
 
 def is_balanced(io_table):
-    """
-    Function to check if Input-Output table is balanced.
+    """Function to check if Input-Output table is balanced.
 
     Parameters
         - io_table - Input-Output table.
 
     Outputs
         - return print statement if table is balanced.
-        
+
     """
 
     row = io_table.sum(axis=0)
@@ -124,15 +118,14 @@ def is_balanced(io_table):
 
 
 def load_provincial_stats(data_path):
-    """
-    Load shapefile with provincial-level data.
+    """Load shapefile with provincial-level data.
 
     Parameters
         - data_path - String name of data path
 
     Outputs
         - geopandas GeoDataFrame with provincial data.
-        
+
     """
 
     prov_path = os.path.join(data_path, 'Vietnam_boundaries',
@@ -142,8 +135,7 @@ def load_provincial_stats(data_path):
 
 
 def estimate_gva(regions, in_million=True):
-    """
-    Functions to estimate the Gross Value Added for each sector in each province.
+    """Functions to estimate the Gross Value Added for each sector in each province.
 
     Parameters
         - regions - pandas DataFrame with provincial/regional data
@@ -159,8 +151,7 @@ def estimate_gva(regions, in_million=True):
 
 
 def create_proxies(data_path, notrade=False, own_production_ratio=0.9, min_rice=True):
-    """
-    Create all proxies required in the disaggregation process. 
+    """Create all proxies required in the disaggregation process.
 
     Parameters
         - data_path - String name of data path
@@ -169,7 +160,7 @@ def create_proxies(data_path, notrade=False, own_production_ratio=0.9, min_rice=
         - own_production_ratio - Specify how much supply and demand is locally supplied and used, and how much is imported/exported. The default is set to **0.8**
 
     Outputs
-        - all proxy level .csv files. 
+        - all proxy level .csv files.
     """
 
     provinces = load_provincial_stats(data_path)
@@ -186,8 +177,7 @@ def create_proxies(data_path, notrade=False, own_production_ratio=0.9, min_rice=
 
 
 def create_regional_proxy(data_path, regions, write_to_csv=True):
-    """
-    Function to create the proxy to disaggregate the national table to the different regions.
+    """Function to create the proxy to disaggregate the national table to the different regions.
 
     Parameters
         - data_path - String name of data path
@@ -196,7 +186,7 @@ def create_regional_proxy(data_path, regions, write_to_csv=True):
 
     Outputs
         - set of .csv files with regional proxy data
-        
+
     """
 
     # regions['pro_nfirm']*regions['laborcost'] + regions['pro_nfirm']*regions['capital']
@@ -213,8 +203,7 @@ def create_regional_proxy(data_path, regions, write_to_csv=True):
 
 
 def create_indices(data_path, provinces, write_to_csv=True):
-    """
-    Create list of indices required to disaggregate the national table to the different regions.
+    """Create list of indices required to disaggregate the national table to the different regions.
 
     Parameters
         - data_path - String name of data path
@@ -246,8 +235,7 @@ def create_indices(data_path, provinces, write_to_csv=True):
 
 
 def create_sector_proxies(data_path, regions, write_to_csv=True):
-    """
-    Create sector proxies required to disaggregate the national table to the different sectors in each region.
+    """Create sector proxies required to disaggregate the national table to the different sectors in each region.
 
     Parameters
         - data_path - String name of data path
@@ -291,8 +279,7 @@ def create_sector_proxies(data_path, regions, write_to_csv=True):
 
 
 def get_trade_value(x, sum_use, sector, own_production_ratio=0.8):
-    """
-    Function to get the trade value between a certain origin and destination.
+    """Function to get the trade value between a certain origin and destination.
 
     Parameters
         - x - row in Origin-Destination dataframe
@@ -301,7 +288,7 @@ def get_trade_value(x, sum_use, sector, own_production_ratio=0.8):
 
     Outputs
         - returns trade value
-        
+
     """
     if x.Destination == x.Origin:
         try:
@@ -318,8 +305,7 @@ def get_trade_value(x, sum_use, sector, own_production_ratio=0.8):
 
 
 def create_level14_proxies(data_path, od_table, own_production_ratio=0.8, write_to_csv=True):
-    """
-    Function to create the level14 proxies, required to disaggregate the national table.
+    """Function to create the level14 proxies, required to disaggregate the national table.
 
     Parameters
         - data_path - String name of data path
@@ -384,8 +370,7 @@ def create_level14_proxies(data_path, od_table, own_production_ratio=0.8, write_
 
 
 def create_zero_proxies(data_path, od_table, notrade=False, write_to_csv=True):
-    """
-    Function to create the trade proxies, required to disaggregate the national table.
+    """Function to create the trade proxies, required to disaggregate the national table.
 
     Parameters
         - data_path - String name of data path
@@ -451,8 +436,7 @@ def create_zero_proxies(data_path, od_table, notrade=False, write_to_csv=True):
 
 
 def load_output(data_path, provinces, notrade=True):
-    """
-    Read output from disaggregation process and translate to usable pandas DataFrame
+    """Read output from disaggregation process and translate to usable pandas DataFrame
 
     Parameters
         - data_path - String name of data path
@@ -461,7 +445,7 @@ def load_output(data_path, provinces, notrade=True):
 
     Outputs
         - pandas DataFrame with disaggregated Input-Output table
-        
+
     """
 
     # prepare index and cols
@@ -520,9 +504,8 @@ def load_output(data_path, provinces, notrade=True):
 
 
 def map_sect_vnm_to_eng():
-    """
-    Convert vietnamese sector names to simple sector classification.
-    
+    """Convert vietnamese sector names to simple sector classification.
+
     Outputs
         - dictionary to map vietnamese sectors to simple sector names.
     """
@@ -541,15 +524,14 @@ def map_sect_vnm_to_eng():
 
 
 def load_od(data_path, min_rice=True):
-    """
-    Load national Origin-Destination matrix as pandas DataFrame.
+    """Load national Origin-Destination matrix as pandas DataFrame.
 
     Parameters
         - data_path - String name of data path
         - min_rice - Boolean to determine whether you want to use the minimal rice value or the maximum rice value from the flow analysis. The default is set to **True**
 
     Outputs
-        - pandas DataFrame with national Origin-Destination matrix 
+        - pandas DataFrame with national Origin-Destination matrix
 
     """
 
@@ -572,15 +554,14 @@ def load_od(data_path, min_rice=True):
 
 
 def map_sectors_to_od(od_table):
-    """
-    Create dictionary to map products from national Origin-Destination matrix to sector classification for the Input-Output table.
-    
+    """Create dictionary to map products from national Origin-Destination matrix to sector classification for the Input-Output table.
+
     Parameters
         - od_table - pandas DataFrame with the Origin-Destination matrix
 
     Outputs
         - dictionary to map goods to sectors.
-        
+
     """
 
     goods = [x for x in od_table.columns if not (
@@ -593,12 +574,11 @@ def map_sectors_to_od(od_table):
 
 
 def map_regions():
-    """
-    Create dictionary to map regions to consistent format.
-    
+    """Create dictionary to map regions to consistent format.
+
     Outputs
         - dictionary to map regions to consistent format
-        
+
     """
     return {
         'An_Giang': 'An_Giang',
