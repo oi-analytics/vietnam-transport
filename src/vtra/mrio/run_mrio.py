@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
+"""Run MRIO
 """
 import os
 import subprocess
@@ -12,8 +12,7 @@ from vtra.utils import load_config
 
 
 def run_mrio_disaggregate(notrade=False, min_rice=True, own_production_ratio=0.8):
-    """
-    This function will disaggregate the (single-region) national Input-Output table to a provincial multiregional Input-Output table
+    """This function will disaggregate the (single-region) national Input-Output table to a provincial multiregional Input-Output table
 
     Parameters
         - notrade - Boolean to specify whether we should include trade in the disaggregation. This should be set to **True** in the first step of the disaggregation. The default is set to **False**
@@ -23,7 +22,7 @@ def run_mrio_disaggregate(notrade=False, min_rice=True, own_production_ratio=0.8
     Outputs
         - .csv file containing the new multiregional Input-Output table.
         - pandas DataFrame with a multiregional Input-Output table
-        
+
     """
     data_path = load_config()['paths']['data']
 
@@ -91,16 +90,15 @@ def run_mrio_disaggregate(notrade=False, min_rice=True, own_production_ratio=0.8
 
 
 def mrio_to_excel(Xin, min_rice=True):
-    """
-    Save the newly created multiregional Input-Output table to Excel, in the format required for the MRIA calculation.
-    
+    """Save the newly created multiregional Input-Output table to Excel, in the format required for the MRIA calculation.
+
     Parameters
         - Xin - pandas DataFrame of the new multiregional Input-Output table
         - min_rice - Boolean to determine whether you want to use the minimal rice value or the maximum rice value from the flow analysis. The default is set to **True**
 
     Outputs
         - .xlsx file with the multiregional Input-Output table
-        
+
     """
     data_path = load_config()['paths']['data']
 

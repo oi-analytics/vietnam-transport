@@ -16,7 +16,7 @@ from vtra.utils import *
 
 def main():
     config = load_config()
-    output_file = os.path.join(config['paths']['figures'], 'air-map.png')
+    output_file = os.path.join(config['paths']['figures'], 'air-map-max.png')
     air_edge_file_path = os.path.join(
         config['paths']['data'], 'post_processed_networks', 'air_edges.shp')
     air_flow_file_path = os.path.join(config['paths']['output'], 'flow_mapping_combined',

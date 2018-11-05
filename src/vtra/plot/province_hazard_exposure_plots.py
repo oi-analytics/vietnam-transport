@@ -1,4 +1,4 @@
-"""Road network flows
+"""Provincial road hazard exposure maps
 """
 import os
 import sys
@@ -41,7 +41,7 @@ def main():
             'name': 'Typhoon flooding'
         }
     ]
-    province_pth = os.path.join(config['paths']['output'], 
+    province_pth = os.path.join(config['paths']['output'],
             'network_stats',
             'province_roads_hazards_stats.xlsx')
     commune_shp = os.path.join(config['paths']['data'], 'Vietnam_boundaries',
@@ -60,8 +60,7 @@ def main():
         all_edge_fail_scenarios = all_edge_fail_scenarios[hazard_cols + ['commune_id','percentage']]
         all_edge_fail_scenarios = all_edge_fail_scenarios.groupby(hazard_cols + ['commune_id'])['percentage'].max().reset_index()
 
-        """Climate change effects
-        """
+        # Climate change effects
         all_edge_fail_scenarios = all_edge_fail_scenarios.set_index(['hazard_type','commune_id'])
         scenarios = list(set(all_edge_fail_scenarios.index.values.tolist()))
         change_tup = []
@@ -86,8 +85,7 @@ def main():
             ), index=False
         )
 
-        """Change effects
-        """
+        # Change effects
         change_df = change_df.set_index(hazard_cols)
         scenarios = list(set(change_df.index.values.tolist()))
         for sc in scenarios:
@@ -152,8 +150,7 @@ def main():
             save_fig(output_file)
             plt.close()
 
-        """Absolute effects
-        """
+        # Absolute effects
         all_edge_fail_scenarios = all_edge_fail_scenarios.reset_index()
         all_edge_fail_scenarios = all_edge_fail_scenarios.set_index(hazard_cols)
         scenarios = list(set(all_edge_fail_scenarios.index.values.tolist()))
@@ -223,9 +220,9 @@ def main():
             else:
                 climate_scenario = climate_scenario.upper()
 
-            # district labels
+            # District labels
             plot_district_labels(ax, config['paths']['data'], highlight_region=region)
-            
+
             plt.title('Percentage exposure of road kms for {} {} {}'.format(name,climate_scenario,year), fontsize=14)
             output_file = os.path.join(config['paths']['figures'],
                                        '{}-roads-{}-{}-{}-exposure-percentage.png'.format(region.replace(' ',''),name,climate_scenario.replace('.',''),year))

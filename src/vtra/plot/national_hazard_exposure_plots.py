@@ -1,4 +1,4 @@
-"""Road network flows
+"""National hazard exposure maps
 """
 import os
 import sys
@@ -42,7 +42,7 @@ def main():
             'name': 'Typhoon flooding'
         }
     ]
-    national_pth = os.path.join(config['paths']['output'], 
+    national_pth = os.path.join(config['paths']['output'],
             'network_stats',
             'national_scale_hazards_stats.xlsx')
     commune_shp = os.path.join(config['paths']['data'], 'Vietnam_boundaries',
@@ -62,9 +62,8 @@ def main():
         all_edge_fail_scenarios = all_edge_fail_scenarios.groupby(hazard_cols + ['district_id','probability'])['length','total_length'].sum().reset_index()
         all_edge_fail_scenarios['percentage'] = 100.0*all_edge_fail_scenarios['length']/all_edge_fail_scenarios['total_length']
         all_edge_fail_scenarios = all_edge_fail_scenarios.groupby(hazard_cols + ['district_id'])['percentage'].max().reset_index()
-        
-        """Climate change effects
-        """
+
+        # Climate change effects
         all_edge_fail_scenarios = all_edge_fail_scenarios.set_index(['hazard_type','district_id'])
         scenarios = list(set(all_edge_fail_scenarios.index.values.tolist()))
         change_tup = []
@@ -89,8 +88,7 @@ def main():
             ), index=False
         )
 
-        """Change effects
-        """
+        # Change effects
         change_df = change_df.set_index(hazard_cols)
         scenarios = list(set(change_df.index.values.tolist()))
         for sc in scenarios:
@@ -132,7 +130,7 @@ def main():
                 handles=legend_handles,
                 title='Percentage change in exposure',
                 loc='center left',
-                fancybox=True, 
+                fancybox=True,
                 framealpha=1.0
             )
             if climate_scenario == 'none':
@@ -145,8 +143,7 @@ def main():
             save_fig(output_file)
             plt.close()
 
-        """Absolute effects
-        """
+        # Absolute effects
         all_edge_fail_scenarios = all_edge_fail_scenarios.reset_index()
         all_edge_fail_scenarios = all_edge_fail_scenarios.set_index(hazard_cols)
         scenarios = list(set(all_edge_fail_scenarios.index.values.tolist()))
@@ -202,7 +199,7 @@ def main():
                 handles=legend_handles,
                 title='Percentage exposure',
                 loc='center left',
-                fancybox=True, 
+                fancybox=True,
                 framealpha=1.0
             )
             if climate_scenario == 'none':

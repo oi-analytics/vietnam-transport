@@ -19,6 +19,8 @@ from vtra.utils import *
 from vtra.transport_flow_and_failure_functions import *
 
 def main():
+    """Combine economic impacts of partial multi-modal rerouting split
+    """
     data_path, calc_path, output_path = load_config()['paths']['data'], load_config()[
         'paths']['calc'], load_config()['paths']['output']
 
@@ -31,20 +33,16 @@ def main():
     shp_output_path = os.path.join(output_path, 'failure_shapefiles')
     csv_data_path = os.path.join(output_path, 'failure_results','minmax_combined_scenarios')
 
-    """
-    Get the modal shares
-    """
+    # Get the modal shares
 
     for m in range(len(modes)):
-        """Load mode igraph network and GeoDataFrame
-        """
+        # Load mode igraph network and GeoDataFrame
         print ('* Loading {} network GeoDataFrame'.format(modes[m]))
         gdf_edges = gpd.read_file(os.path.join(network_data_path,'{}_edges.shp'.format(modes[m])),encoding='utf-8')
         gdf_edges = gdf_edges[['edge_id','geometry']]
 
         for perct in percentage:
-            """Load flow paths
-            """
+            # Load flow paths
             if perct < 100:
                 if single_edge == True:
                     file_name_1 = 'single_edge_failures_minmax_national_{0}_{1}_percent_disrupt_multi_modal'.format(modes[m],int(perct))
@@ -80,16 +78,16 @@ def main():
                     edge_impact['max_econ_impact'] = edge_impact['max_tr_loss'] + edge_impact['max_econ_loss']
 
                     if single_edge == True:
-                        file_name = 'single_edge_failures_minmax_national_{0}_{1}_percent_modal_shift'.format(modes[m],int(perct))    
+                        file_name = 'single_edge_failures_minmax_national_{0}_{1}_percent_modal_shift'.format(modes[m],int(perct))
                     else:
                         file_name = 'multiple_edge_failures_minmax_national_{0}_{1}_percent_modal_shift'.format(modes[m],int(perct))
 
                     edge_impact = rearrange_minmax_values(edge_impact)
-                    
+
                     edge_impact.to_csv(os.path.join(csv_data_path,file_name + '.csv'),index=False)
 
                     print ('* Creating {} network shapefiles with failure results'.format(modes[m]))
-                    
+
                     shp_path = os.path.join(shp_output_path,file_name + '.shp')
                     network_failure_assembly_shapefiles(edge_impact,gdf_edges, save_edges=True, shape_output_path=shp_path)
 

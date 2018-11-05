@@ -1,4 +1,4 @@
-"""Rail network flows map
+"""Rail network loss maps
 """
 import os
 import sys

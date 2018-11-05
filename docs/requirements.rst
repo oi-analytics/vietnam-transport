@@ -4,4 +4,4 @@ Installation
 
 .. mdinclude:: ../README.md
    :start-line: 13
-   :end-line: 51
+   :end-line: 49

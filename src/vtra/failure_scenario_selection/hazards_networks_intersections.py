@@ -1,5 +1,6 @@
 
-"""
+"""Intersect networks with hazards
+
 Purpose
 -------
 
@@ -10,7 +11,7 @@ Write final results to Shapefiles
 Input data requirements
 -----------------------
 
-1. Correct paths to all files and correct input parameters 
+1. Correct paths to all files and correct input parameters
 
 2. Shapefiles of network edges or nodes with attributes:
     - edge_id or node_id - String/Integer/Float Edge ID or Node ID of network
@@ -30,6 +31,7 @@ Results
 2. Node Shapefile with attributes:
     - node_id - String name of intersecting node ID
     - geometry - Shapely Point geometry of intersecting node ID
+
 """
 import itertools
 import os
@@ -42,19 +44,24 @@ from vtra.utils import line_length, load_config
 
 
 def networkedge_hazard_intersection(edge_shapefile, hazard_shapefile, output_shapefile):
-    """
-    Intersect network edges and hazards and write results to shapefiles
+    """Intersect network edges and hazards and write results to shapefiles
 
     Parameters
-        - edge_shapefile - Shapefile of network LineStrings 
-        - hazard_shapefile - Shapefile of hazard Polygons
-        - output_shapefile - String name of edge-hazard shapefile for storing results   
+    ----------
+    edge_shapefile
+        Shapefile of network LineStrings
+    hazard_shapefile
+        Shapefile of hazard Polygons
+    output_shapefile
+        String name of edge-hazard shapefile for storing results
+
 
     Outputs
-        output_shapefile with attributes:
-            - edge_id - String name of intersecting edge ID
-            - length - Float length of intersection of edge LineString and hazard Polygon
-            - geometry - Shapely LineString geometry of intersection of edge LineString and hazard Polygon
+    -------
+    output_shapefile
+        - edge_id - String name of intersecting edge ID
+        - length - Float length of intersection of edge LineString and hazard Polygon
+        - geometry - Shapely LineString geometry of intersection of edge LineString and hazard Polygon
     """
     print ('* Starting {} and {} intersections'.format(edge_shapefile,hazard_shapefile))
     line_gpd = gpd.read_file(edge_shapefile)
@@ -105,18 +112,23 @@ def networkedge_hazard_intersection(edge_shapefile, hazard_shapefile, output_sha
 
 
 def networknode_hazard_intersection(node_shapefile, hazard_shapefile, output_shapefile):
-    """
-    Intersect network nodes and hazards and write results to shapefiles
+    """Intersect network nodes and hazards and write results to shapefiles
 
     Parameters
-        - node_shapefile - Shapefile of network Points 
-        - hazard_shapefile - Shapefile of hazard Polygons
-        - output_shapefile - String name of node-hazard shapefile for storing results   
+    ----------
+    node_shapefile
+        Shapefile of network Points
+    hazard_shapefile
+        Shapefile of hazard Polygons
+    output_shapefile
+        String name of node-hazard shapefile for storing results
+
 
     Outputs
-        output_shapefile with attributes:
-            - node_id - String name of intersecting node ID
-            - geometry - Shapely Point geometry of intersecting node ID
+    -------
+    output_shapefile
+        - node_id - String name of intersecting node ID
+        - geometry - Shapely Point geometry of intersecting node ID
     """
     print ('* Starting {} and {} intersections'.format(node_shapefile,hazard_shapefile))
     point_gpd = gpd.read_file(node_shapefile)
@@ -143,20 +155,26 @@ def networknode_hazard_intersection(node_shapefile, hazard_shapefile, output_sha
     del point_gpd, poly_gpd
 
 def intersect_networks_and_all_hazards(hazard_dir,network_file_path,network_file_name,output_file_path,network_type = ''):
-    """
-    Walk through all hazard files and select network-hazard intersection criteria
-    
-    Call other functions accordingly 
+    """Walk through all hazard files and select network-hazard intersection criteria
 
     Parameters
-        - hazard_dir - String name of directory where all hazard shapefiles are stored 
-        - network_file_path - String name of directory where network shapefile is stored 
-        - network_file_name - String name network shapefile
-        - output_file_path - String name of directory where network-hazard instersection result shapefiles will be stored
-        - network_type - String values of 'edges' or 'nodes'    
-    
+    ----------
+    hazard_dir : str
+        name of directory where all hazard shapefiles are stored
+    network_file_path : str
+        name of directory where network shapefile is stored
+    network_file_name : str
+        name network shapefile
+    output_file_path : str
+        name of directory where network-hazard instersection result shapefiles will be stored
+    network_type : str
+        values of 'edges' or 'nodes'
+
+
     Outputs
-        Edge or Node shapefiles
+    -------
+    Edge or Node shapefiles
+
     """
     for root, dirs, files in os.walk(hazard_dir):
         for file in files:
@@ -171,29 +189,27 @@ def intersect_networks_and_all_hazards(hazard_dir,network_file_path,network_file
 
 
 def main():
-    """
+    """Intersect networks with hazards
+
     1. Specify the paths from where you to read and write:
         - Input data
         - Intermediate calcuations data
         - Output results
 
     2. Supply input data and parameters
-        - Names of the three Provinces - List of string types 
+        - Names of the three Provinces - List of string types
         - Paths of the mode files - List of tuples of strings
         - Names of modes - List of strings
         - Names of output modes - List of strings
-        - Condition 'Yes' or 'No' is the users wants to process results 
+        - Condition 'Yes' or 'No' is the users wants to process results
 
     3. Give the paths to the input data files:
         - Hazard directory
-    
-    4. Specify the output files and paths to be created 
     """
     data_path, calc_path, output_path = load_config()['paths']['data'], load_config()[
         'paths']['calc'], load_config()['paths']['output']
 
-    """Supply input data and parameters
-    """
+    # Supply input data and parameters
     provinces = ['Lao Cai','Binh Dinh','Thanh Hoa']
 
     modes_file_paths = [('Roads','national_roads'), ('Railways','national_rail'), ('Airports','airnetwork'), ('Waterways','waterways'), ('Waterways','waterways')]
@@ -202,17 +218,15 @@ def main():
     province_results = 'Yes'
     national_results = 'Yes'
 
-    """Give the paths to the input data files
-    """
+    # Give the paths to the input data files
     hazard_dir = os.path.join(data_path, 'Hazard_data')
 
-    """Specify the output files and paths to be created 
-    """
+    # Specify the output files and paths to be created
     output_dir = os.path.join(output_path, 'networks_hazards_intersection_shapefiles')
-    if os.path.exists(output_dir) == False:
+    if not os.path.exists(output_dir):
         os.mkdir(output_dir)
-    """Start province roads and all hazards intersections
-    """
+
+    # Start province roads and all hazards intersections
     if province_results == 'Yes':
         for province in provinces:
             province_name = province.replace(' ','').lower()
@@ -254,7 +268,7 @@ def main():
                             nodes_name = mode_file
                     except:
                         return ('Network node file necessary')
-                
+
                 output_dir = os.path.join(output_path, 'networks_hazards_intersection_shapefiles','{}_hazard_intersections'.format(out_modes[m]))
                 if os.path.exists(output_dir) == False:
                     os.mkdir(output_dir)

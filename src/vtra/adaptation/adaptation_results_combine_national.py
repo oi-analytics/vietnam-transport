@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Assign commodity flows on the road network
+"""Combine national adaptation results
 """
 import ast
 import copy
@@ -26,9 +26,7 @@ def main():
 
     shp_output_path = os.path.join(output_path, 'failure_shapefiles')
 
-    """
-    Get the modal shares
-    """
+    # Get the modal shares
     # modes = ['road','rail','inland','coastal']
     modes = ['road']
 

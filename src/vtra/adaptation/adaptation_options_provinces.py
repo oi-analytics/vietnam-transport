@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
+"""Assess provincial adaptation options
 """
 import ast
 import copy
@@ -22,12 +22,6 @@ def main():
     data_path, calc_path, output_path = load_config()['paths']['data'], load_config()[
         'paths']['calc'], load_config()['paths']['output']
 
-    """
-    cols = ['band_name','band_num','climate_scenario','commune_id','commune_name','district_id','district_name',
-            'edge_id','hazard_type','max_val','min_val','model','probability','province_id','province_name','sector',
-            'year','length','road_cond','asset_type','width','min_econ_loss','max_econ_loss']
-    """
-
     start_year = 2016
     end_year = 2050
     truck_unit_wt = [5.0]
@@ -35,32 +29,23 @@ def main():
     discount_rate = 12.0
     total_discount_ratio = []
     for year in range(start_year, end_year):
-        # total_discount_ratio += 1.0/math.pow(1.0 + 1.0*discount_rate/100.0, year - start_year)
         total_discount_ratio.append(
             1.0/math.pow(1.0 + 1.0*discount_rate/100.0, year - start_year))
-
-    # total_discount_ratio = sum(total_discount_ratio_list)
 
     df_path = os.path.join(data_path, 'Adaptation_options', 'adaptation_options.xlsx')
     adaptation_df = pd.read_excel(df_path, sheet_name='adapt_options')
 
 
-    print(adaptation_df)
+    cols = [
+        'band_num', 'climate_scenario', 'edge_id', 'hazard_type', 'max_val', 'min_val',
+        'model', 'probability', 'year', 'exposure_length'
+    ]
 
-    """
-    Add new strategy
-    cols = ['strategy','asset_type','asset_cond','location','height_m','adapt_cost_min','adapt_cost_max',
-            'maintain_cost_min','maintain_cost_max','rehab_cost_min','rehab_cost_max','height_incr_min',
-            'height_incr_max','maintenance_times_min','maintenance_times_max','cost_unit']
-    """
-    cols = ['strategy', 'asset_type', 'asset_cond', 'location', 'height_m', 'cost_unit', 'min_initial_cost',
-            'max_initial_cost', 'min_cost', 'max_cost', 'min_rehab_benefit', 'max_rehab_benefit']
-
-    cols = ['band_num', 'climate_scenario',
-            'edge_id', 'hazard_type', 'max_val', 'min_val', 'model', 'probability',
-            'year', 'exposure_length']
-
-    # index_cols = ['edge_id','hazard_type','model','climate_scenario','year','road_cond','asset_type','width','road_length','min_daily_loss_{}'.format(start_year),'max_daily_loss_{}'.format(start_year)]
+    index_cols = [
+        'edge_id', 'hazard_type', 'model', 'climate_scenario', 'year', 'road_cond',
+        'asset_type', 'width', 'road_length', 'min_daily_loss_{}'.format(start_year),
+        'max_daily_loss_{}'.format(start_year)
+    ]
 
     # provinces to consider
     province_list = ['Lao Cai', 'Binh Dinh', 'Thanh Hoa']
@@ -77,13 +62,10 @@ def main():
     length_thr = 200.0
 
     for prn in range(len(province_list)):
-        # for prn in range(0, 1):
         province = province_list[prn]
         # set all paths for all input files we are going to use
         province_name = province.replace(' ', '').lower()
 
-        index_cols = ['edge_id', 'hazard_type', 'model', 'climate_scenario', 'year', 'road_cond', 'asset_type',
-                      'width', 'road_length', 'min_daily_loss_{}'.format(start_year), 'max_daily_loss_{}'.format(start_year)]
         all_edge_fail_scenarios = pd.read_excel(fail_scenarios_data, sheet_name=province_name)
         all_edge_fail_scenarios.loc[all_edge_fail_scenarios['probability']
                                     == 'none', 'probability'] = 1.0
@@ -100,8 +82,9 @@ def main():
         edges = edges[['edge_id', 'road_cond', 'asset_type',
                        'width', 'length', 'min_econ_l', 'max_econ_l']]
 
-        all_edge_fail_scenarios = pd.merge(all_edge_fail_scenarios, edges, on=[
-                                           'edge_id'], how='left').fillna(0)
+        all_edge_fail_scenarios = pd.merge(
+            all_edge_fail_scenarios, edges, on=['edge_id'], how='left'
+        ).fillna(0)
         del edges
 
         all_edge_fail_scenarios.rename(columns={'length': 'road_length', 'min_econ_l': 'min_daily_loss_{}'.format(
@@ -110,7 +93,6 @@ def main():
             start_year)] > 0]
         all_edge_fail_scenarios['road_length'] = 1000.0*all_edge_fail_scenarios['road_length']
 
-        # all_edge_fail_scenarios = all_edge_fail_scenarios.groupby(index_cols + ['probability'])['exposure_length'].sum().reset_index()
         all_edge_fail_scenarios['percent_exposure'] = 100.0 * \
             all_edge_fail_scenarios['exposure_length']/all_edge_fail_scenarios['road_length']
         # df_path = os.path.join(output_path,'hazard_scenarios','roads_hazard_intersections_{}_2.csv'.format(province_name))

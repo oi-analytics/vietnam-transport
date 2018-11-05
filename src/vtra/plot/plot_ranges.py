@@ -1,4 +1,4 @@
-"""Road network flows
+"""Plot adaptation cost ranges (national results)
 """
 import sys
 import os
@@ -45,14 +45,14 @@ def plot_ranges(input_data, division_factor,x_label, y_label,plot_title,plot_col
     plt.xlabel(x_label, fontweight='bold')
     plt.ylabel(y_label, fontweight='bold')
     plt.title(plot_title)
-    
+
     plt.tight_layout()
     plt.savefig(plot_file_path, dpi=500)
     plt.close()
 
 def plot_many_ranges(input_dfs, division_factor,x_label, y_label,plot_title,plot_color,plot_labels,plot_file_path):
     fig, ax = plt.subplots(figsize=(8, 4))
-    
+
     length = []
     for i in range(len(input_dfs)):
         input_data = input_dfs[i]
@@ -99,13 +99,13 @@ def plot_many_ranges(input_dfs, division_factor,x_label, y_label,plot_title,plot
             label = 'BCR = 1'
         )
         ax.set_yscale('log')
-    
+
     # ax.tick_params(axis='x', rotation=45)
     ax.legend(loc='upper left')
     plt.xlabel(x_label, fontweight='bold')
     plt.ylabel(y_label, fontweight='bold')
     plt.title(plot_title)
-    
+
     plt.tight_layout()
     plt.savefig(plot_file_path, dpi=500)
     plt.close()
@@ -129,7 +129,7 @@ def main():
         flow_file = pd.read_csv(flow_file_path).fillna(0)
         flow_file = flow_file.sort_values(['max_tons'], ascending=True)
         plt_file_path = os.path.join(config['paths']['figures'],'national-{}-aadf-ranges.png'.format(modes[m]))
-        plot_ranges(flow_file[['min_tons','max_tons']],1000, "Percentile rank", 
+        plot_ranges(flow_file[['min_tons','max_tons']],1000, "Percentile rank",
                 "AADF ('000 tons/day)","Range of AADF flows on links",modes_colors[m],plt_file_path)
 
         if modes[m] in ['road','rail']:
@@ -138,10 +138,10 @@ def main():
             flow_file = pd.read_csv(flow_file_path).fillna(0)
             flow_file = flow_file.sort_values(['max_econ_impact'], ascending=True)
             plt_file_path = os.path.join(config['paths']['figures'],'national-{}-economic_impact-ranges.png'.format(modes[m]))
-            plot_ranges(flow_file[['min_econ_impact','max_econ_impact']],1000000, "Percentile rank", 
+            plot_ranges(flow_file[['min_econ_impact','max_econ_impact']],1000000, "Percentile rank",
                     "Economic losses (million USD/day)","Range of Economic losses due to link failures",modes_colors[m],plt_file_path)
 
-                        
+
             flow_file_path = os.path.join(config['paths']['output'], 'hazard_scenarios',
                                'national_{}_hazard_intersections_risks.csv'.format(modes[m]))
 
@@ -169,11 +169,11 @@ def main():
             fail_max = fail_cur.groupby(['edge_id'])['max_eael'].max().reset_index()
             fail_cur = pd.merge(fail_min,fail_max,how='left',on=['edge_id']).fillna(0)
             fail_cur = fail_cur.sort_values(['max_eael'], ascending=True)
-            
+
             fail_dfs = [fail_cur[['min_eael','max_eael']],fail_rcp45[['min_eael_rcp45','max_eael_rcp45']],fail_rcp85[['min_eael_rcp85','max_eael_rcp85']]]
 
             plt_file_path = os.path.join(config['paths']['figures'],'national-{}-flood-eael-ranges.png'.format(modes[m]))
-            plot_many_ranges(fail_dfs,1000000, "Percentile rank", 
+            plot_many_ranges(fail_dfs,1000000, "Percentile rank",
                     "EAEL (million USD)","Range of Expected Annual economic losses to link failures",flood_colors,flood_labels,plt_file_path)
 
         if modes[m] == 'road':
@@ -181,12 +181,12 @@ def main():
                                    'output_adaptation_national_road_10_days_max_disruption_fixed_parameters.csv')
             fail_scenarios = pd.read_csv(flow_file_path)
             fail_scenarios = fail_scenarios[fail_scenarios['max_econ_impact'] > 0]
-            
+
             for cols in ['min_ini_adap_cost','max_ini_adap_cost']:
                 fail_scenarios[cols] = fail_scenarios[cols].apply(lambda x: np.max(np.array(ast.literal_eval(x))))
-        
+
             # fail_scenarios = fail_scenarios.groupby(['edge_id'])[adapt_cols].max().reset_index()
-            
+
             for c in range(len(adapt_groups)):
                 cols = adapt_groups[c]
                 new_cols = ['{}_rcp45'.format(cols[0]),'{}_rcp45'.format(cols[1])]
@@ -216,10 +216,10 @@ def main():
                 fail_cur = pd.merge(fail_min,fail_max,how='left',on=['edge_id']).fillna(0)
                 fail_cur = fail_cur.sort_values([cols[1]], ascending=True)
                 fail_cur = fail_cur[cols]
-            
+
                 fail_dfs = [fail_cur,fail_rcp45,fail_rcp85]
                 plt_file_path = os.path.join(config['paths']['figures'],'national-road-{}-flooding-ranges-fixed-paramters.png'.format(adapt_names[c]))
-                plot_many_ranges(fail_dfs,adapt_divisor[c], "Percentile rank".format(adapt_labels[c]), 
+                plot_many_ranges(fail_dfs,adapt_divisor[c], "Percentile rank".format(adapt_labels[c]),
                         "{} ({})".format(adapt_labels[c],adapt_units[c]),"Range of {} of adaptation".format(adapt_labels[c]),flood_colors,flood_labels,plt_file_path)
 if __name__ == '__main__':
     main()

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-"""
-Create output file for gams and run a quick gams module to estimate marginal values of rationing demand
+"""Create output file for gams and run a quick gams module to estimate marginal values of
+rationing demand
 """
 import os
 from shutil import copyfile
@@ -11,24 +11,23 @@ from vtra.utils import load_config
 
 
 def load_db_IO(table_in):
-    """
-    Load the Input-Output data from the **io_basic** Class object and converts it to a GAMS .gdx file.
+    """Load the Input-Output data from the **io_basic** Class object and converts it to a GAMS .gdx file.
+
+    Write out .gdx file of the IO data
 
     Parameters
-        - table_in - **io_basic** class object, containing all IO data
+    ----------
+    table_in
+        **io_basic** class object, containing all IO data
 
-    Outputs
-        - .gdx file of the IO data
     """
 
     data_path = load_config()['paths']['data']
 
-    """CREATE GAMS WORKSPACE"""
-
+    # CREATE GAMS WORKSPACE
     ws = GamsWorkspace(os.path.join(data_path, 'gams_runs'))
 
-    """ CREATE INPUT FILES GAMS GDX """
-
+    # CREATE INPUT FILES GAMS GDX
     db = ws.add_database()
 
     # set regions
@@ -96,8 +95,7 @@ def load_db_IO(table_in):
     db.export(os.path.join(data_path, "gams_runs", "{}.gdx".format(table_in.name)))
 
 def ratmarg_IO(table_in):
-    """
-    Estimate marginal values of the rationing variable in GAMS. GAMS is required, as the marginal values of a variable are not returned in the free python solvers.
+    """Estimate marginal values of the rationing variable in GAMS. GAMS is required, as the marginal values of a variable are not returned in the free python solvers.
 
     Parameters
         - table_in - **io_basic** class object, containing all IO data
@@ -113,9 +111,7 @@ def ratmarg_IO(table_in):
 
     load_db_IO(table_in)
 
-    """
-    RUN SCRIPT WITH DISRUPTION
-    """
+    # RUN SCRIPT WITH DISRUPTION
     setdir = os.path.join(data_path, 'gams_runs')
     ws = GamsWorkspace(setdir)
     ws.get_working_directory()

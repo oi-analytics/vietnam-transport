@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
+"""Plot adaptation boxplots
 """
 import os
 import sys
@@ -201,9 +201,7 @@ def main():
         adapt_output_excel = os.path.join(
             output_path, 'failure_results', 'single_edge_failures_scenarios_{0}_adapt_options.xlsx'.format(province_name))
 
-        """
-        Box plots for the hazard losses
-        """
+        # Box plots for the hazard losses
         # for g in range(len(growth_scenarios)):
         for g in range(1, 2):
             grth = growth_scenarios[g]

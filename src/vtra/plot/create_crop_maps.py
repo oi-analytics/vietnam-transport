@@ -1,4 +1,4 @@
-"""Generate crop maps for Vietnam
+"""Crop maps
 """
 # pylint: disable=C0103
 import os

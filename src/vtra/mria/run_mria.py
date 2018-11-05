@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Run the MRIA Model for a given set of disruptions.
+"""Run the MRIA Model for a given set of disruptions.
 """
 
 import os
@@ -13,15 +12,14 @@ from vtra.utils import load_config
 
 
 def estimate_losses(input_file):
-    """
-    Estimate the economic losses for a given set of failure scenarios
+    """Estimate the economic losses for a given set of failure scenarios
 
     Parameters
         - input_file - String name of input file to failure scenarios
 
     Outputs
         - .csv file with total losses per failure scenario
-        
+
     """
 
     print('{} started!'.format(input_file))
@@ -29,7 +27,7 @@ def estimate_losses(input_file):
     data_path, output_path = load_config()['paths']['data'], load_config()[
         'paths']['calc'], load_config()['paths']['output']
 
-    """ Set booleans"""
+     # Set booleans
     if 'min' in input_file:
         min_rice = True
     elif 'max' in input_file:
@@ -40,27 +38,27 @@ def estimate_losses(input_file):
     elif 'multiple' in input_file:
         single_point = False
 
-    """ Specify file path """
+     # Specify file path
     if min_rice == True:
         filepath = os.path.join(data_path, 'input_data', 'IO_VIETNAM_MIN.xlsx')
     else:
         filepath = os.path.join(data_path, 'input_data', 'IO_VIETNAM_MAX.xlsx')
 
-    """Create data input"""
+    # Create data input
     DATA = io_basic('Vietnam', filepath, 2010)
     DATA.prep_data()
 
-    """Run model and create some output"""
+    # Run model and create some output
     output = pd.DataFrame()
 
-    """Specify disruption"""
+    # Specify disruption
     output_dir = os.path.join(
         output_path,
         'economic_failure_results',
         os.path.basename(os.path.splitext(input_file)[0])
     )
 
-    """Create output folders"""
+    # Create output folders
     if os.path.exists(output_dir) == False:
         os.mkdir(output_dir)
 
@@ -81,30 +79,30 @@ def estimate_losses(input_file):
             disr_dict_fd = {}
             disr_dict_sup = event_dict[event]
 
-            """Get direct losses """
+            # Get direct losses
             disrupt = pd.DataFrame.from_dict(disr_dict_sup, orient='index')
             disrupt.reset_index(inplace=True)
             disrupt[['region', 'sector']] = disrupt['index'].apply(pd.Series)
 
-            """Create model"""
+            # Create model
             MRIA_RUN = MRIA(DATA.name, DATA.countries, DATA.sectors, list_fd_cats=['FinDem'])
 
-            """Define sets and alias"""
+            # Define sets and alias
             # CREATE SETS
             MRIA_RUN.create_sets()
 
             # CREATE ALIAS
             MRIA_RUN.create_alias()
 
-            """ Define tables and parameters"""
+             # Define tables and parameters
             MRIA_RUN.baseline_data(DATA, disr_dict_sup, disr_dict_fd)
             MRIA_RUN.impact_data(DATA, disr_dict_sup, disr_dict_fd)
 
-            """Get base line values"""
+            # Get base line values
             output['x_in'] = pd.Series(MRIA_RUN.X.get_values())*43
             output.index.names = ['region', 'sector']
 
-            """Get direct losses """
+            # Get direct losses
             disrupt = pd.DataFrame.from_dict(disr_dict_sup, orient='index')
             disrupt.reset_index(inplace=True)
             disrupt[['region', 'sector']] = disrupt['index'].apply(pd.Series)
@@ -132,13 +130,13 @@ def estimate_losses(input_file):
             print('Failed to finish {} because of {}!'.format(event, e))
 
     if collect_outputs:
-        """Specify disruption"""
+        # Specify disruption
         output_dir = os.path.join(output_path,
                                   'economic_failure_results',
                                   'od_regions_losses'
                                   )
 
-        """Create output folders"""
+        # Create output folders
         if os.path.exists(output_dir) == False:
             os.mkdir(output_dir)
 
@@ -155,7 +153,7 @@ def estimate_losses(input_file):
         sums = pd.DataFrame.from_dict(get_sums, orient='index')
         sums.columns = ['total_losses']
 
-        """Specify disruption"""
+        # Specify disruption
         output_dir = os.path.join(
             output_path,
             'economic_failure_results',
@@ -163,7 +161,7 @@ def estimate_losses(input_file):
             'summarized'
         )
 
-        """Create output folders"""
+        # Create output folders
         if os.path.exists(output_dir) == False:
             os.mkdir(output_dir)
 
@@ -177,7 +175,6 @@ def estimate_losses(input_file):
 
 
 if __name__ == '__main__':
-
     data_path, calc_path, output_path = load_config()['paths']['data'], load_config()[
         'paths']['calc'], load_config()['paths']['output']
 
@@ -185,17 +182,17 @@ if __name__ == '__main__':
     output_dir = os.path.join(
         output_path,
         'economic_failure_results')
-    """Create output folders"""
+    # Create output folders
     if os.path.exists(output_dir) == False:
         os.mkdir(output_dir)
 
     if multi_modal == True:
         get_all_input_files = [os.path.join(
-            output_path,'failure_results','isolated_od_scenarios','multi_modal', x) 
+            output_path,'failure_results','isolated_od_scenarios','multi_modal', x)
             for x in os.listdir(os.path.join(output_path,'failure_results','isolated_od_scenarios','multi_modal')) if x.endswith(".csv")]
     else:
         get_all_input_files = [os.path.join(
-            output_path,'failure_results','isolated_od_scenarios','single_mode', x) 
+            output_path,'failure_results','isolated_od_scenarios','single_mode', x)
             for x in os.listdir(os.path.join(output_path,'failure_results','isolated_od_scenarios','single_mode')) if x.endswith(".csv")]
 
     for gi in get_all_input_files:

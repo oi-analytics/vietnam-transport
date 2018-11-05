@@ -9,6 +9,7 @@ dependencies:
   - boltons
   - cartopy
   - colour
+  - dask
   - fiona
   - GDAL
   - geoalchemy2
@@ -24,7 +25,6 @@ dependencies:
   - openpyxl
   - pandas
   - pathos
-  - psycopg2
   - pylint  # dev
   - pyomo
   - pytest  # test
@@ -33,7 +33,9 @@ dependencies:
   - rasterstats
   - requests
   - rtree
+  - SALib
   - scipy
   - shapely
   - sphinx  # docs
   - sqlalchemy
+  - tqdm

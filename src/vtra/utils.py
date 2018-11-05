@@ -557,7 +557,7 @@ def gdf_geom_clip(gdf_in, clip_geom):
     province_geom
         shapely geometry of province for what we do the calculation
 
-    Outputs
+    Returns
     -------
     filtered dataframe
     """
@@ -574,7 +574,7 @@ def gdf_clip(shape_in, clip_geom):
     province_geom
         shapely geometry of province for what we do the calculation
 
-    Outputs
+    Returns
     -------
     filtered dataframe
     """
@@ -597,7 +597,7 @@ def get_nearest_node(x, sindex_input_nodes, input_nodes, id_column):
     id_column
         name of column of id of closest node
 
-    Outputs
+    Returns
     -------
     Nearest node to geometry of row
     """
@@ -625,9 +625,9 @@ def count_points_in_polygon(x, points_sindex):
     points_sindex
         spatial index of dataframe with points in the region to consider
 
-    Outputs
+    Returns
     -------
-    Amount of points in polygon
+    Number of points in polygon
     """
     return len(list(points_sindex.intersection(x.bounds)))
 
@@ -646,7 +646,7 @@ def extract_value_from_gdf(x, gdf_sindex, gdf, column_name):
     column_name
         column that contains the value we want to extract
 
-    Outputs
+    Returns
     -------
     extracted value from other gdf
     """
@@ -781,13 +781,12 @@ def extract_gdf_values_containing_nodes(x, sindex_input_gdf, input_gdf, column_n
         return get_nearest_node(x.geometry, sindex_input_gdf, input_gdf, column_name)
 
 def get_node_edge_files_in_path(mode_file_path):
-    """
-    Get the paths of edge and node files in folder
+    """Get the paths of edge and node files in folder
 
     Parameters
     ----------
     mode_file_path : Path of mode file
-    
+
     Returns
     -------
     edges_in : Path of edges shapefile
@@ -798,7 +797,7 @@ def get_node_edge_files_in_path(mode_file_path):
     Prints error if node or edge file missing
 
     """
-    for file in os.listdir(mode_file_path): 
+    for file in os.listdir(mode_file_path):
         try:
             if file.endswith('.shp') and 'edges' in file.lower().strip():
                 edges_in = os.path.join(mode_file_path, file)
@@ -810,25 +809,28 @@ def get_node_edge_files_in_path(mode_file_path):
     return nodes_in,edges_in
 
 def get_node_edge_files(mode_file_path,file_identification):
-    """
-    Get the paths of edge and node files in folder
+    """Get the paths of edge and node files in folder
 
     Parameters
     ----------
-    mode_file_path : Path of mode file
-    file_identification: String name of file
+    mode_file_path : str
+        path of mode file
+    file_identification : str
+        name of file
 
     Returns
     -------
-    edges_in : Path of edges shapefile
-    nodes_in: Path of nodes shapefile
+    edges_in
+        Path of edges shapefile
+    nodes_in
+        Path of nodes shapefile
 
     Error Exception
     ---------------
     Prints error if node or edge file missing
 
     """
-    for file in os.listdir(mode_file_path): 
+    for file in os.listdir(mode_file_path):
         try:
             if file.lower().strip() == '{}_edges.shp'.format(file_identification):
                 edges_in = os.path.join(mode_file_path, file)
@@ -837,4 +839,4 @@ def get_node_edge_files(mode_file_path,file_identification):
         except:
             print('Network nodes and edge files necessary')
 
-    return nodes_in,edges_in
+    return nodes_in, edges_in

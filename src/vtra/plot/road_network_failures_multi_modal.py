@@ -1,4 +1,4 @@
-"""Road network flows
+"""Road network failure maps (multi-modal)
 """
 import os
 import sys

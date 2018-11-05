@@ -20,6 +20,8 @@ from vtra.transport_flow_and_failure_functions import *
 
 
 def main():
+    """Process results
+    """
     data_path, calc_path, output_path = load_config()['paths']['data'], load_config()[
         'paths']['calc'], load_config()['paths']['output']
 
@@ -35,20 +37,15 @@ def main():
     econ_data_path = os.path.join(
         output_path, 'economic_failure_results', 'summarized')
 
-    """
-    Get the modal shares
-    """
-
+    # Get the modal shares
     for m in range(len(modes)):
-        """Load mode igraph network and GeoDataFrame
-        """
+        # Load mode igraph network and GeoDataFrame
         print ('* Loading {} network GeoDataFrame'.format(modes[m]))
         gdf_edges = gpd.read_file(os.path.join(network_data_path,'{}_edges.shp'.format(modes[m])),encoding='utf-8')
         gdf_edges = gdf_edges[['edge_id','geometry']]
 
         for perct in percentage:
-            """Load flow paths
-            """
+            # Load flow paths
             print ('* Loading {} transport loss and tonnage estimates'.format(modes[m]))
             for m_mod in multi_modal:
                 if m_mod == True:
@@ -98,9 +95,9 @@ def main():
                     edge_impact = edge_fail_ranges[0]
                     edge_impact = pd.merge(edge_impact, edge_fail_ranges[1], how='left', on=[
                                            'edge_id']).fillna(0)
-                    
+
                     print ('* Loading {} merging transport loss and economic loss estimates'.format(modes[m]))
-                    
+
                     if 'min_econ_loss' in all_results.columns.values.tolist():
                         all_results.drop('min_econ_loss', axis=1, inplace=True)
 
@@ -116,8 +113,7 @@ def main():
                     all_results['max_econ_impact'] = all_results['max_tr_loss'] + all_results['max_econ_loss']
 
                     all_results.to_csv(os.path.join(csv_data_path,file_name + '.csv'),index=False)
-                    """Create network shapefiles with flows
-                    """
+                    # Create network shapefiles with flows
                     print ('* Creating {} network shapefiles with failure results'.format(modes[m]))
                     shp_path = os.path.join(
                         shp_output_path,file_name + '.shp')
