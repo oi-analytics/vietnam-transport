@@ -15,7 +15,7 @@ Purpose:
 
 Execution:
     - Load data as described in `Collected Data <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/predata.html>`_ `Networks <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/predata.html#networks>`_, `Cost attributes <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/predata.html#cost-attributes>`_ and `Road design attributes <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/predata.html#road-design-attributes>`_
-    - Run script ``vtra.preprocess.create_transport_networks.py``
+    - Run :py:mod:`vtra.preprocess.create_transport_networks`
 
 Result:
     - Create networks with formats and attributes described in `Processed Data Assembly <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html>`_ `Networks <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#networks>`_
@@ -31,7 +31,7 @@ Purpose:
 
 Execution:
     - Load data as described in `Processed Data Assembly <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html>`_ `Hazards <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#hazards>`_
-    - Run script ``vtra.preprocess.convert_hazard_data.py``
+    - Run :py:mod:`vtra.preprocess.convert_hazard_data`
 
 Result:
     - Create hazard shapefiles with names described in excel sheet in `Processed Data Assembly <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html>`_ `Hazards <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#hazards>`_ and attributes:
@@ -52,8 +52,8 @@ Purpose:
 
 Execution:
     - Load data as described in `Networks <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#networks>`_, `VITRANSS2 OD data <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/predata.html#vitranns2-od-data>`_, `IFPRI crop data <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/predata.html#ifpri-crop-data>`_, `RiceAtlas data <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/predata.html#riceatlas-data>`_, `Points of interest data <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/predata.html#points-of-interest-data>`_, and `Administrative Areas with Statistics <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#administrative-areas-with-statistics>`_
-    - For National OD matrices run script vtra.preprocess.national_modes_od_creation.py
-    - For Provinces OD matrices run script vtra.preprocess.province_roads_access_od_creation.py
+    - For National OD matrices run :py:mod:`vtra.preprocess.national_modes_od_creation`
+    - For Provinces OD matrices run :py:mod:`vtra.preprocess.province_roads_access_od_creation`
 
 Result:
     - Create OD matrices with attributes described in `Processed Data Assembly <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html>`_ `OD matrices <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#od-matrices>`_
@@ -74,8 +74,8 @@ Purpose:
 
 Execution:
     - Load data as described in `Networks <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#networks>`_ and `OD matrices <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#od-matrices>`_
-    - For National OD matrices run script ``vtra.flow_mapping.national_modes_flow_paths.py``
-    - For Provinces OD matrices run script ``vtra.flow_mapping.province_roads_access_flow_paths.py``
+    - For National OD matrices run :py:mod:`vtra.flow_mapping.national_modes_flow_paths`
+    - For Provinces OD matrices run :py:mod:`vtra.flow_mapping.province_roads_access_flow_paths`
 
 Result:
     - Store flow excel outputs in ``/results/flow_mapping_paths/``
@@ -127,8 +127,8 @@ Purpose:
 
 Execution:
     - Load shapefiles data as described in `Networks <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#networks>`_ and `Hazards <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#hazards>`_
-    - Run script ``vtra.failure_scenario_selection.hazards_networks_intersections.py``
-    - Run script ``vtra.failure_scenario_selection.hazards_network_intersections_results_collect.py``
+    - Run :py:mod:`vtra.failure_scenario_selection.hazards_networks_intersections`
+    - Run :py:mod:`vtra.failure_scenario_selection.hazards_network_intersections_results_collect`
 
 Result:
     - Store shapefile outputs in the directory ``/results/networks_hazards_intersection_shapefiles/``
@@ -174,9 +174,9 @@ Purpose:
 
 Execution:
     - Load network and flow excel data as described in `Networks <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#networks>`_, `Mapping Flows onto Networks <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/results.html#mapping-flows-onto-networks>`_, and failure scenarios from `Hazard exposure <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/results.html#hazard-exposure>`_
-    - For National networks failure analysis run script ``vtra.failure.failure_estimation_national.py``
-    - For National networks failure analysis with multi-modal options run script ``vtra.failure.failure_multi_modal_options.py``
-    - For Provinces roads failure analysis run script ``vtra.flow_mapping.failures.failure_estimation_provinces.py``
+    - For National networks failure analysis run :py:mod:`vtra.failure.failure_estimation_national`
+    - For National networks failure analysis with multi-modal options run :py:mod:`vtra.failure.failure_multi_modal_options`
+    - For Provinces roads failure analysis run :py:mod:`vtra.failure.failure_estimation_provinces`
 
 Result:
     - Store csv outputs in the directory ``/results/failure_results/``
@@ -278,20 +278,20 @@ Purpose:
 
 Execution:
     - Load data described in `Macroeconomic Data <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#macroeconomic-data>`_ and `OD matrices <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#od-matrices>`_
-    - To create the multiregional input-output table for Vietnam, run script ``vtra.mrio.run_mrio.py``
-    - To perform the loss analysis, run script ``vtra.mria.run_mria.py``
+    - To create the multiregional input-output table for Vietnam, run :py:mod:`vtra.mrio.run_mrio`
+    - To perform the loss analysis, run :py:mod:`vtra.mria.run_mria`
 
 Result:
     - Store the new multiregional input-output table in ``/data/input_data/``
         - files starting with ``IO_VIETNAM_*.xlsx`` contain:
-            - Sheetname ``**T**`` with the full multiregional table
-            - Sheetname ``**labels_T**`` with the column and row labels of matrix ``**T**``
-            - Sheetname ``**FD**`` with the final demand columns of the new table
-            - Sheetname ``**labels_FD**`` with the column labels of matrix ``**FD**``
-            - Sheetname ``**ExpROW**`` with the export to the Rest of the World columns of the new table
-            - Sheetname ``**labels_ExpROW**`` with the column labels of matrix ``**ExpROW**``
-            - Sheetname ``**VA**`` with the value added rows of the new table
-            - Sheetname ``**labels_VA**`` with the row labels of matrix ``**VA**``
+            - Sheetname ``T`` with the full multiregional table
+            - Sheetname ``labels_T`` with the column and row labels of matrix ``T``
+            - Sheetname ``FD`` with the final demand columns of the new table
+            - Sheetname ``labels_FD`` with the column labels of matrix ``FD``
+            - Sheetname ``ExpROW`` with the export to the Rest of the World columns of the new table
+            - Sheetname ``labels_ExpROW`` with the column labels of matrix ``ExpROW``
+            - Sheetname ``VA`` with the value added rows of the new table
+            - Sheetname ``labels_VA`` with the row labels of matrix ``VA``
     - Store csv files in ``/results/economic_failure_losses/summarized/``
     - All summarized files have the following attributes:
         - ``edge_id`` - String edge IDs
@@ -314,9 +314,9 @@ Purpose:
 
 Execution:
     - Load data described in `Failure Analysis <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/results.html#failure-analysis>`_ and `Macroeconomic loss analysis <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/results.html#macroeconomic-loss-analysis>`_
-    - Run script ``vtra.failure.economic_failure_combine_national.py``
-    - Run script ``vtra.failure.national_failure_transfers.py``
-    - Run script ``vtra.failure.transfer_costs_modes.py``
+    - Run :py:mod:`vtra.failure.economic_failure_combine_national`
+    - Run :py:mod:`vtra.failure.national_failure_transfers`
+    - Run :py:mod:`vtra.failure.transfer_costs_modes`
 
 Result:
     - Store csv files in ``/results/failure_results/minmax_combined_scenarios/``
@@ -342,41 +342,48 @@ Purpose:
 
 Execution:
     - Load data described in `Networks <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#networks>`_, `Processing Failure Results <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/results.html#processing-failure-results>`_, and `Adaptation Options <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#adaptation-options>`_
-    - For national-scale roads run script ``vtra.adaptation.adaptation_options_national.py``
-    - For province-scale roads run script ``vtra.adaptation.adaptation_options_provinces.py``
+    - Run :py:mod:`vtra.adaptation.adaptation_calc_uncertainty`
 
 Result:
     - Store results as excel sheets in ``/results/adaptation_results/``
     - All adaptation results have the following attributes:
-        - ``edge_id`` - String edge IDs
-        - ``hazard_type`` - String names of hazard types
-        - ``model`` - String names of hazard models
-        - ``climate_scenario`` - String names of climate scenarios
-        - ``year`` - Integer values of year of hazard climate models
-        - ``road_cond`` - String names of road conditions
-        - ``width`` - Float values of edge widths
-        - ``road_length`` - Float values of edge lengths
-        - ``min_daily_loss_2016``  - Float values of current minimum daily economic losses
-        - ``max_daily_loss_2016`` - Float values of current maximum daily economic losses
-        - ``min_band`` - Integer values of minimum hazard bands
-        - ``max_band`` - Integer values of maximum hazard bands
-        - ``min_height`` - Float values of minimum height of hazard exposure - if flooding
-        - ``max_height`` - Float values of maximum height of hazard exposure - if flooding
-        - ``min_exposure_percent`` - Float values of minimum percent of edge length exposed to hazard
-        - ``max_exposure_percent`` - Float values of maximum percent of edge length exposed to hazard
-        - ``min_duration`` - Float values of minimum duration of disruption of edge
-        - ``max_duration`` - Float values of maximum duration of disruption of edge
-        - ``min_exposure_length`` - Float values of minimum edge length exposed to hazard
-        - ``max_exposure_length`` - Float values of maximum edge length exposed to hazard
-        - ``risk_wt`` - Float values of risk weight
-        - ``adapt_strategy`` - String names of adaptation strategy
-        - ``min_initial_cost`` - Float values of minimum intiial cost of adaptation
-        - ``max_initial_cost`` - Float values of maximum intiial cost of adaptation
-        - ``min_benefit_npv`` - Float values of minimum benefit of adaptation
-        - ``max_benefit_npv`` - Float values of maximum benefit of adaptation
-        - ``min_cost_npv`` - Float values of minimum net present value of cost of adaptation
-        - ``max_cost_npv`` - Float values of maximum net present value of cost of adaptation
-        - ``min_adapt_npv`` - Float values of minimum net present value of adaptation
-        - ``max_adapt_npv`` - Float values of maxiimum net present value of adaptation
-        - ``min_bc_ratio`` - Float values of minimum benefit-cost ratio of adaptation
-        - ``max_bc_ratio`` - Float values of maximum benefit-cost ratio of adaptation
+        - ``edge_id`` - string, edge IDs
+        - ``hazard_type`` - string, names of hazard types
+        - ``model`` - string, names of hazard models
+        - ``climate_scenario`` - string, names of climate scenarios
+        - ``year`` - integer, values of year of hazard climate models
+        - ``level`` - integer, road level
+        - ``terrain`` - string, road terrain (flat/mountain)
+        - ``surface`` - string, road surface
+        - ``road_class`` - integer, road class (1-6)
+        - ``road_cond`` - string, names of road conditions
+        - ``width`` - float, edge widths
+        - ``road_length`` - float, edge lengths
+        - ``min_band`` - integer, minimum hazard bands
+        - ``max_band`` - integer, maximum hazard bands
+        - ``min_height`` - float, minimum height of hazard exposure - if flooding
+        - ``max_height`` - float, maximum height of hazard exposure - if flooding
+        - ``min_exposure_percent`` - float, minimum percent of edge length exposed to hazard
+        - ``max_exposure_percent`` - float, maximum percent of edge length exposed to hazard
+        - ``min_duration_wt`` - float, minimum duration of disruption of edge
+        - ``max_duration_wt`` - float, maximum duration of disruption of edge
+        - ``min_exposure_length`` - float, minimum edge length exposed to hazard
+        - ``max_exposure_length`` - float, maximum edge length exposed to hazard
+        - ``risk_wt`` - float, weight given to estimating expected annual losses
+        - ``dam_wt`` - float, weight given to estimating expected annual damage costs
+        - ``min_econ_impact`` - float, minimum economic impact
+        - ``max_econ_impact`` - float, maximum economic impact
+        - ``min_benefit`` - float, minimum benefit
+        - ``min_ini_adap_cost`` - float, minimum initial adaptation cost
+        - ``min_tot_adap_cost`` - float, minimum total adaptation cost
+        - ``min_ini_rel_share`` - float, minimum initial relative shares (per cost component)
+        - ``min_tot_rel_share`` - float, minimum total relative shares (per cost component)
+        - ``min_bc_ratio`` - float, minimum benefit cost ratio
+        - ``min_bc_diff`` - float, minimum benefit cost difference
+        - ``max_benefit`` - float, maximum benefit
+        - ``max_ini_adap_cost`` - float, maximum initial adaptation cost
+        - ``max_tot_adap_cost`` - float, maximum total adaptation cost
+        - ``max_ini_rel_share`` - float, maximum initial relative shares (per cost component)
+        - ``max_tot_rel_share`` - float, maximum total relative shares (per cost component)
+        - ``max_bc_ratio`` - float, maximum benefit cost ratio
+        - ``max_bc_diff`` - float, maximum benefit cost difference
