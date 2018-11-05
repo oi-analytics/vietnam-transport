@@ -2,6 +2,16 @@
 Vietnam Transport Risk Analysis
 ===============================
 
+.. image:: https://img.shields.io/badge/github-oi--analytics%2Fvietnam--transport-brightgreen.png
+    :target: https://github.com/oi-analytics/vietnam-transport/
+
+This documentation describes the modelling and analysis of climate-related risks to transport
+networks in Vietnam.
+
+The modelling and analysis aims to support decision-making by identifying the performance of
+adaptation options under current and future scenarios. It comprises a network flow model,
+generation of failure scenarios, economic impact assessment, and cost-benefit analysis of
+adaptation options.
 
 Contents
 ========
