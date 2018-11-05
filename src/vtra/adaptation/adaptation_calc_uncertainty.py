@@ -436,115 +436,115 @@ def run_file(file_id,data_path,output_path,duration_max=10,discount_rate=12,grow
     else:
         param_values = {
             'district_mountain': [
-                2, # drainage
-                0.05, # ew1
-                0.25, # ew2
-                1.5, # ss1
-                0.5, # ss2
-                1, # ss3
-                0.05, # ss4
-                2 # pavement option
+                2,  # drainage
+                0.05,  # ew1
+                0.25,  # ew2
+                1.5,  # ss1
+                0.5,  # ss2
+                1,  # ss3
+                0.05,  # ss4
+                2  # pavement option
 
             ],
             'district_flat': [
-                0, # drainage
-                2, # ew1
-                0, # ew2
-                0, # ss1
-                2, # ss2
-                2, # ss3
-                0.1, # ss4
-                3 # pavement option
+                0,  # drainage
+                2,  # ew1
+                0,  # ew2
+                0,  # ss1
+                2,  # ss2
+                2,  # ss3
+                0.1,  # ss4
+                3  # pavement option
             ],
             'national_mountain': [
-                2, # drainage
-                0.2, # ew1
-                1, # ew2
-                1.5, # ss1
-                0.5, # ss2
-                1, # ss3
-                0.05, # ss4
-                1 # pavement option
+                2,  # drainage
+                0.2,  # ew1
+                1,  # ew2
+                1.5,  # ss1
+                0.5,  # ss2
+                1,  # ss3
+                0.05,  # ss4
+                1  # pavement option
             ],
             'national_flat': [
-                0, # drainage
-                2, # ew1
-                0, # ew2
-                0, # ss1
-                2, # ss2
-                2, # ss3
-                0.1, # ss4
-                4 # pavement option
+                0,  # drainage
+                2,  # ew1
+                0,  # ew2
+                0,  # ss1
+                2,  # ss2
+                2,  # ss3
+                0.1,  # ss4
+                4  # pavement option
             ],
             'bridge_mountain': [
-                2, # drainage
-                2, # ew1
-                0, # ew2
-                0, # ss1
-                2, # ss2
-                0, # ss3
-                2, # ss4
-                2 # pavement option
+                2,  # drainage
+                2,  # ew1
+                0,  # ew2
+                0,  # ss1
+                2,  # ss2
+                0,  # ss3
+                2,  # ss4
+                2  # pavement option
             ],
             'bridge_flat': [
-                2, # drainage
-                2, # ew1
-                0, # ew2
-                0, # ss1
-                2, # ss2
-                0, # ss3
-                2, # ss4
-                2 # pavement option
+                2,  # drainage
+                2,  # ew1
+                0,  # ew2
+                0,  # ss1
+                2,  # ss2
+                0,  # ss3
+                2,  # ss4
+                2  # pavement option
             ]
         }
 
     pavement = np.array([
-        [1,0,0,0], #
-        [0,0.75,0.2,0.05],
-        [0,0.9,0,0.1],
-        [0,2,0,0]
+        [1,0,0,0],  # option 1
+        [0,0.75,0.2,0.05],  # option 2
+        [0,0.9,0,0.1],  # option 3
+        [0,2,0,0]  # option 4
     ])
 
     # load provinces
     if file_id == 'national_road':
         nat = True
-        prov_roads = pd.read_csv(os.path.join(output_path,'hazard_scenarios','{}_hazard_intersections_risks.csv'.format(file_id)))
+        roads = pd.read_csv(os.path.join(output_path,'hazard_scenarios','{}_hazard_intersections_risks.csv'.format(file_id)))
         loss_roads = pd.read_csv(os.path.join(output_path,'failure_results','minmax_combined_scenarios','single_edge_failures_minmax_{}_100_percent_disrupt.csv'.format(file_id)))[['edge_id','min_econ_impact','max_econ_impact']]
     else:
-        prov_roads = pd.read_csv(os.path.join(output_path,'hazard_scenarios','roads_hazard_intersections_{}_risks.csv'.format(file_id)))
+        roads = pd.read_csv(os.path.join(output_path,'hazard_scenarios','roads_hazard_intersections_{}_risks.csv'.format(file_id)))
         loss_roads = pd.read_csv(os.path.join(output_path,'failure_results','minmax_combined_scenarios','single_edge_failures_minmax_{}_5_tons_100_percent_disrupt.csv'.format(file_id)))[['edge_id','min_econ_impact','max_econ_impact']]
         nat = False
 
-    prov_roads = prov_roads.merge(loss_roads)
+    roads = roads.merge(loss_roads)
 
     dr_norm,dr_growth,min_main_dr,max_main_dr = calculate_discounting_arrays(discount_rate,growth_rate)
     print (sum(dr_norm),sum(dr_growth),sum(min_main_dr),sum(max_main_dr))
 
     tqdm.pandas()
 
-    prov_roads['min_benefit'],prov_roads['min_ini_adap_cost'],prov_roads['min_tot_adap_cost'], \
-    prov_roads['min_ini_rel_share'],prov_roads['min_tot_rel_share'],prov_roads['min_bc_ratio'],prov_roads['min_bc_diff'] = zip(*prov_roads.progress_apply(lambda x: calc_costs(x,param_values,
+    roads['min_benefit'],roads['min_ini_adap_cost'],roads['min_tot_adap_cost'], \
+    roads['min_ini_rel_share'],roads['min_tot_rel_share'],roads['min_bc_ratio']_roads['min_bc_diff'] = zip(*roads.progress_apply(lambda x: calc_costs(x,param_values,
                                 mnt_dis_cost,mnt_nat_cost,cst_dis_cost,cst_nat_cost,brdg_cost,pavement,
                                 mnt_main_cost,cst_main_cost,dr_norm,dr_growth,rehab_costs,min_main_dr,max_main_dr,
                                 duration_max=duration_max,min_exp=True,national=nat,min_loss=True),axis=1))
 
 
-    prov_roads['max_benefit'],prov_roads['max_ini_adap_cost'],prov_roads['max_tot_adap_cost'], \
-    prov_roads['max_ini_rel_share'],prov_roads['max_tot_rel_share'],prov_roads['max_bc_ratio'],prov_roads['max_bc_diff'] = zip(*prov_roads.progress_apply(lambda x: calc_costs(x,param_values,
+    roads['max_benefit'],roads['max_ini_adap_cost'],roads['max_tot_adap_cost'], \
+    roads['max_ini_rel_share'],roads['max_tot_rel_share'],roads['max_bc_ratio']_roads['max_bc_diff'] = zip(*roads.progress_apply(lambda x: calc_costs(x,param_values,
                                 mnt_dis_cost,mnt_nat_cost,cst_dis_cost,cst_nat_cost,brdg_cost,pavement,
                                 mnt_main_cost,cst_main_cost,dr_norm,dr_growth,rehab_costs,min_main_dr,max_main_dr,
                                 duration_max=duration_max,min_exp=False,national=nat,min_loss=False),axis=1))
 
     if not read_from_file:
-        prov_roads['max_tot_adap_cost'] = prov_roads.max_tot_adap_cost.apply(lambda item: max(item))
-        prov_roads['min_tot_adap_cost'] = prov_roads.min_tot_adap_cost.apply(lambda item: max(item))
-        prov_roads['min_bc_ratio'] = prov_roads['min_benefit']/prov_roads['max_tot_adap_cost']
-        prov_roads['max_bc_ratio'] = prov_roads['max_benefit']/prov_roads['min_tot_adap_cost']
+        roads['max_tot_adap_cost'] = roads.max_tot_adap_cost.apply(lambda item: max(item))
+        roads['min_tot_adap_cost'] = roads.min_tot_adap_cost.apply(lambda item: max(item))
+        roads['min_bc_ratio'] = roads['min_benefit']/roads['max_tot_adap_cost']
+        roads['max_bc_ratio'] = roads['max_benefit']/roads['min_tot_adap_cost']
 
     if read_from_file:
-        prov_roads.to_csv(os.path.join(output_path,'adaptation_results','output_adaptation_{}_{}_days_max_disruption.csv'.format(file_id,duration_max)))
+        roads.to_csv(os.path.join(output_path,'adaptation_results','output_adaptation_{}_{}_days_max_disruption.csv'.format(file_id,duration_max)))
     else:
-        prov_roads.to_csv(os.path.join(output_path,'adaptation_results','output_adaptation_{}_{}_days_max_disruption_fixed_parameters.csv'.format(file_id,duration_max)))
+        roads.to_csv(os.path.join(output_path,'adaptation_results','output_adaptation_{}_{}_days_max_disruption_fixed_parameters.csv'.format(file_id,duration_max)))
 
 if __name__ == '__main__':
     read_from_file = False
