@@ -407,6 +407,7 @@ def main():
         'national_roads_adapt_summary_fixed_parameters.csv'
         ), index=False
     )
+    all_edge_fail_scenarios.drop('road_class', axis=1, inplace=True)
     edges_vals = pd.merge(region_file,all_edge_fail_scenarios,how='left',on=['edge_id']).fillna(0)
 
     for c in range(len(adapt_set)):

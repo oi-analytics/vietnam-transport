@@ -154,29 +154,47 @@ Adaptation Options
 ------------------
 .. Note::
 	1. All adaptation options input datasets are stored:
-		- In the path - /data/Adaptation_options/
+		- In the file - /data/Adaptation_options/adaptation_costs_road_types.xlsx
 		- As Excel files
 
-	2. Following adaptation options attributes should be collected:
-		- strategy_no - Integer numbers for options	
-		- strategy_name	- String names of options
-		- hazard_type - String names of hazards matching hazard types defined in hazard data	
-		- asset_type - String names of type of network asset	
-		- asset_class - String names of asset class
-		- asset_terrain	- String names of terrains on assets
-		- asset_cond - String names of asset conditions
-		- residual_hazard - Float values of remaining levels of hazards
-		- disruption_restore - Float values of percentage of disruption restored	
-		- climate_uplift_min - Float values of minimum uplit factor for cost due to climate change	
-		- climate_uplift_max - Float values of maximum uplit factor for cost due to climate change	
-		- height_m - Float values of height of construction for raising assets	
-		- adapt_cost_min - Float values of minimum cost of investment of adaptation option	
-		- adapt_cost_max - Float values of maximum cost of investment of adaptation option	
-		- maintain_cost_min	- Float values of minimum cost of maintenance of adaptation option
-		- maintain_cost_max	- Float values of maximum cost of maintenance of adaptation option
-		- rehab_cost_min - Float values of minimum cost of rehabilitation of assets	
-		- rehab_cost_max - Float values of maximum cost of rehabilitation of assets	
-		- maintenance_times_min	- Float values of minimum time intervals in year of maintaining the adaptation option
-		- maintenance_times_max	- Float values of maximum time intervals in year of maintaining the adaptation option
-		- cost_unit	- String values of cost unit
-		- dimension_unit - String values of dimensions
+	2. Excel sheet 'options' explains:
+		- adaptation_group - String names of the type of adaptation strategy
+		- option_code - Stirng codes of the option	
+		- item - String descriptions of the option
+
+	3. Excel sheets 'costs_district_mountain','costs_district_flat','costs_national_mountain', 'costs_national_flat' and 'bridges' explain:
+		- adaptation_group - String names of the type of adaptation strategy
+		- option_code - Stirng codes of the option	
+		- item - String descriptions of the option
+		- estimated_amount_fraction	- Float ratios of road length over which the option is implemented
+		- Estimated length - Flaot assumed road lengths in example case
+		- factor - Float factor multiplied to length based on rates and option	
+		- factor_unit - String factor units 	
+		- unit - String dimension units of measurement of option	
+		- rate - Float unit rates of option in USD/unit
+		- total cost - Float product of Estimated length*factor*rate 	
+		- design_assumption	- String explanations of some design assumptions
+		- comment - Sting general comments
+
+	4. Excel sheet 'rehabilitation_costs' explain:
+		- Road Type	- String type of road
+		- terrain - String terrian of road	
+		- basic_cost - Float current costs of rehabilitation in USD/km of road 	
+		- design_width - Float design width of road	
+		- road_class - Integer class for National Roads	
+		- road_level - Integer level for Province Roads	
+		- unit - String unit of cost
+
+	5. Excels sheets 'maintenance_mountain' and 'maintenance_flat' explain:
+		- adaptation_group - String names of the type of adaptation strategy
+		- option_code - Stirng codes of the option	
+		- item - String descriptions of the option	
+		- recurrent_cost - Float costs of recurrent maintenance	
+		- periodic_cost - Float costs of periodic maintenance	
+		- recurrent_factor - Float factor of recurrent maintenance	 	
+		- periodic_factor - Float factor of periodic maintenance	
+		- recurrent_maintain_time - Float times of recurrent maintenance in years
+		- periodic_maintain_time - Float times of periodic maintenance in years	
+		- recurrent_cost_unit - Sting unit of recurrent maintenance costs 	
+		- periodic_cost_unit - Sting unit of periodic maintenance costs	
+		- comment - Sting general comments
