@@ -62,7 +62,7 @@ The essential attributes in these OD matrices are listed below. See the data for
 2. All node-level national OD matrices contain mode-wise and total OD flows and should have attributes:
 	- ``origin`` - String node IDs of origin nodes
 	- ``destination`` - String node IDs of destination nodes
-	- ``o_region`` - String names of origin Provincse
+	- ``o_region`` - String names of origin Provinces
 	- ``d_region`` - String names of destination Provinces
 	- ``min_tons`` - Float values of minimum daily tonnages between OD nodes
 	- ``max_tons`` - Float values of maximum daily tonnages between OD nodes
@@ -153,42 +153,42 @@ Adaptation Options
 
 2. Excel sheet ``options`` explains:
 	- ``adaptation_group`` - String names of the type of adaptation strategy
-	- ``option_code`` - String codes of the option	
+	- ``option_code`` - String codes of the option
 	- ``item`` - String descriptions of the option
 
 3. Excel sheets ``costs_district_mountain``, ``costs_district_flat``, ``costs_national_mountain``, ``costs_national_flat`` and ``bridges`` explain:
 	- ``adaptation_group`` - String names of the type of adaptation strategy
-	- ``option_code`` - String codes of the option	
+	- ``option_code`` - String codes of the option
 	- ``item`` - String descriptions of the option
 	- ``estimated_amount_fraction``	- Float ratios of road length over which the option is implemented
 	- ``Estimated`` length - Float assumed road lengths in example case
-	- ``factor`` - Float factor multiplied to length based on rates and option	
-	- ``factor_unit`` - String factor units 	
-	- ``unit`` - String dimension units of measurement of option	
+	- ``factor`` - Float factor multiplied to length based on rates and option
+	- ``factor_unit`` - String factor units
+	- ``unit`` - String dimension units of measurement of option
 	- ``rate`` - Float unit rates of option in USD/unit
-	- ``total`` cost - Float product of Estimated length*factor*rate 	
+	- ``total`` cost - Float product of Estimated length*factor*rate
 	- ``design_assumption``	- String explanations of some design assumptions
 	- ``comment`` - String general comments
 
 4. Excel sheet ``rehabilitation_costs`` explain:
 	- ``Road Type``	- String type of road
-	- ``terrain`` - String terrian of road	
-	- ``basic_cost`` - Float current costs of rehabilitation in USD/km of road 	
-	- ``design_width`` - Float design width of road	
-	- ``road_class`` - Integer class for National Roads	
-	- ``road_level`` - Integer level for Province Roads	
+	- ``terrain`` - String terrian of road
+	- ``basic_cost`` - Float current costs of rehabilitation in USD/km of road
+	- ``design_width`` - Float design width of road
+	- ``road_class`` - Integer class for National Roads
+	- ``road_level`` - Integer level for Province Roads
 	- ``unit`` - String unit of cost
 
 5. Excels sheets ``maintenance_mountain`` and ``maintenance_flat`` explain:
 	- ``adaptation_group`` - String names of the type of adaptation strategy
-	- ``option_code`` - String codes of the option	
-	- ``item`` - String descriptions of the option	
-	- ``recurrent_cost`` - Float costs of recurrent maintenance	
-	- ``periodic_cost`` - Float costs of periodic maintenance	
-	- ``recurrent_factor`` - Float factor of recurrent maintenance	 	
-	- ``periodic_factor`` - Float factor of periodic maintenance	
+	- ``option_code`` - String codes of the option
+	- ``item`` - String descriptions of the option
+	- ``recurrent_cost`` - Float costs of recurrent maintenance
+	- ``periodic_cost`` - Float costs of periodic maintenance
+	- ``recurrent_factor`` - Float factor of recurrent maintenance
+	- ``periodic_factor`` - Float factor of periodic maintenance
 	- ``recurrent_maintain_time`` - Float times of recurrent maintenance in years
-	- ``periodic_maintain_time`` - Float times of periodic maintenance in years	
-	- ``recurrent_cost_unit`` - String unit of recurrent maintenance costs 	
-	- ``periodic_cost_unit`` - String unit of periodic maintenance costs	
+	- ``periodic_maintain_time`` - Float times of periodic maintenance in years
+	- ``recurrent_cost_unit`` - String unit of recurrent maintenance costs
+	- ``periodic_cost_unit`` - String unit of periodic maintenance costs
 	- ``comment`` - String general comments
