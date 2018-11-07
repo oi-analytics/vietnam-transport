@@ -27,6 +27,16 @@ Networks
 	- ``geometry`` - LineString geometry of edge with projection ESPG:4326
 	- variable list of attributes depending upon sector
 
+.. Note::
+	We assume that networks are provided as topologically correct connected graphs: each edge
+	is a single LineString (may be straight line or more complex line), but must have exactly
+	two endpoints, which are labelled as ``from_node`` and ``to_node`` (the values of these
+	attributes must correspond to the ``node_id`` of a node).
+
+	Wherever two edges meet, we assume that there is a shared node, matching each of the intersecting edge endpoints. For example, at a t-junction there will be three edges meeting
+	at one node.
+
+
 Cost attributes
 ---------------
 1. Data to assign transport costs to network edges are stored:
