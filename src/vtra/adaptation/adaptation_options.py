@@ -547,11 +547,11 @@ def run_adaptation_calculation(file_id, data_path, output_path, duration_max=10,
     tqdm.pandas()
 
     roads['min_benefit'], roads['min_ini_adap_cost'], roads['min_tot_adap_cost'], \
-        roads['min_ini_rel_share'], roads['min_tot_rel_share'], roads['min_bc_ratio']_roads['min_bc_diff'] = zip(*roads.progress_apply(
+        roads['min_ini_rel_share'], roads['min_tot_rel_share'], roads['min_bc_ratio'], roads['min_bc_diff'] = zip(*roads.progress_apply(
             lambda x: calc_costs(x, param_values, mnt_dis_cost, mnt_nat_cost, cst_dis_cost, cst_nat_cost, brdg_cost, pavement, mnt_main_cost, cst_main_cost, dr_norm, dr_growth, rehab_costs, min_main_dr, max_main_dr, duration_max=duration_max, min_exp=True, national=nat, min_loss=True), axis=1))
 
     roads['max_benefit'], roads['max_ini_adap_cost'], roads['max_tot_adap_cost'], \
-        roads['max_ini_rel_share'], roads['max_tot_rel_share'], roads['max_bc_ratio']_roads['max_bc_diff'] = zip(*roads.progress_apply(
+        roads['max_ini_rel_share'], roads['max_tot_rel_share'], roads['max_bc_ratio'], roads['max_bc_diff'] = zip(*roads.progress_apply(
             lambda x: calc_costs(x, param_values, mnt_dis_cost, mnt_nat_cost, cst_dis_cost, cst_nat_cost, brdg_cost, pavement, mnt_main_cost, cst_main_cost, dr_norm, dr_growth, rehab_costs, min_main_dr, max_main_dr, duration_max=duration_max, min_exp=False, national=nat, min_loss=False), axis=1))
 
     if not read_from_file:

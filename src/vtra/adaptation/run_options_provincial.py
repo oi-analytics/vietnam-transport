@@ -24,7 +24,7 @@ if __name__ == 'main':
     duration_list = [10]
     discount_rate = 12
     growth_rate = 6.5
-    regions = [['laocai', 'binhdinh', 'thanhhoa']
+    regions = ['laocai', 'binhdinh', 'thanhhoa']
 
     for dur in duration_list:
         for file_id in regions:
