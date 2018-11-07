@@ -176,7 +176,7 @@ Execution:
     - Load network and flow excel data as described in `Networks <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#networks>`_, `Mapping Flows onto Networks <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/results.html#mapping-flows-onto-networks>`_, and failure scenarios from `Hazard exposure <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/results.html#hazard-exposure>`_
     - For National networks failure analysis run :py:mod:`vtra.failure.failure_estimation_national`
     - For National networks failure analysis with multi-modal options run :py:mod:`vtra.failure.failure_multi_modal_options`
-    - For Provinces roads failure analysis run :py:mod:`vtra.failure.failure_estimation_provinces`
+    - For Provincial roads failure analysis run :py:mod:`vtra.failure.failure_estimation_provinces`
 
 Result:
     - Store csv outputs in the directory ``/results/failure_results/``
@@ -266,7 +266,37 @@ Result:
         - ``min/max_tons`` - Float values of total daily tonnages along edge
         - ``min/max_netrev`` - Float values of total daily net revenues along edge
         - ``min/max_econ_impact`` - Float value of total daily economic impact of edge
-        - ``geometry`` - LineString geomtry of edges
+        - ``geometry`` - LineString geometry of edges
+
+Purpose
+    - Combine failure scenarios across probability levels into single value per
+      hazard type, scenario, network link.
+
+Execution
+    - Produce hazard scenarios as described above.
+    - Common functions are defined in
+      :py:mod:`vtra.failure_scenario_selection.hazard_network_scenarios`
+    - For national networks, run
+      :py:mod:`vtra.failure_scenario_selection.collect_network_hazard_scenarios_national`
+    - For provincial networks, run
+      :py:mod:`vtra.failure_scenario_selection.collect_network_hazard_scenarios_provincial`
+
+Result
+    - Combined scenarios in
+      ``results/hazard_scenarios/{national,provincial}_{mode}_hazard_intersections_risks.csv``
+        - ``edge_id`` - string, name of failed edge
+        - ``hazard_type`` - string, name of hazard
+        - ``model`` - string, name of hazard model (if any)
+        - ``climate_scenario`` - string, name of climate scenario (if any)
+        - ``year`` - integer, year of hazard data
+        - ``{mode}_length`` - float, length of edge (mode could be road, rail)
+        - ``min/max_band`` - integer, hazard band (if any)
+        - ``min/max_height`` - float, hazard height (if any)
+        - ``min/max_exposure_percent`` - float, percentage of edge exposed to hazard
+        - ``min/max_duration_wt`` - float, duration weight
+        - ``min/max_exposure_length`` - float, length of edge exposed to hazard
+        - ``risk_wt`` - float, risk weight
+        - ``dam_wt`` - float, damage weight
 
 
 Macroeconomic loss Analysis
@@ -335,14 +365,16 @@ Result:
 Adaptation
 ----------
 Purpose:
-    - Generate adaption scenarios/strategies and examine their costs, benefits, net present values and benefit-cost ratios
-    - For national-scale roads
-    - For province-scale roads
-    - Based on different types of hazards, road assets and climate-change conditions
+    - Generate adaption scenarios/strategies and examine their costs, benefits, net present
+      values and benefit-cost ratios
+    - For national or provincial roads, based on different types of hazards, road assets and
+      climate-change conditions
 
 Execution:
     - Load data described in `Networks <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#networks>`_, `Processing Failure Results <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/results.html#processing-failure-results>`_, and `Adaptation Options <https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/data.html#adaptation-options>`_
-    - Run :py:mod:`vtra.adaptation.adaptation_calc_uncertainty`
+    - Common functions are in :py:mod:`vtra.adaptation.adaptation_options`
+    - Run :py:mod:`vtra.adaptation.run_options_national`
+    - Run :py:mod:`vtra.adaptation.run_options_provincial`
 
 Result:
     - Store results as excel sheets in ``/results/adaptation_results/``
@@ -359,31 +391,20 @@ Result:
         - ``road_cond`` - string, names of road conditions
         - ``width`` - float, edge widths
         - ``road_length`` - float, edge lengths
-        - ``min_band`` - integer, minimum hazard bands
-        - ``max_band`` - integer, maximum hazard bands
-        - ``min_height`` - float, minimum height of hazard exposure - if flooding
-        - ``max_height`` - float, maximum height of hazard exposure - if flooding
-        - ``min_exposure_percent`` - float, minimum percent of edge length exposed to hazard
-        - ``max_exposure_percent`` - float, maximum percent of edge length exposed to hazard
-        - ``min_duration_wt`` - float, minimum duration of disruption of edge
-        - ``max_duration_wt`` - float, maximum duration of disruption of edge
-        - ``min_exposure_length`` - float, minimum edge length exposed to hazard
-        - ``max_exposure_length`` - float, maximum edge length exposed to hazard
+        - ``min/max_band`` - integer, hazard bands
+        - ``min/max_height`` - float, heights of hazard exposure - if flooding
+        - ``min/max_exposure_percent`` - float, percent of edge length exposed to hazard
+        - ``min/max_duration_wt`` - float, duration of disruption of edge
+        - ``min/max_exposure_length`` - float, edge length exposed to hazard
         - ``risk_wt`` - float, weight given to estimating expected annual losses
         - ``dam_wt`` - float, weight given to estimating expected annual damage costs
-        - ``min_econ_impact`` - float, minimum economic impact
-        - ``max_econ_impact`` - float, maximum economic impact
-        - ``min_benefit`` - float, minimum benefit
-        - ``min_ini_adap_cost`` - float, minimum initial adaptation cost
-        - ``min_tot_adap_cost`` - float, minimum total adaptation cost
-        - ``min_ini_rel_share`` - float, minimum initial relative shares (per cost component)
-        - ``min_tot_rel_share`` - float, minimum total relative shares (per cost component)
-        - ``min_bc_ratio`` - float, minimum benefit cost ratio
-        - ``min_bc_diff`` - float, minimum benefit cost difference
-        - ``max_benefit`` - float, maximum benefit
-        - ``max_ini_adap_cost`` - float, maximum initial adaptation cost
-        - ``max_tot_adap_cost`` - float, maximum total adaptation cost
-        - ``max_ini_rel_share`` - float, maximum initial relative shares (per cost component)
-        - ``max_tot_rel_share`` - float, maximum total relative shares (per cost component)
-        - ``max_bc_ratio`` - float, maximum benefit cost ratio
-        - ``max_bc_diff`` - float, maximum benefit cost difference
+        - ``min/max_econ_impact`` - float, minimum/maximum economic impact
+        - ``min/max_benefit`` - float, minimum/maximum benefit
+        - ``min/max_ini_adap_cost`` - float, minimum/maximum initial adaptation cost
+        - ``min/max_tot_adap_cost`` - float, minimum/maximum total adaptation cost
+        - ``min/max_ini_rel_share`` - float, minimum/maximum initial relative shares (per cost
+            component)
+        - ``min/max_tot_rel_share`` - float, minimum/maximum total relative shares (per cost
+            component)
+        - ``min/max_bc_ratio`` - float, minimum/maximum benefit cost ratio
+        - ``min/max_bc_diff`` - float, minimum/maximum benefit cost difference

@@ -1,45 +1,33 @@
 # -*- coding: utf-8 -*-
-"""Utility functions for adaptation analysis
+"""Utility functions for combined impact analysis
 """
-import ast
-import copy
-import csv
-import itertools
-import math
-import operator
-import os
-import sys
-from collections import Counter
-
-import igraph as ig
-import networkx as nx
-import numpy as np
 import pandas as pd
-from vtra.utils import *
-from vtra.transport_flow_and_failure_functions import *
 
 
-def combine_hazards_and_network_attributes_and_impacts(hazard_dataframe,network_dataframe):
-    hazard_dataframe.loc[hazard_dataframe['probability']
-                                == 'none', 'probability'] = 1.0
-    hazard_dataframe['probability'] = pd.to_numeric(
-        hazard_dataframe['probability'])
-    hazard_dataframe.rename(columns={'length': 'exposure_length','min_val':'min_flood_depth','max_val':'max_flood_depth'}, inplace=True)
+def combine_hazards_and_network_attributes_and_impacts(hazard_dataframe, network_dataframe):
+    hazard_dataframe.loc[hazard_dataframe['probability'] == 'none', 'probability'] = 1.0
+    hazard_dataframe['probability'] = pd.to_numeric(hazard_dataframe['probability'])
+    hazard_dataframe.rename(columns={
+        'length': 'exposure_length',
+        'min_val': 'min_flood_depth',
+        'max_val': 'max_flood_depth'
+    }, inplace=True)
 
     network_dataframe.rename(columns={'length': 'road_length'}, inplace=True)
     network_dataframe['road_length'] = 1000.0*network_dataframe['road_length']
 
     all_edge_fail_scenarios = pd.merge(hazard_dataframe, network_dataframe, on=[
-                                           'edge_id'], how='left').fillna(0)
+        'edge_id'], how='left').fillna(0)
 
     all_edge_fail_scenarios['percent_exposure'] = 100.0 * \
-            all_edge_fail_scenarios['exposure_length']/all_edge_fail_scenarios['road_length']
+        all_edge_fail_scenarios['exposure_length']/all_edge_fail_scenarios['road_length']
 
     del hazard_dataframe, network_dataframe
 
     return all_edge_fail_scenarios
 
-def create_hazard_scenarios_for_adaptation(all_edge_fail_scenarios,index_cols,length_thr):
+
+def create_hazard_scenarios_for_adaptation(all_edge_fail_scenarios, index_cols, length_thr):
     all_edge_fail_scenarios = all_edge_fail_scenarios.set_index(index_cols)
     scenarios = list(set(all_edge_fail_scenarios.index.values.tolist()))
     print('Number of failure scenarios', len(scenarios))
@@ -85,14 +73,13 @@ def create_hazard_scenarios_for_adaptation(all_edge_fail_scenarios,index_cols,le
             dam_wt = 0
             for p in range(len(u_pr)-1):
                 risk_wt += 0.5*(u_pr[p+1]-u_pr[p])*(r_wt[p+1]+r_wt[p])
-                dam_wt +=  0.5*(u_pr[p+1]-u_pr[p])*(exposure_len[p+1]+exposure_len[p])
+                dam_wt += 0.5*(u_pr[p+1]-u_pr[p])*(exposure_len[p+1]+exposure_len[p])
 
         else:
             prob_wt = prob[0]
             min_exposure_len = sum(
                 all_edge_fail_scenarios.loc[[sc], 'exposure_length'].values.tolist())
-            min_per = sum(all_edge_fail_scenarios.loc[[
-                          sc], 'percent_exposure'].values.tolist())
+            min_per = sum(all_edge_fail_scenarios.loc[[sc], 'percent_exposure'].values.tolist())
             if min_per > 100.0:
                 min_exposure_len = 100.0*min_exposure_len/min_per
                 min_per = 100.0
@@ -109,10 +96,12 @@ def create_hazard_scenarios_for_adaptation(all_edge_fail_scenarios,index_cols,le
                 risk_wt = prob_wt
 
         scenarios_list.append(list(sc) + [min_band_num, max_band_num, min_height, max_height,
-                                          min_per, max_per, min_dur, max_dur, min_exposure_len, max_exposure_len, risk_wt, dam_wt])
+                                          min_per, max_per, min_dur, max_dur, min_exposure_len,
+                                          max_exposure_len, risk_wt, dam_wt])
 
-    new_cols = ['min_band', 'max_band', 'min_height', 'max_height', 'min_exposure_percent', 'max_exposure_percent',
-                'min_duration_wt', 'max_duration_wt', 'min_exposure_length', 'max_exposure_length', 'risk_wt','dam_wt']
+    new_cols = ['min_band', 'max_band', 'min_height', 'max_height', 'min_exposure_percent',
+                'max_exposure_percent', 'min_duration_wt', 'max_duration_wt',
+                'min_exposure_length', 'max_exposure_length', 'risk_wt', 'dam_wt']
     scenarios_df = pd.DataFrame(scenarios_list, columns=index_cols + new_cols)
 
     del all_edge_fail_scenarios, scenarios_list
