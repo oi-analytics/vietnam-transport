@@ -47,6 +47,11 @@ licensing](https://www.gams.com/latest/docs/UG_MAIN.htm) instructions.
 The location of data and output files are configured by a `config.json` file. Copy
 `config.template.json` and edit the file path details to locate the files on your system.
 
+Note that on Windows, you will need to use double backslashes (`\\`) in the file paths, for
+example:
+
+    "data": "C:\\Users\\Username\\projects\\vtra\\data"
+
 
 ## Development notes
 
