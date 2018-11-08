@@ -122,6 +122,8 @@ def plot_basemap(ax, data_path, focus='VNM', neighbours=['VNM', 'CHN', 'LAO', 'K
                     zorder=1)
 
     # Regions
+    if highlight_region is None:
+        highlight_region = []
     highlight_region_geom = None
     if plot_regions:
         for record in shpreader.Reader(provinces_filename).records():
