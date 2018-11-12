@@ -388,20 +388,20 @@ Result:
         - ``terrain`` - string, road terrain (flat/mountain)
         - ``surface`` - string, road surface
         - ``road_class`` - integer, road class (1-6)
-        - ``road_cond`` - string, names of road conditions
-        - ``width`` - float, edge widths
-        - ``road_length`` - float, edge lengths
-        - ``min/max_band`` - integer, hazard bands
-        - ``min/max_height`` - float, heights of hazard exposure - if flooding
+        - ``road_cond`` - string, names of road conditions (paved/unpaved)
+        - ``width`` - float, edge widths in meters
+        - ``road_length`` - float, edge lengths in meters
+        - ``min/max_band`` - integer, hazard bands (3, 4 or 5)
+        - ``min/max_height`` - float, heights in meters of hazard exposure - if flooding
         - ``min/max_exposure_percent`` - float, percent of edge length exposed to hazard
-        - ``min/max_duration_wt`` - float, duration of disruption of edge
-        - ``min/max_exposure_length`` - float, edge length exposed to hazard
+        - ``min/max_duration_wt`` - float, fraction of maximum duration of disruption considered for edge failure scenario
+        - ``min/max_exposure_length`` - float, edge length in meters exposed to hazard
         - ``risk_wt`` - float, weight given to estimating expected annual losses
         - ``dam_wt`` - float, weight given to estimating expected annual damage costs
-        - ``min/max_econ_impact`` - float, minimum/maximum economic impact
-        - ``min/max_benefit`` - float, minimum/maximum benefit
-        - ``min/max_ini_adap_cost`` - float, minimum/maximum initial adaptation cost
-        - ``min/max_tot_adap_cost`` - float, minimum/maximum total adaptation cost
+        - ``min/max_econ_impact`` - float, minimum/maximum economic impact in USD/day
+        - ``min/max_benefit`` - float, minimum/maximum benefit over time in USD
+        - ``min/max_ini_adap_cost`` - float, minimum/maximum initial adaptation cost in USD
+        - ``min/max_tot_adap_cost`` - float, minimum/maximum total adaptation cost in USD
         - ``min/max_ini_rel_share`` - float, minimum/maximum initial relative shares (per cost
             component)
         - ``min/max_tot_rel_share`` - float, minimum/maximum total relative shares (per cost
