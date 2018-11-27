@@ -54,14 +54,17 @@ def main():
     """
 
     data_root = load_config()['paths']['data']
+    output_root = load_config()['paths']['output']
 
-    dir_raw_cvts = os.path.join(data_root, 'Cvts', 'raw', '20170801')
-    dir_raw_roads = os.path.join(data_root, 'pre_processed_networks_data', 'Roads', 'national_roads')
-    dir_inter_reduse = os.path.join(data_root, 'Cvts', 'intermediate', 'reduse')
-    dir_results_routes = os.path.join(data_root, 'Cvts', 'results', 'routes')
+    dir_raw_roads = os.path.join(data_root, 'post_processed_networks_data')
+    
+    dir_raw_cvts = os.path.join(data_root, 'cvts_data', 'raw', '20170801')
+    dir_inter_reduse = os.path.join(output_root, 'transport cvts analysis', 'intermediate', 'reduse')
+    dir_results_routes = os.path.join(output_root, 'transport cvts analysis', 'results', 'routes')
+    
     dir_results_routes_collected = os.path.join(
-        data_root, 'Cvts', 'results', 'routes_collected')
-    dir_results_traffic_count = os.path.join(data_root, 'Cvts', 'results', 'traffic_count')
+        output_root, 'transport cvts analysis', 'results', 'routes_collected')
+    dir_results_traffic_count = os.path.join(output_root, 'transport cvts analysis', 'results', 'traffic_count')
 
     # Reduse dataset with 70 percent (processing 4s/100mb)
     print('Reduce dataset size')
@@ -69,7 +72,7 @@ def main():
 
     # Read road network in memory
     print('Read road network')
-    geojson_road_network = read_shapefile(dir_raw_roads, 'national_network_edges.shp')
+    geojson_road_network = read_shapefile(dir_raw_roads, 'road_edges.shp')
 
     # Generate routes by mapping gps points on the road network
     print('Generate routes')
