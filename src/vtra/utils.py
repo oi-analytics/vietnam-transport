@@ -170,10 +170,9 @@ def plot_basemap_labels_large_region(ax, data_path):
         ('Indonesia', 97.822, 3.338, 9),
         ('Singapore', 103.799, 1.472, 9),
         ('Cambodia', 105.25, 12.89, 9),
-        ('Laos', 105.64, 16.55, 9),
+        ('Lao PDR', 105.64, 16.55, 9),
         ('Thailand', 101.360, 16.257, 9),
-        ('China', 108.08, 22.71, 9),
-        ('South China Sea', 108.17, 17.37, 7)
+        ('China', 108.08, 22.71, 9)
     ]
     plot_basemap_labels(ax, data_path, labels, province_zoom=False, plot_regions=False)
 
@@ -230,13 +229,13 @@ def plot_basemap_labels(ax, data_path, labels=None, province_zoom=False, plot_re
         if plot_international_left:
             labels = labels + [
                 ('Cambodia', 105.25, 12.89, 9),
-                ('Laos', 105.64, 16.55, 9),
+                ('Lao PDR', 105.64, 16.55, 9),
                 ('Thailand', 103.64, 15.25, 9)]
 
         if plot_international_right:
             labels = labels + [
-                ('China', 108.08, 22.71, 9),
-                ('South China Sea', 108.17, 17.37, 7)]
+                ('China', 108.08, 22.71, 9)
+                ]
 
         if plot_regions:
             labels = labels + [
