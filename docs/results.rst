@@ -161,6 +161,37 @@ Result:
         - ``min_val`` - Integer value of minimum value of hazard threshold
         - ``max_val`` - Integer value of maximum value of hazard threshold
 
+Hazard weights 
+--------------
+Purpose
+    - Combine failure scenarios across probability levels into single value per
+      hazard type, scenario, network link.
+
+Execution
+    - Produce hazard scenarios as described above.
+    - Common functions are defined in
+      :py:mod:`vtra.failure_scenario_selection.hazard_network_scenarios`
+    - For national networks, run
+      :py:mod:`vtra.failure_scenario_selection.collect_network_hazard_scenarios_national`
+    - For provincial networks, run
+      :py:mod:`vtra.failure_scenario_selection.collect_network_hazard_scenarios_provincial`
+
+Result
+    - Combined scenarios in
+      ``results/hazard_scenarios/{national,provincial}_{mode}_hazard_intersections_risks.csv``
+        - ``edge_id`` - string, name of failed edge
+        - ``hazard_type`` - string, name of hazard
+        - ``model`` - string, name of hazard model (if any)
+        - ``climate_scenario`` - string, name of climate scenario (if any)
+        - ``year`` - integer, year of hazard data
+        - ``{mode}_length`` - float, length of edge (mode could be road, rail)
+        - ``min/max_band`` - integer, hazard band (if any)
+        - ``min/max_height`` - float, hazard height (if any)
+        - ``min/max_exposure_percent`` - float, percentage of edge exposed to hazard
+        - ``min/max_duration_wt`` - float, duration weight
+        - ``min/max_exposure_length`` - float, length of edge exposed to hazard
+        - ``risk_wt`` - float, risk weight
+        - ``dam_wt`` - float, damage weight
 
 Failure Analysis
 ----------------
@@ -267,36 +298,6 @@ Result:
         - ``min/max_netrev`` - Float values of total daily net revenues along edge
         - ``min/max_econ_impact`` - Float value of total daily economic impact of edge
         - ``geometry`` - LineString geometry of edges
-
-Purpose
-    - Combine failure scenarios across probability levels into single value per
-      hazard type, scenario, network link.
-
-Execution
-    - Produce hazard scenarios as described above.
-    - Common functions are defined in
-      :py:mod:`vtra.failure_scenario_selection.hazard_network_scenarios`
-    - For national networks, run
-      :py:mod:`vtra.failure_scenario_selection.collect_network_hazard_scenarios_national`
-    - For provincial networks, run
-      :py:mod:`vtra.failure_scenario_selection.collect_network_hazard_scenarios_provincial`
-
-Result
-    - Combined scenarios in
-      ``results/hazard_scenarios/{national,provincial}_{mode}_hazard_intersections_risks.csv``
-        - ``edge_id`` - string, name of failed edge
-        - ``hazard_type`` - string, name of hazard
-        - ``model`` - string, name of hazard model (if any)
-        - ``climate_scenario`` - string, name of climate scenario (if any)
-        - ``year`` - integer, year of hazard data
-        - ``{mode}_length`` - float, length of edge (mode could be road, rail)
-        - ``min/max_band`` - integer, hazard band (if any)
-        - ``min/max_height`` - float, hazard height (if any)
-        - ``min/max_exposure_percent`` - float, percentage of edge exposed to hazard
-        - ``min/max_duration_wt`` - float, duration weight
-        - ``min/max_exposure_length`` - float, length of edge exposed to hazard
-        - ``risk_wt`` - float, risk weight
-        - ``dam_wt`` - float, damage weight
 
 
 Macroeconomic loss Analysis
