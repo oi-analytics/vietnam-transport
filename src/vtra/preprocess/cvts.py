@@ -42,6 +42,7 @@ import sys
 import time
 from collections import OrderedDict, defaultdict
 from pathlib import Path
+import zipfile
 
 import fiona
 from rtree import index
@@ -52,13 +53,14 @@ from vtra.utils import load_config
 def main():
     """Pre-process CVTS
     """
-
+    incoming_root = load_config()['paths']['incoming_data']
     data_root = load_config()['paths']['data']
     output_root = load_config()['paths']['output']
 
-    dir_raw_roads = os.path.join(data_root, 'post_processed_networks_data')
+    dir_raw_roads = os.path.join(data_root, 'post_processed_networks')
+    dir_raw_cvts = os.path.join(incoming_root,'20170801')
     
-    dir_raw_cvts = os.path.join(data_root, 'cvts_data', 'raw', '20170801')
+
     dir_inter_reduse = os.path.join(output_root, 'transport cvts analysis', 'intermediate', 'reduse')
     dir_results_routes = os.path.join(output_root, 'transport cvts analysis', 'results', 'routes')
     
@@ -66,7 +68,7 @@ def main():
         output_root, 'transport cvts analysis', 'results', 'routes_collected')
     dir_results_traffic_count = os.path.join(output_root, 'transport cvts analysis', 'results', 'traffic_count')
 
-    # Reduse dataset with 70 percent (processing 4s/100mb)
+    Reduse dataset with 70 percent (processing 4s/100mb)
     print('Reduce dataset size')
     reduse_dataset(dir_raw_cvts, dir_inter_reduse)
 
@@ -226,9 +228,9 @@ def find_routes(road_network, gps_points_folder, routes_folder):
     rtree = index.Index()
     road_network_lut = {}
     for road in road_network:
-        rtree.insert(int(road['properties']['G_ID']), shape(
+        rtree.insert(int(road['properties']['g_id']), shape(
             road['geometry']).bounds, obj=shape(road['geometry']))
-        road_network_lut[int(road['properties']['G_ID'])] = shape(road['geometry'])
+        road_network_lut[int(road['properties']['g_id'])] = shape(road['geometry'])
 
     # Process gps points per file
     for root, dirs, files in os.walk(gps_points_folder):
@@ -286,8 +288,8 @@ def add_traffic_count_to_road_network(road_network, routes_folder, results_folde
     # Process road network into lookup friendly dictionary
     road_network_lut = {}
     for road in road_network:
-        road_network_lut[int(road['properties']['G_ID'])] = road
-        road_network_lut[int(road['properties']['G_ID'])]['properties']['vehicle_count'] = 0
+        road_network_lut[int(road['properties']['g_id'])] = road
+        road_network_lut[int(road['properties']['g_id'])]['properties']['vehicle_co'] = 0
 
     # Add vehicle count attribute to road network
     for root, dirs, files in os.walk(routes_folder):
@@ -299,7 +301,7 @@ def add_traffic_count_to_road_network(road_network, routes_folder, results_folde
 
                     for route_edge in reader:
                         road_network_lut[int(route_edge[0])
-                                         ]['properties']['vehicle_count'] += 1
+                                         ]['properties']['vehicle_co'] += 1
 
     return [road[1] for road in road_network_lut.items()]
 

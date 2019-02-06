@@ -51,15 +51,16 @@ from vtra.transport_flow_and_failure_functions import *
 
 def hazard_data_summary(hazard_network_dataframe,network_dataframe):
     df = pd.merge(network_dataframe,hazard_network_dataframe,how='left',on=['edge_id']).fillna(0)
+    total_length = df.groupby(['edge_id'])['length'].max().sum()
     df['min_exposure_length'] = 0.001*df['min_exposure_length']
     df['max_exposure_length'] = 0.001*df['max_exposure_length']
     hazard_totals = df.groupby(['hazard_type','model','climate_scenario','year'])['min_exposure_length','max_exposure_length'].sum().reset_index()
 
-    hazard_totals_min = hazard_totals.groupby(['hazard_type','climate_scenario','year'])['min_exposure_length'].min().reset_index()
-    hazard_totals_min['Percentage (min)'] = hazard_totals_min['min_exposure_length']/df['length'].sum()
+    hazard_totals_min = hazard_totals.groupby(['hazard_type','climate_scenario','year'])['min_exposure_length'].max().reset_index()
+    hazard_totals_min['Percentage (min)'] = hazard_totals_min['min_exposure_length']/total_length
 
     hazard_totals_max = hazard_totals.groupby(['hazard_type','climate_scenario','year'])['max_exposure_length'].max().reset_index()
-    hazard_totals_max['Percentage (max)'] = hazard_totals_max['max_exposure_length']/df['length'].sum()
+    hazard_totals_max['Percentage (max)'] = hazard_totals_max['max_exposure_length']/total_length
 
     hazards = pd.merge(hazard_totals_min,hazard_totals_max,how='left',on=['hazard_type','climate_scenario','year'])
 
