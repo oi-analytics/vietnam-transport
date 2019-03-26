@@ -130,6 +130,7 @@ def plot_basemap(ax, data_path, focus='VNM', neighbours=None,
                     crs=proj,
                     edgecolor=country_border,
                     facecolor='#e0e0e0',
+                    linewidth=0.5,
                     zorder=1)
 
     # Regions
@@ -142,11 +143,11 @@ def plot_basemap(ax, data_path, focus='VNM', neighbours=None,
         for record in shpreader.Reader(provinces_filename).records():
             if record.attributes['NAME_ENG'] in highlight_region:
                 ax.add_geometries([record.geometry], crs=proj,
-                                  edgecolor='#ffffff', facecolor='#7c7c7c')
+                                  edgecolor='#ffffff', facecolor='#7c7c7c', linewidth=0.5)
                 highlight_region_geom = record.geometry
             else:
                 ax.add_geometries([record.geometry], crs=proj,
-                                  edgecolor='#ffffff', facecolor='#d2d2d2')
+                                  edgecolor='#ffffff', facecolor='#d2d2d2', linewidth=0.5)
 
     # Districts
     if plot_districts:
@@ -156,11 +157,11 @@ def plot_basemap(ax, data_path, focus='VNM', neighbours=None,
                 if district_region == highlight_region or \
                         shape(record.geometry.centroid).intersects(highlight_region_geom):
                     ax.add_geometries([record.geometry], crs=proj, edgecolor='#ffffff',
-                                      facecolor='#c7c7c7')
+                                      facecolor='#c7c7c7', linewidth=0.5)
 
             else:
                 ax.add_geometries([record.geometry], crs=proj, edgecolor='#ffffff',
-                                  facecolor='#d2d2d2')
+                                  facecolor='#d2d2d2', linewidth=0.5)
 
     # Lakes
     for record in shpreader.Reader(lakes_filename).records():
