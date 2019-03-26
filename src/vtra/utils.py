@@ -8,14 +8,16 @@ import os
 from collections import OrderedDict, namedtuple
 from math import floor, log10
 
+import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
+import numpy as np
+from scipy.spatial import Voronoi
+
 import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
 import fiona
 import fiona.crs
 import geopandas as gpd
-import matplotlib.patches as mpatches
-import matplotlib.pyplot as plt
-import numpy as np
 import rasterio
 import shapely.geometry
 import shapely.ops
@@ -23,7 +25,6 @@ from boltons.iterutils import pairwise
 from colour import Color
 from geopy.distance import vincenty
 from osgeo import gdal
-from scipy.spatial import Voronoi
 from shapely.geometry import Polygon, shape
 
 
@@ -36,10 +37,17 @@ def load_config():
     return config
 
 
-def get_axes(extent=[102.2, 109.5, 8.5, 23.3], figsize=(6, 10), epsg=None):
+def get_axes(extent=None, figsize=None, epsg=None):
     """Get transverse mercator axes (default to Vietnam extent)
     EPSG:4756
     """
+    if extent is None:
+        # extent = [102.2, 109.5, 8.5, 23.3]  # mainland extent
+        extent = [101.8, 118.3, 6.7, 23.6]  # include islands
+    if figsize is None:
+        # figsize = (6, 10)  # mainland (portrait)
+        figsize = (12, 10)  # include islands
+
     if epsg is not None:
         ax_proj = ccrs.epsg(epsg)
     else:
@@ -66,12 +74,15 @@ def set_ax_bg(ax, color='#c6e0ff'):
     ax.background_patch.set_facecolor(color)
 
 
-def plot_basemap(ax, data_path, focus='VNM', neighbours=['VNM', 'CHN', 'LAO', 'KHM', 'THA'],
+def plot_basemap(ax, data_path, focus='VNM', neighbours=None,
                  country_border='white', plot_regions=True, plot_states=True,
                  plot_districts=False, highlight_region=None):
     """Plot countries and regions background
     """
     proj = ccrs.PlateCarree()
+
+    if neighbours is None:
+        neighbours = ['VNM', 'CHN', 'LAO', 'KHM', 'THA', 'PHL', 'MYS', 'BRN']
 
     states_filename = os.path.join(
         data_path,
@@ -125,6 +136,8 @@ def plot_basemap(ax, data_path, focus='VNM', neighbours=['VNM', 'CHN', 'LAO', 'K
     if highlight_region is None:
         highlight_region = []
     highlight_region_geom = None
+    if highlight_region is None:
+        highlight_region = []
     if plot_regions:
         for record in shpreader.Reader(provinces_filename).records():
             if record.attributes['NAME_ENG'] in highlight_region:
@@ -221,7 +234,7 @@ def plot_basemap_labels(ax, data_path, labels=None, province_zoom=False, plot_re
     """Plot countries and regions background
     """
     proj = ccrs.PlateCarree()
-    extent = ax.get_extent()
+    extent = ax.get_extent(crs=proj)
 
     if labels is None:
         labels = []
@@ -254,7 +267,7 @@ def plot_basemap_labels(ax, data_path, labels=None, province_zoom=False, plot_re
                 ('Ca Mau', 105.036, 9.046, 5),
                 ('Can Tho', 105.530, 10.184, 5),
                 ('Cao Bang', 106.087, 22.744, 5),
-                # ('Da Nang', 109.634, 16.188, 5),
+                ('Da Nang', 108.234, 16.057, 5),
                 ('Dak Lak', 108.212, 12.823, 5),
                 ('Dak Nong', 107.688, 12.228, 5),
                 ('Dien Bien', 103.022, 21.710, 5),
@@ -271,7 +284,7 @@ def plot_basemap_labels(ax, data_path, labels=None, province_zoom=False, plot_re
                 ('Ho Chi Minh', 106.697, 10.743, 5),
                 ('Hoa Binh', 105.343, 20.684, 5),
                 ('Hung Yen', 106.060, 20.814, 5),
-                # ('Khanh Hoa', 111.307, 10.890, 5),
+                ('Khanh Hoa', 109.172, 12.271, 5),
                 ('Kien Giang', 104.942, 9.998, 5),
                 ('Kon Tum', 107.875, 14.647, 5),
                 ('Lai Chau', 103.187, 22.316, 5),
