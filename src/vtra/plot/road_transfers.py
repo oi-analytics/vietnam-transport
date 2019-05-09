@@ -4,18 +4,31 @@ import os
 import sys
 from collections import OrderedDict
 
+import numpy as np
+import geopandas as gpd
+import pandas as pd
 import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
 import matplotlib.pyplot as plt
+import numpy as np
 from shapely.geometry import LineString
 from vtra.utils import *
 
 
 def main():
     config = load_config()
-    flows_file = os.path.join(
-        config['paths']['data'], 'Results', 'Failure_shapefiles',
-        'weighted_edges_failures_national_road_transfer_from_rail.shp')
+    region_file_path = os.path.join(config['paths']['data'], 'post_processed_networks',
+                               'road_edges.shp')
+    flow_file_path = os.path.join(config['paths']['output'], 'failure_results','minmax_combined_scenarios',
+                               'single_edge_failures_transfers_national_rail_100_percent_shift.csv')
+
+    region_file = gpd.read_file(region_file_path,encoding='utf-8')
+    flow_file = pd.read_csv(flow_file_path)
+    region_file = pd.merge(region_file,flow_file,how='left', on=['edge_id']).fillna(0)
+    del flow_file
+
+    region_file = region_file[region_file['edge_id'] != 0]
+
     plot_sets = [
         {
             'file_tag': 'commodities',
@@ -32,14 +45,14 @@ def main():
             ax = get_axes()
             plot_basemap(ax, config['paths']['data'], highlight_region=[])
             scale_bar(ax, location=(0.8, 0.05))
-            plot_basemap_labels(ax, config['paths']['data'])
+            plot_basemap_labels(ax, config['paths']['data'],plot_international_left=False)
             proj_lat_lon = ccrs.PlateCarree()
 
             # generate weight bins
             column = plot_set['columns'][c]
             weights = [
-                record.attributes[column]
-                for record in shpreader.Reader(flows_file).records()
+                record[column]
+                for iter_,record in region_file.iterrows()
             ]
 
             max_weight = max(weights)
@@ -54,14 +67,14 @@ def main():
                 '6': []
             }
 
-            for record in shpreader.Reader(flows_file).records():
+            for iter_,record in region_file.iterrows():
 
-                cat = str(record.attributes['road_class'])
+                cat = str(record['road_class'])
                 if cat not in road_geoms_by_category:
                     raise Exception
                 geom = record.geometry
 
-                val = record.attributes[column]
+                val = record[column]
 
                 buffered_geom = None
                 for (nmin, nmax), width in width_by_range.items():
@@ -71,7 +84,7 @@ def main():
                 if buffered_geom is not None:
                     road_geoms_by_category[cat].append(buffered_geom)
                 else:
-                    print("Feature was outside range to plot", record.attributes)
+                    print("Feature was outside range to plot", iter_)
 
             styles = OrderedDict([
                 ('1',  Style(color='#000004', zindex=9, label='Class 1')),  # red
@@ -131,11 +144,11 @@ def main():
                     transform=proj_lat_lon,
                     size=10)
 
-            plt.title(plot_set['title_cols'][c], fontsize=14)
+            plt.title('Rail transfers - ' + plot_set['title_cols'][c], fontsize=14)
             legend_from_style_spec(ax, styles)
             output_file = os.path.join(
                 config['paths']['figures'],
-                'road_failure-map-transfer-rail-{}-{}.png'.format(
+                'road_flow-map-transfer-rail-{}-{}.png'.format(
                     plot_set['file_tag'], column))
             save_fig(output_file)
             plt.close()

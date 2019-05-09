@@ -194,8 +194,8 @@ def main():
                     [line],
                     crs=proj_lat_lon,
                     linewidth=0,
-                    edgecolor=str(line_style[2]),
-                    facecolor=str(line_style[2]),
+                    edgecolor='#969696',
+                    facecolor='#969696',
                     zorder=2)
                 significance_ndigits = plot_set[c]['significance']
                 if nmin == max_weight:

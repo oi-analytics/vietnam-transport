@@ -136,7 +136,7 @@ def main():
             if buffered_geom is not None:
                 road_geoms_by_category[cat].append(buffered_geom)
             else:
-                print("Feature was outside range to plot", record.index)
+                print("Feature was outside range to plot", iter_)
 
         styles = OrderedDict([
             ('1',  Style(color='#000004', zindex=9, label='Class 1')),  # red

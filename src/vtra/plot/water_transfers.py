@@ -15,12 +15,19 @@ from shapely.geometry import LineString
 from vtra.utils import *
 
 
-def main():
+def main(mode):
     config = load_config()
+    if mode == 'road':
+        flow_file_path = os.path.join(config['paths']['output'], 'failure_results','minmax_combined_scenarios',
+                               'single_edge_failures_transfers_national_road_10_percent_shift.csv')
+    elif mode == 'rail':
+        flow_file_path = os.path.join(config['paths']['output'], 'failure_results','minmax_combined_scenarios',
+                                   'single_edge_failures_transfers_national_rail_100_percent_shift.csv')
+    else:
+        raise ValueError("Mode must be road or rail")
+
     region_file_path = os.path.join(config['paths']['data'], 'post_processed_networks',
                                'coastal_edges.shp')
-    flow_file_path = os.path.join(config['paths']['output'], 'failure_results','minmax_combined_scenarios',
-                               'single_edge_failures_transfers_national_road_10_percent_shift.csv')
 
     region_file = gpd.read_file(region_file_path,encoding='utf-8')
     flow_file = pd.read_csv(flow_file_path)
@@ -44,7 +51,7 @@ def main():
         ax = get_axes()
         plot_basemap(ax, config['paths']['data'], highlight_region=[])
         scale_bar(ax, location=(0.8, 0.05))
-        plot_basemap_labels(ax, config['paths']['data'])
+        plot_basemap_labels(ax, config['paths']['data'],plot_international_left=False)
         proj_lat_lon = ccrs.PlateCarree()
 
         column = columns[c]
@@ -137,14 +144,22 @@ def main():
                 transform=proj_lat_lon,
                 size=10)
 
-        plt.title(title_cols[c], fontsize=14)
+        plt.title('{} transfers - '.format(mode.title()) + title_cols[c], fontsize=14)
+        legend_from_style_spec(ax, styles)
         print ('* Plotting ',title_cols[c])
-        output_file = os.path.join(
-            config['paths']['figures'],
-            'water_flow-map-transfer-road-10-shift-{}.png'.format(column))
+        if mode == 'road':
+            output_file = os.path.join(
+                config['paths']['figures'], 'water_flow-map-transfer-{}-10-shift-{}.png'.format(mode,column))
+        elif mode == 'rail':
+            output_file = os.path.join(
+                config['paths']['figures'], 'water_flow-map-transfer-{}-100-shift-{}.png'.format(mode,column))
+        else:
+            raise ValueError("Mode must be road or rail")
         save_fig(output_file)
         plt.close()
 
 
 if __name__ == '__main__':
-    main()
+    ok_values = ('road', 'rail')
+    for ok in ok_values:
+        main(ok)

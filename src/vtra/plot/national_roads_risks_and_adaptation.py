@@ -119,6 +119,34 @@ def main():
             'significance': 0
         },
         {
+            'column': 'min_ini_adap_cost_perkm',
+            'title': 'Min Initial Investment per km',
+            'legend_label': "Initial Investment (USD million/km)",
+            'divisor': 1000000,
+            'significance': 0
+        },
+        {
+            'column': 'max_ini_adap_cost_perkm',
+            'title': 'Max Initial Investment per km',
+            'legend_label': "Initial Investment (USD million/km)",
+            'divisor': 1000000,
+            'significance': 0
+        },
+        {
+            'column': 'min_tot_adap_cost_perkm',
+            'title': 'Min Investment per km over time',
+            'legend_label': "Total Investment (USD million/km)",
+            'divisor': 1000000,
+            'significance': 0
+        },
+        {
+            'column': 'max_tot_adap_cost_perkm',
+            'title': 'Max Investment per km over time',
+            'legend_label': "Total Investment (USD million/km)",
+            'divisor': 1000000,
+            'significance': 0
+        },
+        {
             'column': 'min_bc_ratio',
             'title': 'Min BCR of adaptation over time',
             'legend_label': "BCR",
@@ -134,7 +162,8 @@ def main():
         }
     ]
 
-    adapt_cols = ['min_benefit','min_ini_adap_cost','min_tot_adap_cost','min_bc_ratio','max_benefit','max_ini_adap_cost','max_tot_adap_cost','max_bc_ratio']
+    adapt_cols = ['min_benefit','min_ini_adap_cost','min_ini_adap_cost_perkm','min_tot_adap_cost','min_tot_adap_cost_perkm','min_bc_ratio',\
+                'max_benefit','max_ini_adap_cost','max_ini_adap_cost_perkm','max_tot_adap_cost','max_tot_adap_cost_perkm','max_bc_ratio']
 
     region_file_path = os.path.join(config['paths']['data'], 'post_processed_networks',
                                'road_edges.shp')
@@ -151,6 +180,7 @@ def main():
                                'output_adaptation_national_road_10_days_max_disruption_fixed_parameters.csv')
 
     fail_scenarios = pd.read_csv(flow_file_path)
+    fail_scenarios = pd.merge(fail_scenarios,region_file[['edge_id','number']],how='left',on=['edge_id']).fillna('Unknown')
     fail_scenarios['min_eael'] = duration*fail_scenarios['min_duration_wt']*fail_scenarios['risk_wt']*fail_scenarios['min_econ_impact']
     fail_scenarios['max_eael'] = duration*fail_scenarios['max_duration_wt']*fail_scenarios['risk_wt']*fail_scenarios['max_econ_impact']
     all_edge_fail_scenarios = fail_scenarios[hazard_cols + ['edge_id','min_eael','max_eael']]
@@ -165,16 +195,17 @@ def main():
         yrs = all_edge_fail_scenarios.loc[[sc], 'year'].values.tolist()
         cl = all_edge_fail_scenarios.loc[[sc], 'climate_scenario'].values.tolist()
         if 2016 not in yrs:
-            change_tup += list(zip([sc[0]]*len(cl),[sc[1]]*len(cl),cl,yrs,[1e9]*len(cl)))
+            change_tup += list(zip([sc[0]]*len(cl),[sc[1]]*len(cl),cl,yrs,[0]*len(cl),eael,[1e9]*len(cl)))
         elif len(yrs) > 1:
             vals = list(zip(cl,eael,yrs))
             vals = sorted(vals, key=lambda pair: pair[-1])
             change = 100.0*(np.array([p for (c,p,y) in vals[1:]]) - vals[0][1])/vals[0][1]
             cl = [c for (c,p,y) in vals[1:]]
             yrs = [y for (c,p,y) in vals[1:]]
-            change_tup += list(zip([sc[0]]*len(cl),[sc[1]]*len(cl),cl,yrs,change))
+            fut = [p for (c,p,y) in vals[1:]]
+            change_tup += list(zip([sc[0]]*len(cl),[sc[1]]*len(cl),cl,yrs,[vals[0][1]]*len(cl),fut,change))
 
-    change_df = pd.DataFrame(change_tup,columns=['hazard_type','edge_id','climate_scenario','year','change'])
+    change_df = pd.DataFrame(change_tup,columns=['hazard_type','edge_id','climate_scenario','year','current','future','change'])
     change_df.to_csv(os.path.join(config['paths']['output'],
         'network_stats',
         'national_roads_eael_climate_change.csv'
@@ -390,14 +421,20 @@ def main():
             save_fig(output_file)
             plt.close()
 
-    # fail_scenarios = fail_scenarios[(fail_scenarios['hazard_type'] == 'flooding') & (fail_scenarios['year'] > 2016) & (fail_scenarios['climate_scenario'] == 'rcp 8.5')]
+    # fail_scenarios = fail_scenarios[(fail_scenarios['hazard_type'] == 'flooding') & (fail_scenarios['year'] > 2016) & (fail_scenarios['climate_scenario'] == 'rcp 4.5')]
     # fail_scenarios = fail_scenarios[(fail_scenarios['hazard_type'] == 'flooding') & (fail_scenarios['year'] == 2016)]
-    all_edge_fail_scenarios = fail_scenarios[['edge_id','road_class','min_eael','max_eael','min_benefit','min_ini_adap_cost','min_tot_adap_cost',\
+    all_edge_fail_scenarios = fail_scenarios[['edge_id','number','road_class','road_length','min_exposure_length','max_exposure_length','min_eael','max_eael',\
+                                'min_benefit','min_ini_adap_cost','min_tot_adap_cost',\
                                 'min_bc_ratio','max_benefit','max_ini_adap_cost','max_tot_adap_cost','max_bc_ratio']]
     for cols in ['min_ini_adap_cost','max_ini_adap_cost']:
         all_edge_fail_scenarios[cols] = all_edge_fail_scenarios[cols].apply(lambda x: np.max(np.array(ast.literal_eval(x))))
 
-    all_edge_fail_scenarios = all_edge_fail_scenarios.groupby(['edge_id','road_class'])[adapt_cols + ['min_eael','max_eael']].max().reset_index()
+    all_edge_fail_scenarios['min_ini_adap_cost_perkm'] = 1000*all_edge_fail_scenarios['min_ini_adap_cost']/all_edge_fail_scenarios['road_length']
+    all_edge_fail_scenarios['max_ini_adap_cost_perkm'] = 1000*all_edge_fail_scenarios['max_ini_adap_cost']/all_edge_fail_scenarios['road_length']
+    all_edge_fail_scenarios['min_tot_adap_cost_perkm'] = 1000*all_edge_fail_scenarios['min_tot_adap_cost']/all_edge_fail_scenarios['road_length']
+    all_edge_fail_scenarios['max_tot_adap_cost_perkm'] = 1000*all_edge_fail_scenarios['max_tot_adap_cost']/all_edge_fail_scenarios['road_length']
+
+    all_edge_fail_scenarios = all_edge_fail_scenarios.groupby(['edge_id','number','road_class'])[adapt_cols + ['min_exposure_length','max_exposure_length','min_eael','max_eael']].max().reset_index()
     all_edge_fail_scenarios = all_edge_fail_scenarios[all_edge_fail_scenarios['max_eael'] > 0]
     all_edge_fail_scenarios.to_csv(os.path.join(config['paths']['output'],
         'network_stats',
@@ -538,7 +575,7 @@ def main():
 
         # output
         output_file = os.path.join(
-            config['paths']['figures'], 'national_roads-{}-values-fixed-parameters-flooding-rcp85.png'.format(column))
+            config['paths']['figures'], 'national_roads-{}-values-fixed-parameters.png'.format(column))
         save_fig(output_file)
         plt.close()
 

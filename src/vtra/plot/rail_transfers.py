@@ -48,7 +48,7 @@ def main():
             ax = get_axes()
             plot_basemap(ax, config['paths']['data'], highlight_region=[])
             scale_bar(ax, location=(0.8, 0.05))
-            plot_basemap_labels(ax, config['paths']['data'])
+            plot_basemap_labels(ax, config['paths']['data'],plot_international_left=False)
             proj_lat_lon = ccrs.PlateCarree()
 
             column = plot_set['columns'][c]
@@ -118,11 +118,11 @@ def main():
                     transform=proj_lat_lon,
                     size=10)
 
-            plt.title(plot_set['title_cols'][c], fontsize=14)
+            plt.title('Road transfers - ' + plot_set['title_cols'][c], fontsize=14)
             print ('* Plotting ',plot_set['title_cols'][c])
             output_file = os.path.join(
                 config['paths']['figures'],
-                'rail_failure-map-transfer-road-10-shift-{}-{}.png'.format(
+                'rail_flow-map-transfer-road-10-shift-{}-{}.png'.format(
                     plot_set['file_tag'], column))
             save_fig(output_file)
             plt.close()
