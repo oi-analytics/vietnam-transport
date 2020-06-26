@@ -1,14 +1,18 @@
 # Vietnam Transport World Bank project
 
-Data processing, modelling, analysis and visualisation for a Vietnam Transport Risk Analysis.
-
 [![vtra on github](https://img.shields.io/badge/github-oi--analytics%2Fvietnam--transport-brightgreen.svg)](https://github.com/oi-analytics/vietnam-transport/)
-
 [![Documentation Status](https://readthedocs.org/projects/vietnam-transport-risk-analysis/badge/?version=latest)](https://vietnam-transport-risk-analysis.readthedocs.io/en/latest/?badge=latest)
 
+Data processing, modelling, analysis and visualisation for a Vietnam Transport Risk Analysis.
 
 Documentation is available at
 [ReadTheDocs](https://vietnam-transport-risk-analysis.readthedocs.io)
+
+A report based on the analysis is available at:
+
+> Oh, J.E., Espinet Alegre, X., Pant, R., Koks, E.E., Russell, T., Schoenmakers, R. and Hall, 
+> J.W. (2020) Addressing Climate Change in Transport: Volume 2: Pathway to Resilient Transport. 
+> World Bank, Washington DC. [DOI: 10.1596/32412](http://dx.doi.org/10.1596/32412)
 
 
 ## Requirements
