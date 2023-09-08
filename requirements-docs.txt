@@ -1,7 +1,7 @@
-Sphinx==1.8.1
 m2r
 matplotlib
 numpy
 pandas
 requests
 scipy
+Sphinx==1.8.1
